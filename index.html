@@ -3,262 +3,547 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Layout Meeting — DASIFILL</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <title>DASIFILL — Private Access</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --void:   #080808;
+      --deep:   #0F0F0F;
+      --paper:  #F0EEE9;
+      --mid:    rgba(240,238,233,0.38);
+      --ghost:  rgba(240,238,233,0.12);
+      --rule:   rgba(240,238,233,0.10);
+      --accent: #C8C8C8;   /* 쿨 실버 액센트 */
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--void);
+      color: var(--paper);
+      font-family: 'Jost', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════════════════
+       배경 — 건축 도면선 (선으로 공간 표현)
+       격자 + 수직/수평 기준선
+       ══════════════════════════════════ */
+
+    /* 미세 격자 (도면 배경지) */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,238,233,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,238,233,0.028) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 중앙 십자 기준선 (건축 도면의 중심선) */
+    .guide-h, .guide-v {
+      position: fixed;
+      background: rgba(240,238,233,0.055);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .guide-h { left: 0; right: 0; top: 50%; height: 1px; }
+    .guide-v { top: 0; bottom: 0; left: 50%; width: 1px; }
+
+    /* 모서리 코너 마커 (도면 경계 표시) */
+    .corner {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .corner::before, .corner::after {
+      content: '';
+      position: absolute;
+      background: rgba(240,238,233,0.28);
+    }
+    .corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+    .corner::after  { width: 1px; height: 100%; top: 0; left: 0; }
+
+    .corner.tl { top: 24px; left: 24px; }
+    .corner.tr { top: 24px; right: 24px; transform: scaleX(-1); }
+    .corner.bl { bottom: 24px; left: 24px; transform: scaleY(-1); }
+    .corner.br { bottom: 24px; right: 24px; transform: scale(-1); }
+
+    /* ══════════════════════════════════
+       네비게이션
+       ══════════════════════════════════ */
+    nav {
+      position: relative;
+      z-index: 10;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav-brand {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 10px;
+      color: var(--paper);
+      text-transform: uppercase;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-item {
+      font-size: 8px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--mid);
+      text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════
+       메인
+       ══════════════════════════════════ */
+    main {
+      position: relative;
+      z-index: 10;
+      height: calc(100vh - 54px - 48px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── 브랜드 블록 ── */
+    .brand-block {
+      text-align: center;
+      margin-bottom: 56px;
+      animation: riseIn 1.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .brand-eyebrow {
+      font-size: 7px;
+      font-weight: 200;
+      letter-spacing: 9px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .brand-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(48px, 5.5vw, 74px);
+      font-weight: 400;
+      letter-spacing: 0.28em;
+      color: var(--paper);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    /* 수평 구분선 — 건축 도면의 치수 보조선 스타일 */
+    .brand-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 24px auto;
+      gap: 0;
+    }
+    .brand-rule-tick {
+      width: 1px;
+      height: 8px;
+      background: rgba(240,238,233,0.35);
+    }
+    .brand-rule-line {
+      flex: 1;
+      max-width: 72px;
+      height: 1px;
+      background: rgba(240,238,233,0.18);
+    }
+    .brand-rule-center {
+      width: 3px;
+      height: 3px;
+      background: rgba(240,238,233,0.5);
+      margin: 0 12px;
+    }
+
+    .brand-sub {
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+    }
+
+    /* ── 진입 폼 ── */
+    .entry-form {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      width: 292px;
+      animation: riseIn 1.2s 0.12s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 7px;
+      font-weight: 200;
+      letter-spacing: 6px;
+      color: var(--accent);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 8px;
+      opacity: 0.75;
+    }
+
+    .project-input {
+      width: 100%;
+      background: rgba(240,238,233,0.04);
+      border: 1px solid rgba(240,238,233,0.14);
+      border-radius: 0;
+      padding: 13px 18px;
+      color: var(--paper);
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .project-input::placeholder {
+      color: rgba(240,238,233,0.18);
+      letter-spacing: 1px;
+      font-style: italic;
+    }
+    .project-input:focus {
+      border-color: rgba(240,238,233,0.38);
+      background: rgba(240,238,233,0.06);
+    }
+
+    /* ── ACCESS 버튼 — 쿨 실버, 각진 소재 ── */
+    .access-btn {
+      width: 100%;
+      padding: 15px 24px;
+      border: none;
+      border-radius: 0;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Jost', sans-serif;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 9px;
+      text-transform: uppercase;
+      color: var(--void);
+
+      /* 브러시드 실버 — 쿨톤 금속 */
+      background: linear-gradient(
+        108deg,
+        #909090 0%,
+        #C8C8C8 22%,
+        #E8E8E8 40%,
+        #F2F2F2 50%,
+        #E0E0E0 60%,
+        #B8B8B8 78%,
+        #888888 100%
+      );
+      background-size: 260% auto;
+      animation: silverShimmer 7s ease-in-out infinite;
+      transition: letter-spacing 0.4s ease;
+    }
+
+    /* 표면 광택 */
+    .access-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.22) 0%,
+        rgba(255,255,255,0.06) 45%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    /* 헤어라인 텍스처 */
+    .access-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.012) 0px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+    }
+
+    .access-btn:hover {
+      letter-spacing: 12px;
+      animation-duration: 2s;
+    }
+    .access-btn:active {
+      filter: brightness(0.88);
+      transform: scaleY(0.98);
+    }
+
+    @keyframes silverShimmer {
+      0%   { background-position: 0%   center; }
+      50%  { background-position: 260% center; }
+      100% { background-position: 0%   center; }
+    }
+
+    /* ── 최근 세션 ── */
+    .recent-block {
+      margin-top: 48px;
+      width: 292px;
+      animation: riseIn 1.2s 0.24s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .recent-header {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 10px;
+    }
+    .recent-tick {
+      width: 1px;
+      height: 10px;
+      background: rgba(240,238,233,0.20);
+      flex-shrink: 0;
+    }
+    .recent-hr {
+      flex: 1;
+      height: 1px;
+      background: rgba(240,238,233,0.10);
+    }
+    .recent-label {
+      font-size: 7px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: rgba(240,238,233,0.32);
+      text-transform: uppercase;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .recent-list { display: flex; flex-direction: column; gap: 1px; }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border: 1px solid rgba(240,238,233,0.07);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .recent-item:hover {
+      border-color: rgba(240,238,233,0.22);
+      background: rgba(240,238,233,0.04);
+    }
+    .recent-name {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+      color: rgba(240,238,233,0.45);
+    }
+    .recent-arrow {
+      font-size: 10px;
+      color: rgba(240,238,233,0.25);
+      font-weight: 200;
+    }
+
+    .recent-empty {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: rgba(240,238,233,0.16);
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    /* ══════════════════════════════════
+       Footer
+       ══════════════════════════════════ */
+    footer {
+      position: relative;
+      z-index: 10;
+      height: 48px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+    }
+
+    .footer-copy {
+      font-size: 8px;
+      font-weight: 200;
+      letter-spacing: 2.5px;
+      color: rgba(240,238,233,0.16);
+      text-transform: uppercase;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .footer-tag {
+      font-size: 8px;
+      font-weight: 200;
+      letter-spacing: 3px;
+      color: rgba(240,238,233,0.18);
+      text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════
+       애니메이션
+       ══════════════════════════════════ */
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-<body class="flex flex-col overflow-hidden" style="height:100vh;">
+<body>
 
-  <!-- ══ Header ═══════════════════════════════════════ -->
-  <header class="header-bar flex-none flex items-center justify-between px-5 gap-4">
+  <!-- 건축 도면 가이드라인 -->
+  <div class="guide-h"></div>
+  <div class="guide-v"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
 
-    <!-- 로고 — 클릭하여 이미지 교체 -->
-    <label class="logo-area" title="클릭하여 로고 이미지 업로드" style="cursor:pointer;">
-      <img id="logoImg" style="width:100%;height:100%;object-fit:contain;display:none;" alt="logo">
-      <span class="logo-label" id="logoPlaceholder">DASIFILL</span>
-      <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="hidden">
-    </label>
+  <!-- 네비 -->
+  <nav>
+    <span class="nav-brand">Dasifill</span>
+    <div class="nav-right">
+      <span class="nav-item">Layout · Meeting</span>
+      <span class="nav-item" style="color:rgba(240,238,233,0.16);">v 2.0</span>
+    </div>
+  </nav>
 
-    <!-- 타이틀 -->
-    <div class="text-center flex-1">
-      <h1 style="font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:20px;font-weight:400;letter-spacing:0.06em;color:#fff;line-height:1.15;">Layout — Meeting</h1>
-      <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;letter-spacing:0.5px;" id="todayDate"></p>
+  <!-- 메인 -->
+  <main>
+
+    <!-- 브랜드 -->
+    <div class="brand-block">
+      <p class="brand-eyebrow">Private Project Access</p>
+      <h1 class="brand-name">Dasifill</h1>
+      <div class="brand-rule">
+        <div class="brand-rule-tick"></div>
+        <div class="brand-rule-line"></div>
+        <div class="brand-rule-center"></div>
+        <div class="brand-rule-line"></div>
+        <div class="brand-rule-tick"></div>
+      </div>
+      <p class="brand-sub">Space as Art — Interior Meeting</p>
     </div>
 
-    <!-- 프로젝트명 -->
-    <div class="flex flex-col items-end gap-0.5 flex-none">
-      <label style="font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:400;letter-spacing:0.12em;color:rgba(255,255,255,0.72);text-transform:uppercase;line-height:1.1;">Project Name</label>
-      <input type="text" id="projectName" placeholder="enter project name" class="client-input">
-    </div>
-  </header>
-
-  <!-- ══ 시안 탭 바 + 액션 버튼 ════════════════════ -->
-  <div class="tab-bar flex-none flex items-center px-4 gap-1">
-    <div id="tabContainer" class="flex items-center gap-1.5"></div>
-    <button id="addTabBtn" class="add-tab-btn" title="시안 추가">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-      </svg>
-    </button>
-    <div class="flex-1"></div>
-    <!-- 내보내기 -->
-    <button id="exportBtn" class="tab-action-btn" title="데이터 내보내기 (JSON)">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m-4-4l4 4 4-4"/>
-      </svg>
-    </button>
-    <!-- 요약 인쇄 -->
-    <button id="printBtn" class="tab-action-btn" title="미팅 요약 인쇄">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z"/>
-      </svg>
-    </button>
-  </div>
-
-  <!-- ══ Workspace ════════════════════════════════════ -->
-  <div class="flex flex-1 min-h-0">
-
-    <!-- 좌측: 도구 패널 -->
-    <aside class="tool-panel flex-none flex flex-col items-center py-2 gap-1 overflow-y-auto">
-
-      <!-- 도면 업로드 -->
-      <label class="tool-btn" title="도면 업로드 (PNG·JPG·PDF)">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-            d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4"/>
-        </svg>
-        <input type="file" id="floorPlanUpload" accept="image/png,image/jpeg,application/pdf" class="hidden">
-      </label>
-
-      <!-- 캔버스 PNG 저장 -->
-      <button class="tool-btn" id="saveImgBtn" title="도면 이미지로 저장 (PNG)">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m-4-4l4 4 4-4"/>
-        </svg>
-      </button>
-      <div class="tool-divider"></div>
-
-      <!-- 선택 -->
-      <button class="tool-btn active" data-tool="select" title="선택 / 이동">
-        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M4 1.5v18.7l5-5.3 3.5 8.6 2.6-1.1-3.5-8.5H17L4 1.5z"/>
-        </svg>
-      </button>
-
-      <!-- 노트 마커 -->
-      <button class="tool-btn" data-tool="note" title="노트 마커 배치">
-        <span style="font-size:17px;line-height:1;">①</span>
-      </button>
-
-      <!-- 텍스트 레이블 -->
-      <button class="tool-btn" data-tool="text" title="텍스트 레이블 배치">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 12h10M4 18h7"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 12v9m-2-2.5h4"/>
-        </svg>
-      </button>
-
-      <div class="tool-divider"></div>
-
-      <!-- 지우개 -->
-      <button class="tool-btn" data-tool="eraser" title="지우개 (선택 후 Delete)">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-            d="M20 20H7L3 16 14 5l7 7-4 4"/>
-          <line x1="7" y1="20" x2="20" y2="20" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <div class="tool-divider"></div>
-
-      <!-- 실행취소 -->
-      <button class="tool-btn" id="undoBtn" title="실행취소 (Ctrl+Z)">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 14L4 9l5-5"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 9h11a4 4 0 010 8H12"/>
-        </svg>
-      </button>
-
-      <!-- 다시실행 -->
-      <button class="tool-btn" id="redoBtn" title="다시실행 (Ctrl+Y)">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 14l5-5-5-5"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 9H9a4 4 0 000 8h3"/>
-        </svg>
-      </button>
-
-      <div class="tool-divider"></div>
-
-      <!-- 화면 맞춤 -->
-      <button class="tool-btn" id="zoomFitBtn" title="화면 맞춤 (뷰포트 초기화)">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-            d="M4 8V5a1 1 0 011-1h3M4 16v3a1 1 0 001 1h3M16 4h3a1 1 0 011 1v3M16 20h3a1 1 0 001-1v-3"/>
-        </svg>
-      </button>
-
-      <!-- 어노테이션 초기화 -->
-      <button class="tool-btn" id="clearAnnotationsBtn" title="마커·텍스트 모두 지우기">
-        <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16"/>
-        </svg>
-      </button>
-
-      <div class="flex-1"></div>
-      <div class="tool-divider"></div>
-
-      <!-- 스티커 섹션 -->
-      <p class="sticker-section-label">스티커</p>
-      <div id="stickerBtns" class="flex flex-col items-center gap-1 w-full px-1.5"></div>
-      <div style="height:8px;"></div>
-    </aside>
-
-    <!-- 중앙: 캔버스 -->
-    <div id="canvasWrapper" class="flex-1 relative overflow-hidden">
-      <canvas id="floorCanvas"></canvas>
+    <!-- 진입 폼 -->
+    <div class="entry-form">
+      <div>
+        <span class="field-label">Project Code</span>
+        <input
+          type="text"
+          id="projectInput"
+          class="project-input"
+          placeholder="enter code to access"
+          maxlength="60"
+          autocomplete="off"
+          spellcheck="false"
+        >
+      </div>
+      <button class="access-btn" id="startBtn">Access</button>
     </div>
 
-    <!-- 우측: 4탭 미팅 패널 -->
-    <aside class="notes-panel flex-none flex flex-col">
-
-      <!-- 탭 바 -->
-      <div class="meeting-tabs">
-        <button class="mtab active" data-tab="agenda">어젠다</button>
-        <button class="mtab" data-tab="spaces">공간별</button>
-        <button class="mtab" data-tab="decisions">결정</button>
-        <button class="mtab" data-tab="notes">노트<span id="notesTabBadge"></span></button>
+    <!-- 최근 세션 -->
+    <div class="recent-block">
+      <div class="recent-header">
+        <div class="recent-tick"></div>
+        <div class="recent-hr"></div>
+        <span class="recent-label">Recent Sessions</span>
+        <div class="recent-hr"></div>
+        <div class="recent-tick"></div>
       </div>
-
-      <!-- Tab: 어젠다 -->
-      <div class="mtab-content active" data-tab="agenda">
-        <div id="agendaProgress" class="agenda-progress-wrap"></div>
-        <div id="agendaList" class="agenda-list"></div>
-        <div class="agenda-add-wrap">
-          <input type="text" id="agendaAddInput" placeholder="항목 추가..." class="agenda-add-input">
-          <button id="agendaAddBtn" class="agenda-add-btn" title="추가">+</button>
-        </div>
-
-        <!-- 후속 액션 아이템 (다음 미팅 일정 대체) -->
-        <div class="action-section">
-          <div class="action-section-header">
-            <span class="action-section-label">후속 액션</span>
-            <span class="action-section-hint">미팅 후 처리할 일</span>
-          </div>
-          <div id="actionItemsList" class="action-items-list"></div>
-          <div class="action-item-add-wrap">
-            <input type="text" id="actionItemInput" placeholder="할 일 추가... (Enter)" class="action-item-input">
-            <button id="actionItemAddBtn" class="action-item-add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab: 공간별 -->
-      <div class="mtab-content hidden" data-tab="spaces">
-        <div id="spaceCardsList" class="space-cards-list"></div>
-      </div>
-
-      <!-- Tab: 결정사항 -->
-      <div class="mtab-content hidden" data-tab="decisions">
-        <div class="decision-add-form">
-          <div class="decision-type-row" id="decisionTypeBtns">
-            <button class="dec-type-btn active" data-type="confirmed">✅ 확정</button>
-            <button class="dec-type-btn" data-type="pending">⏸ 보류</button>
-            <button class="dec-type-btn" data-type="research">🔍 검토</button>
-          </div>
-          <div class="decision-input-row">
-            <select id="decisionSpaceSelect" class="decision-space-sel">
-              <option value="">공간</option>
-            </select>
-            <input type="text" id="decisionText" placeholder="내용 입력 후 Enter" class="decision-text-input">
-          </div>
-        </div>
-        <div id="decisionList" class="decision-list"></div>
-      </div>
-
-      <!-- Tab: 노트 -->
-      <div class="mtab-content hidden" data-tab="notes">
-        <div id="notesList" class="notes-list"></div>
-        <div class="notes-divider"></div>
-        <div class="memo-section">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">메모</span>
-            <span id="memoCharCount" class="text-xs text-gray-400">0자</span>
-          </div>
-          <textarea id="memoArea"
-            placeholder="고객 요청사항, 현장 특이사항 등을 자유롭게 입력하세요..."
-            class="memo-textarea"></textarea>
-          <p class="text-xs mt-1.5" style="color:#C9CDD4;">자동 저장됩니다</p>
-        </div>
-      </div>
-
-    </aside>
-  </div>
-
-  <!-- ══ 공간 명칭 바 ══════════════════════════════════ -->
-  <div class="space-bar flex-none">
-    <div class="space-bar-left">
-      <span class="space-bar-label">공간</span>
-      <button id="addSpaceBtn" class="add-space-btn" title="공간 추가">＋</button>
+      <div id="recentList" class="recent-list"></div>
     </div>
-    <div class="space-bar-divider"></div>
-    <div id="spaceTagsContainer" class="space-tags-flow"></div>
-  </div>
 
-  <!-- ══ Footer ═══════════════════════════════════════ -->
-  <footer class="footer-bar flex-none flex items-center justify-center">
-    <p id="copyrightText"></p>
+  </main>
+
+  <!-- 푸터 -->
+  <footer>
+    <span class="footer-copy">© 2026 Dasifill · All rights reserved</span>
+    <div class="footer-right">
+      <span class="footer-tag">Interior Design</span>
+      <span class="footer-tag" style="color:rgba(240,238,233,0.10);">Seoul</span>
+    </div>
   </footer>
 
-  <!-- Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/image-db.js"></script>
-  <script src="js/canvas-manager.js"></script>
-  <script src="js/meeting-panel.js"></script>
-  <script src="js/app.js"></script>
+  <script>
+    function getRecents() {
+      return Object.keys(localStorage)
+        .filter(k => k.startsWith('layout_meeting_v2_'))
+        .map(k => {
+          const id = k.replace('layout_meeting_v2_', '');
+          try {
+            const d = JSON.parse(localStorage.getItem(k));
+            return { id, name: d?.projectName || id };
+          } catch { return { id, name: id }; }
+        })
+        .filter(p => p.id !== 'default')
+        .slice(0, 5);
+    }
+
+    function goTo(raw) {
+      const id = (raw || '').trim().replace(/\s+/g, '_');
+      window.location.href = id
+        ? `app.html?p=${encodeURIComponent(id)}`
+        : 'app.html';
+    }
+
+    const listEl  = document.getElementById('recentList');
+    const recents = getRecents();
+
+    if (!recents.length) {
+      listEl.innerHTML = '<p class="recent-empty">— no archived sessions —</p>';
+    } else {
+      recents.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'recent-item';
+        div.innerHTML = `<span class="recent-name">${p.name}</span><span class="recent-arrow">›</span>`;
+        div.addEventListener('click', () => goTo(p.id));
+        listEl.appendChild(div);
+      });
+    }
+
+    const input    = document.getElementById('projectInput');
+    const startBtn = document.getElementById('startBtn');
+
+    startBtn.addEventListener('click', () => goTo(input.value));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') goTo(input.value); });
+    input.focus();
+  </script>
+
 </body>
 </html>

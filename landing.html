@@ -518,8 +518,8 @@
     function goTo(raw) {
       const id = (raw || '').trim().replace(/\s+/g, '_');
       window.location.href = id
-        ? `index.html?p=${encodeURIComponent(id)}`
-        : 'index.html';
+        ? `app.html?p=${encodeURIComponent(id)}`
+        : 'app.html';
     }
 
     const listEl  = document.getElementById('recentList');
