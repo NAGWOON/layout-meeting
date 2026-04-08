@@ -540,6 +540,12 @@
     const input    = document.getElementById('projectInput');
     const startBtn = document.getElementById('startBtn');
 
+    // ?p= 파라미터가 있으면 인풋에 자동 입력
+    const presetCode = new URLSearchParams(location.search).get('p');
+    if (presetCode) {
+      input.value = presetCode;
+    }
+
     startBtn.addEventListener('click', () => goTo(input.value));
     input.addEventListener('keydown', e => { if (e.key === 'Enter') goTo(input.value); });
     input.focus();
