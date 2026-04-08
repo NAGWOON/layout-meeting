@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DASIFILL — Private Access</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --void:   #080808;
+      --deep:   #0F0F0F;
+      --paper:  #F0EEE9;
+      --mid:    rgba(240,238,233,0.38);
+      --ghost:  rgba(240,238,233,0.12);
+      --rule:   rgba(240,238,233,0.10);
+      --accent: #C8C8C8;   /* 쿨 실버 액센트 */
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--void);
+      color: var(--paper);
+      font-family: 'Jost', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════════════════
+       배경 — 건축 도면선 (선으로 공간 표현)
+       격자 + 수직/수평 기준선
+       ══════════════════════════════════ */
+
+    /* 미세 격자 (도면 배경지) */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,238,233,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,238,233,0.028) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 중앙 십자 기준선 (건축 도면의 중심선) */
+    .guide-h, .guide-v {
+      position: fixed;
+      background: rgba(240,238,233,0.055);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .guide-h { left: 0; right: 0; top: 50%; height: 1px; }
+    .guide-v { top: 0; bottom: 0; left: 50%; width: 1px; }
+
+    /* 모서리 코너 마커 (도면 경계 표시) */
+    .corner {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .corner::before, .corner::after {
+      content: '';
+      position: absolute;
+      background: rgba(240,238,233,0.28);
+    }
+    .corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+    .corner::after  { width: 1px; height: 100%; top: 0; left: 0; }
+
+    .corner.tl { top: 24px; left: 24px; }
+    .corner.tr { top: 24px; right: 24px; transform: scaleX(-1); }
+    .corner.bl { bottom: 24px; left: 24px; transform: scaleY(-1); }
+    .corner.br { bottom: 24px; right: 24px; transform: scale(-1); }
+
+    /* ══════════════════════════════════
+       네비게이션
+       ══════════════════════════════════ */
+    nav {
+      position: relative;
+      z-index: 10;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav-brand {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 10px;
+      color: var(--paper);
+      text-transform: uppercase;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-item {
+      font-size: 8px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--mid);
+      text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════
+       메인
+       ══════════════════════════════════ */
+    main {
+      position: relative;
+      z-index: 10;
+      height: calc(100vh - 54px - 48px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── 브랜드 블록 ── */
+    .brand-block {
+      text-align: center;
+      margin-bottom: 56px;
+      animation: riseIn 1.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .brand-eyebrow {
+      font-size: 7px;
+      font-weight: 200;
+      letter-spacing: 9px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .brand-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(48px, 5.5vw, 74px);
+      font-weight: 400;
+      letter-spacing: 0.28em;
+      color: var(--paper);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    /* 수평 구분선 — 건축 도면의 치수 보조선 스타일 */
+    .brand-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 24px auto;
+      gap: 0;
+    }
+    .brand-rule-tick {
+      width: 1px;
+      height: 8px;
+      background: rgba(240,238,233,0.35);
+    }
+    .brand-rule-line {
+      flex: 1;
+      max-width: 72px;
+      height: 1px;
+      background: rgba(240,238,233,0.18);
+    }
+    .brand-rule-center {
+      width: 3px;
+      height: 3px;
+      background: rgba(240,238,233,0.5);
+      margin: 0 12px;
+    }
+
+    .brand-sub {
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+    }
+
+    /* ── 진입 폼 ── */
+    .entry-form {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      width: 292px;
+      animation: riseIn 1.2s 0.12s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 7px;
+      font-weight: 200;
+      letter-spacing: 6px;
+      color: var(--accent);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 8px;
+      opacity: 0.75;
+    }
+
+    .project-input {
+      width: 100%;
+      background: rgba(240,238,233,0.04);
+      border: 1px solid rgba(240,238,233,0.14);
+      border-radius: 0;
+      padding: 13px 18px;
+      color: var(--paper);
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .project-input::placeholder {
+      color: rgba(240,238,233,0.18);
+      letter-spacing: 1px;
+      font-style: italic;
+    }
+    .project-input:focus {
+      border-color: rgba(240,238,233,0.38);
+      background: rgba(240,238,233,0.06);
+    }
+
+    /* ── ACCESS 버튼 — 쿨 실버, 각진 소재 ── */
+    .access-btn {
+      width: 100%;
+      padding: 15px 24px;
+      border: none;
+      border-radius: 0;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Jost', sans-serif;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 9px;
+      text-transform: uppercase;
+      color: var(--void);
+
+      /* 브러시드 실버 — 쿨톤 금속 */
+      background: linear-gradient(
+        108deg,
+        #909090 0%,
+        #C8C8C8 22%,
+        #E8E8E8 40%,
+        #F2F2F2 50%,
+        #E0E0E0 60%,
+        #B8B8B8 78%,
+        #888888 100%
+      );
+      background-size: 260% auto;
+      animation: silverShimmer 7s ease-in-out infinite;
+      transition: letter-spacing 0.4s ease;
+    }
+
+    /* 표면 광택 */
+    .access-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.22) 0%,
+        rgba(255,255,255,0.06) 45%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    /* 헤어라인 텍스처 */
+    .access-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.012) 0px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+    }
+
+    .access-btn:hover {
+      letter-spacing: 12px;
+      animation-duration: 2s;
+    }
+    .access-btn:active {
+      filter: brightness(0.88);
+      transform: scaleY(0.98);
+    }
+
+    @keyframes silverShimmer {
+      0%   { background-position: 0%   center; }
+      50%  { background-position: 260% center; }
+      100% { background-position: 0%   center; }
+    }
+
+    /* ── 최근 세션 ── */
+    .recent-block {
+      margin-top: 48px;
+      width: 292px;
+      animation: riseIn 1.2s 0.24s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .recent-header {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 10px;
+    }
+    .recent-tick {
+      width: 1px;
+      height: 10px;
+      background: rgba(240,238,233,0.20);
+      flex-shrink: 0;
+    }
+    .recent-hr {
+      flex: 1;
+      height: 1px;
+      background: rgba(240,238,233,0.10);
+    }
+    .recent-label {
+      font-size: 7px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: rgba(240,238,233,0.32);
+      text-transform: uppercase;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .recent-list { display: flex; flex-direction: column; gap: 1px; }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border: 1px solid rgba(240,238,233,0.07);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .recent-item:hover {
+      border-color: rgba(240,238,233,0.22);
+      background: rgba(240,238,233,0.04);
+    }
+    .recent-name {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+      color: rgba(240,238,233,0.45);
+    }
+    .recent-arrow {
+      font-size: 10px;
+      color: rgba(240,238,233,0.25);
+      font-weight: 200;
+    }
+
+    .recent-empty {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: rgba(240,238,233,0.16);
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    /* ══════════════════════════════════
+       Footer
+       ══════════════════════════════════ */
+    footer {
+      position: relative;
+      z-index: 10;
+      height: 48px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+    }
+
+    .footer-copy {
+      font-size: 8px;
+      font-weight: 200;
+      letter-spacing: 2.5px;
+      color: rgba(240,238,233,0.16);
+      text-transform: uppercase;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .footer-tag {
+      font-size: 8px;
+      font-weight: 200;
+      letter-spacing: 3px;
+      color: rgba(240,238,233,0.18);
+      text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════
+       애니메이션
+       ══════════════════════════════════ */
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 건축 도면 가이드라인 -->
+  <div class="guide-h"></div>
+  <div class="guide-v"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- 네비 -->
+  <nav>
+    <span class="nav-brand">Dasifill</span>
+    <div class="nav-right">
+      <span class="nav-item">Layout · Meeting</span>
+      <span class="nav-item" style="color:rgba(240,238,233,0.16);">v 2.0</span>
+    </div>
+  </nav>
+
+  <!-- 메인 -->
+  <main>
+
+    <!-- 브랜드 -->
+    <div class="brand-block">
+      <p class="brand-eyebrow">Private Project Access</p>
+      <h1 class="brand-name">Dasifill</h1>
+      <div class="brand-rule">
+        <div class="brand-rule-tick"></div>
+        <div class="brand-rule-line"></div>
+        <div class="brand-rule-center"></div>
+        <div class="brand-rule-line"></div>
+        <div class="brand-rule-tick"></div>
+      </div>
+      <p class="brand-sub">Space as Art — Interior Meeting</p>
+    </div>
+
+    <!-- 진입 폼 -->
+    <div class="entry-form">
+      <div>
+        <span class="field-label">Project Code</span>
+        <input
+          type="text"
+          id="projectInput"
+          class="project-input"
+          placeholder="enter code to access"
+          maxlength="60"
+          autocomplete="off"
+          spellcheck="false"
+        >
+      </div>
+      <button class="access-btn" id="startBtn">Access</button>
+    </div>
+
+    <!-- 최근 세션 -->
+    <div class="recent-block">
+      <div class="recent-header">
+        <div class="recent-tick"></div>
+        <div class="recent-hr"></div>
+        <span class="recent-label">Recent Sessions</span>
+        <div class="recent-hr"></div>
+        <div class="recent-tick"></div>
+      </div>
+      <div id="recentList" class="recent-list"></div>
+    </div>
+
+  </main>
+
+  <!-- 푸터 -->
+  <footer>
+    <span class="footer-copy">© 2026 Dasifill · All rights reserved</span>
+    <div class="footer-right">
+      <span class="footer-tag">Interior Design</span>
+      <span class="footer-tag" style="color:rgba(240,238,233,0.10);">Seoul</span>
+    </div>
+  </footer>
+
+  <script>
+    function getRecents() {
+      return Object.keys(localStorage)
+        .filter(k => k.startsWith('layout_meeting_v2_'))
+        .map(k => {
+          const id = k.replace('layout_meeting_v2_', '');
+          try {
+            const d = JSON.parse(localStorage.getItem(k));
+            return { id, name: d?.projectName || id };
+          } catch { return { id, name: id }; }
+        })
+        .filter(p => p.id !== 'default')
+        .slice(0, 5);
+    }
+
+    function goTo(raw) {
+      const id = (raw || '').trim().replace(/\s+/g, '_');
+      window.location.href = id
+        ? `index.html?p=${encodeURIComponent(id)}`
+        : 'index.html';
+    }
+
+    const listEl  = document.getElementById('recentList');
+    const recents = getRecents();
+
+    if (!recents.length) {
+      listEl.innerHTML = '<p class="recent-empty">— no archived sessions —</p>';
+    } else {
+      recents.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'recent-item';
+        div.innerHTML = `<span class="recent-name">${p.name}</span><span class="recent-arrow">›</span>`;
+        div.addEventListener('click', () => goTo(p.id));
+        listEl.appendChild(div);
+      });
+    }
+
+    const input    = document.getElementById('projectInput');
+    const startBtn = document.getElementById('startBtn');
+
+    startBtn.addEventListener('click', () => goTo(input.value));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') goTo(input.value); });
+    input.focus();
+  </script>
+
+</body>
+</html>
