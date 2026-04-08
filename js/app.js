@@ -499,7 +499,7 @@ class LayoutMeetingApp {
 
   _calcA3Dims(wrapper) {
     const A3_RATIO = 420 / 297; // Landscape
-    const pad      = 44;         // 사방 여백
+    const pad      = 20;         // 최소 여백
     const maxW     = wrapper.clientWidth  - pad * 2;
     const maxH     = wrapper.clientHeight - pad * 2;
     let w = maxW;
