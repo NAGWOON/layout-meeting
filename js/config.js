@@ -3,7 +3,8 @@
 // ─── 프로젝트 분리 (노션 연동) ────────────────
 // URL: ?p=PROJECT_ID 로 각 프로젝트의 데이터를 완전 분리
 // 노션 템플릿 링크 예시: https://your-host/?p=honggildong_apt_2026
-const PROJECT_ID = new URLSearchParams(location.search).get('p') || 'default';
+const PROJECT_ID      = new URLSearchParams(location.search).get('p')   || 'default';
+const NOTION_PAGE_ID  = new URLSearchParams(location.search).get('nid') || '';
 
 // ─── 앱 설정 ──────────────────────────────────
 const CONFIG = {
@@ -56,6 +57,10 @@ const TOOLS = {
   ERASER: 'eraser',
   TEXT:   'text',
 };
+
+// ─── Notion 연동 웹훅 ─────────────────────────
+// Make.com 웹훅 URL — 미팅 결과를 노션으로 자동 전송
+const NOTION_WEBHOOK_URL = 'https://hook.eu1.make.com/sv44gn93x4u2qmazje75n6blp25k6y45';  // TODO: Make.com 웹훅 URL 입력
 
 // ─── XSS 방지 유틸리티 ────────────────────────
 function escapeHtml(str) {

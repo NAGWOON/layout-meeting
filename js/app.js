@@ -113,6 +113,9 @@ class LayoutMeetingApp {
     // ── 내보내기 ────────────────────────────
     document.getElementById('exportBtn').addEventListener('click', () => this._exportData());
 
+    // ── Notion 저장 ─────────────────────────
+    document.getElementById('notionBtn').addEventListener('click', () => this._saveToNotion());
+
     // ── 요약 인쇄 ───────────────────────────
     document.getElementById('printBtn').addEventListener('click', () => this.meetingPanel.printSummary());
 
@@ -537,6 +540,78 @@ class LayoutMeetingApp {
     plan.notes  = [];
     Storage.save(this.state);
     this.meetingPanel.renderNotes();
+  }
+
+  // ═══════════════════════════════════════════
+  // Notion 저장 (Make.com 웹훅 경유)
+  // ═══════════════════════════════════════════
+
+  async _saveToNotion() {
+    if (!NOTION_WEBHOOK_URL) {
+      alert('Notion 웹훅 URL이 설정되지 않았습니다.\nconfig.js의 NOTION_WEBHOOK_URL을 입력해 주세요.');
+      return;
+    }
+    const btn = document.getElementById('notionBtn');
+    btn.disabled = true;
+
+    const plan = Storage.getCurrentPlan(this.state);
+
+    const payload = {
+      meetingType:  'layout',
+      projectId:    PROJECT_ID,
+      notionPageId: NOTION_PAGE_ID,
+      projectName:  this.state.projectName || PROJECT_ID,
+      exportedAt:   new Date().toISOString(),
+      agenda:       this.state.agenda.map(a => ({ text: a.text, done: a.done })),
+      spaces:       this.state.spaces.map(s => ({
+        name: s.name, status: s.status,
+        dimensions: s.dimensions || '', notes: s.notes || '',
+      })),
+      decisions:    this.state.decisions.map(d => ({
+        type: d.type, spaceName: d.spaceName || '', text: d.text,
+      })),
+      actionItems:  this.state.actionItems.map(a => ({ text: a.text, done: a.done })),
+      notes:        (plan.notes || []).map(n => ({
+        number: n.number ?? n.num ?? '', text: n.text || '',
+      })),
+      memo:         plan.memo || '',
+    };
+
+    try {
+      const res = await fetch(NOTION_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      this.state.notionSyncedAt = new Date().toISOString();
+      Storage.save(this.state);
+      this._showToast('Notion에 저장되었습니다 ✓');
+    } catch (err) {
+      console.error('[Notion] 저장 실패:', err);
+      this._showToast('저장 실패 — 잠시 후 다시 시도해주세요', true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  _showToast(msg, isError = false) {
+    const prev = document.getElementById('notionToast');
+    if (prev) prev.remove();
+    const toast = document.createElement('div');
+    toast.id = 'notionToast';
+    toast.textContent = msg;
+    Object.assign(toast.style, {
+      position: 'fixed', bottom: '24px', left: '50%',
+      transform: 'translateX(-50%)',
+      background: isError ? '#DC2626' : '#059669',
+      color: '#fff', padding: '10px 20px', borderRadius: '8px',
+      fontSize: '13px', zIndex: '9999', pointerEvents: 'none',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em',
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
   }
 
   // ═══════════════════════════════════════════
