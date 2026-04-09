@@ -60,7 +60,7 @@ const TOOLS = {
 
 // ─── Notion 연동 웹훅 ─────────────────────────
 // Make.com 웹훅 URL — 미팅 결과를 노션으로 자동 전송
-const NOTION_WEBHOOK_URL = 'https://hook.eu1.make.com/sv44gn93x4u2qmazje75n6blp25k6y45';  // TODO: Make.com 웹훅 URL 입력
+const NOTION_WEBHOOK_URL = 'https://hook.eu1.make.com/sv44gn93x4u2qmazje75n6blp25k6y45';
 
 // ─── XSS 방지 유틸리티 ────────────────────────
 function escapeHtml(str) {

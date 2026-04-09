@@ -548,7 +548,11 @@ class LayoutMeetingApp {
 
   async _saveToNotion() {
     if (!NOTION_WEBHOOK_URL) {
-      alert('Notion 웹훅 URL이 설정되지 않았습니다.\nconfig.js의 NOTION_WEBHOOK_URL을 입력해 주세요.');
+      alert('Notion 웹훅 URL이 설정되지 않았습니다.');
+      return;
+    }
+    if (!NOTION_PAGE_ID) {
+      this._showToast('노션 링크로 열어주세요 (nid 파라미터 필요)', true);
       return;
     }
     const btn = document.getElementById('notionBtn');
