@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>디자인 인터뷰 | DASIFILL</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-brand">DASIFILL</div>
+      <div class="header-meta">
+        <span
+          class="meta-field"
+          id="fieldProjectName"
+          contenteditable="true"
+          data-field="projectName"
+          data-placeholder="고객명 입력"
+        ></span>
+        <span class="meta-sep">·</span>
+        <span
+          class="meta-field"
+          id="fieldSpaceName"
+          contenteditable="true"
+          data-field="spaceName"
+          data-placeholder="공간 (예: 84㎡ 아파트)"
+        ></span>
+        <span class="meta-sep">·</span>
+        <span
+          class="meta-field"
+          id="fieldMeetingDate"
+          contenteditable="true"
+          data-field="meetingDate"
+          data-placeholder="미팅일"
+        ></span>
+      </div>
+      <div class="header-actions">
+        <button class="action-btn new-client-btn" id="btnNewClient" title="새 고객 인터뷰 시작">새 고객</button>
+        <span class="header-vsep"></span>
+        <button class="action-btn" id="btnCopy" title="회의록 클립보드 복사">복사</button>
+        <button class="action-btn" id="btnMarkdown" title="Markdown 파일 다운로드">MD</button>
+        <button class="action-btn telegram-btn" id="btnTelegram" title="텔레그램으로 전송">전송</button>
+        <button class="action-btn icon-btn" id="btnSettings" title="텔레그램 설정">⚙</button>
+        <span class="save-indicator" id="saveIndicator">저장됨</span>
+      </div>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <main class="app-layout">
+
+      <!-- LEFT: SPACE NAV -->
+      <nav class="space-nav" id="spaceNav">
+        <!-- rendered by app.js -->
+      </nav>
+
+      <!-- CENTER: QUESTION CANVAS -->
+      <section class="question-canvas" id="questionCanvas">
+        <!-- rendered by app.js -->
+      </section>
+
+      <!-- RIGHT: SUMMARY PANEL -->
+      <aside class="summary-panel" id="summaryPanel">
+        <!-- rendered by app.js -->
+      </aside>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Settings Modal -->
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-modal">
+      <div class="settings-header">
+        <span>텔레그램 설정</span>
+        <button class="settings-close" id="btnCloseSettings">✕</button>
+      </div>
+      <div class="settings-body">
+        <label class="settings-label">Bot Token</label>
+        <input class="settings-input" id="inputBotToken" type="password"
+               placeholder="1234567890:AAFxxxxxxxxxxxxxxxx" autocomplete="off">
+        <p class="settings-hint">@BotFather → /newbot 으로 생성</p>
+
+        <label class="settings-label">Chat ID</label>
+        <input class="settings-input" id="inputChatId" type="text"
+               placeholder="-100xxxxxxxxxx 또는 @채널명" autocomplete="off">
+        <p class="settings-hint">개인: @userinfobot 에 /start 전송 후 확인<br>채널: 채널 링크에서 숫자 ID 확인</p>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-btn" id="btnTestTelegram">연결 테스트</button>
+        <button class="settings-btn primary" id="btnSaveSettings">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Client Confirm Modal -->
+  <div class="settings-overlay" id="newClientOverlay">
+    <div class="settings-modal narrow">
+      <div class="settings-header">
+        <span>새 고객 시작</span>
+        <button class="settings-close" id="btnCloseNewClient">✕</button>
+      </div>
+      <div class="settings-body">
+        <p class="confirm-text">현재 <strong id="currentClientName"></strong> 데이터는<br>자동으로 저장됩니다.</p>
+        <p class="confirm-sub">새 고객 인터뷰를 시작할까요?</p>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-btn" id="btnCancelNewClient">취소</button>
+        <button class="settings-btn primary" id="btnConfirmNewClient">새 고객 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/questions-data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/summary-builder.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
