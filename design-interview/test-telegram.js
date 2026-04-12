@@ -179,8 +179,15 @@ function buildTelegramCard() {
 }
 
 // ── 5. Telegram API 호출 헬퍼
-const BOT_TOKEN = '8637144574:AAFdtNo3E80R-Teb9rmfMjYarXvRg7pGckc';
-const CHAT_ID   = '-5030536383';
+// 실행 시 환경변수로 주입: TG_TOKEN=xxx TG_CHAT=yyy node test-telegram.js
+const BOT_TOKEN = process.env.TG_TOKEN;
+const CHAT_ID   = process.env.TG_CHAT;
+
+if (!BOT_TOKEN || !CHAT_ID) {
+  console.error('❌ 환경변수를 설정해주세요:');
+  console.error('   TG_TOKEN=<bot-token> TG_CHAT=<chat-id> node design-interview/test-telegram.js');
+  process.exit(1);
+}
 
 function tgRequest(endpoint, body, isFormData = false) {
   return new Promise((resolve, reject) => {
