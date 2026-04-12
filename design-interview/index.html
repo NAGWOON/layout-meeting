@@ -3,10 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>디자인 인터뷰 | DASIFILL</title>
+  <title>DASIFILL Brief</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231A1A1A'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui' font-size='18' font-weight='700' fill='white'>D</text></svg>">
 </head>
 <body>
+
+  <!-- ══════════════════════════════════════
+       PIN GATE — 진입 보호 화면
+       이 화면은 앱 로드 전 전체를 가립니다.
+       PIN 변경: js/app.js 상단 PIN_HASH 참조.
+       ══════════════════════════════════════ -->
+  <div id="pinGate" class="pin-gate">
+    <div class="pin-gate-card">
+      <img src="logo.png" alt="DASIFILL" class="pin-gate-logo">
+      <p class="pin-gate-wordmark">Design Brief</p>
+      <p class="pin-gate-hint">접속 코드를 입력해주세요</p>
+      <div class="pin-digits" id="pinDigits">
+        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+      </div>
+      <p class="pin-gate-error" id="pinError"></p>
+    </div>
+  </div>
+
   <div id="app">
 
     <!-- HEADER -->

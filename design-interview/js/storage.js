@@ -72,16 +72,26 @@ const InterviewStorage = {
   },
 
   // ── 텔레그램 설정 ───────────────────────────
+  // sessionStorage 사용: 탭을 닫으면 토큰이 메모리에서 소멸됨.
+  // 기존 localStorage 저장값은 첫 로드 시 자동 마이그레이션 후 삭제.
   saveConfig(config) {
     try {
-      localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+      sessionStorage.setItem(CONFIG_KEY, JSON.stringify(config));
     } catch (e) {}
   },
 
   loadConfig() {
     try {
-      const raw = localStorage.getItem(CONFIG_KEY);
-      return raw ? JSON.parse(raw) : { botToken: '8637144574:AAFdtNo3E80R-Teb9rmfMjYarXvRg7pGckc', chatId: '-5030536383' };
-    } catch (e) { return { botToken: '8637144574:AAFdtNo3E80R-Teb9rmfMjYarXvRg7pGckc', chatId: '-5030536383' }; }
+      const session = sessionStorage.getItem(CONFIG_KEY);
+      if (session) return JSON.parse(session);
+      // 구버전 localStorage 마이그레이션 (1회)
+      const legacy = localStorage.getItem(CONFIG_KEY);
+      if (legacy) {
+        sessionStorage.setItem(CONFIG_KEY, legacy);
+        localStorage.removeItem(CONFIG_KEY);
+        return JSON.parse(legacy);
+      }
+      return { botToken: '', chatId: '' };
+    } catch (e) { return { botToken: '', chatId: '' }; }
   }
 };

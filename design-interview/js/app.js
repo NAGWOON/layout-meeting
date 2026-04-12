@@ -7,6 +7,115 @@
   'use strict';
 
   // ==========================================
+  // PIN GATE — 접근 보호
+  // ==========================================
+  //
+  // PIN 변경 방법:
+  //   브라우저 콘솔에서 실행 →
+  //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('새PIN숫자'))
+  //     .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+  //   출력된 해시를 아래 PIN_HASH 에 붙여넣기.
+  //
+  //   현재 PIN: 1234
+  const PIN_HASH   = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+  const AUTH_KEY   = 'brief_v1_auth';
+
+  let _pinAttempts    = 0;
+  let _pinLockedUntil = 0;
+
+  async function _hashPin(pin) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function _showPinError(msg) {
+    const el = document.getElementById('pinError');
+    if (el) el.textContent = msg;
+    const card = document.querySelector('.pin-gate-card');
+    if (card) {
+      card.classList.remove('shake');
+      void card.offsetWidth; // reflow to restart animation
+      card.classList.add('shake');
+    }
+  }
+
+  function _clearPinDigits() {
+    document.querySelectorAll('.pin-digit').forEach(d => { d.value = ''; });
+    const first = document.querySelector('.pin-digit');
+    if (first) first.focus();
+  }
+
+  function _unlockGate() {
+    sessionStorage.setItem(AUTH_KEY, '1');
+    const gate = document.getElementById('pinGate');
+    if (gate) {
+      gate.classList.add('dissolve');
+      setTimeout(() => { gate.style.display = 'none'; }, 360);
+    }
+    init();
+  }
+
+  async function _verifyPin() {
+    const now = Date.now();
+    if (now < _pinLockedUntil) {
+      const secs = Math.ceil((_pinLockedUntil - now) / 1000);
+      _showPinError(`${secs}초 후 다시 시도해주세요`);
+      return;
+    }
+    const digits = [...document.querySelectorAll('.pin-digit')].map(d => d.value).join('');
+    if (digits.length < 4) return;
+    const hash = await _hashPin(digits);
+    if (hash === PIN_HASH) {
+      _unlockGate();
+    } else {
+      _pinAttempts++;
+      if (_pinAttempts >= 3) {
+        _pinLockedUntil = Date.now() + 60_000;
+        _pinAttempts = 0;
+        _showPinError('잠시 후 다시 시도해주세요 (60초)');
+      } else {
+        _showPinError('코드가 올바르지 않습니다');
+      }
+      _clearPinDigits();
+    }
+  }
+
+  function _initPinGate() {
+    const digits = [...document.querySelectorAll('.pin-digit')];
+    digits.forEach((digit, i) => {
+      digit.addEventListener('input', () => {
+        digit.value = digit.value.replace(/\D/g, '').slice(0, 1);
+        if (digit.value && i < digits.length - 1) digits[i + 1].focus();
+        if (digits.every(d => d.value)) _verifyPin();
+      });
+      digit.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !digit.value && i > 0) {
+          digits[i - 1].value = '';
+          digits[i - 1].focus();
+        }
+      });
+      digit.addEventListener('paste', e => {
+        e.preventDefault();
+        const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 4);
+        pasted.split('').forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
+        if (pasted.length === 4) _verifyPin();
+      });
+    });
+    if (digits[0]) digits[0].focus();
+  }
+
+  function boot() {
+    if (sessionStorage.getItem(AUTH_KEY) === '1') {
+      // 이미 이 세션에서 인증됨 — 게이트 즉시 숨김
+      const gate = document.getElementById('pinGate');
+      if (gate) gate.style.display = 'none';
+      init();
+    } else {
+      _initPinGate();
+    }
+  }
+
+  // ==========================================
   // HEADER — editable meta fields
   // ==========================================
 
@@ -308,9 +417,9 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    init();
+    boot();
   }
 
 })();
