@@ -100,6 +100,10 @@ const UIRender = (function () {
     const isPrevDisabled = state.currentSectionIdx === 0 && spaceIdx === 0;
 
     canvas.innerHTML = `
+      <div class="canvas-space-title">
+        <span class="canvas-space-icon-lg">${space.icon}</span>
+        <span class="canvas-space-label-lg">${AppState.escapeHtml(space.label)}</span>
+      </div>
       <div class="canvas-section-header">
         ${tabsHtml}
         <div class="section-progress-wrap">

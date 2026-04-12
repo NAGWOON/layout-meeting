@@ -179,6 +179,30 @@
   }
 
   // ==========================================
+  // COMPLETION OVERLAY
+  // ==========================================
+
+  function showCompletionOverlay() {
+    const name = AppState.state.projectName || '인터뷰';
+    const overlay = document.createElement('div');
+    overlay.className = 'completion-overlay';
+    overlay.innerHTML = `
+      <div class="completion-card">
+        <div class="completion-check">✓</div>
+        <p class="completion-title">${AppState.escapeHtml(name)}</p>
+        <p class="completion-sub">텔레그램으로 전송되었습니다</p>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => overlay.classList.add('show'));
+    });
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      setTimeout(() => overlay.remove(), 350);
+    }, 2800);
+  }
+
+  // ==========================================
   // TELEGRAM
   // ==========================================
 
@@ -206,6 +230,7 @@
         `📎 ${AppState.state.projectName || '고객'} 전체 회의록`
       );
       AppState.showToast('텔레그램 전송 완료 ✓');
+      showCompletionOverlay();
     } catch (err) {
       console.error('[Telegram] 전송 실패', err);
       AppState.showToast('전송 실패 — 설정을 확인해주세요');
