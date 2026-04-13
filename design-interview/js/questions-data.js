@@ -5,9 +5,9 @@
 
 const INTERVIEW_DATA = {
   meta: {
-    version: '1.0.0',
-    title: '1차 디자인 인터뷰',
-    updatedAt: '2026-04-11'
+    version: '3.3.0',
+    title: 'DASIFILL 디자인 브리프',
+    updatedAt: '2026-04-13'
   },
 
   // 공통 질문 (모든 프로젝트)
@@ -17,110 +17,199 @@ const INTERVIEW_DATA = {
     icon: '⭐',
     sections: [
       {
-        id: 'global-lifestyle',
-        title: '라이프스타일',
+        id: 'part1-life-understanding',
+        title: '현재의 삶 이해',
         questions: [
           {
-            id: 'g-household',
-            label: '거주 구성원은 어떻게 되나요?',
+            id: 'p1-q1-household',
+            label: '현재 함께 거주하는 구성원은 어떻게 되시나요?',
             type: 'multi-choice',
             required: true,
-            options: ['부부 둘', '자녀 1명', '자녀 2명 이상', '반려동물', '부모님 동거', '재택근무자'],
-            summary: { label: '구성원', keyword: false }
+            options: ['부부', '자녀 1명', '자녀 2명 이상', '부모님 동거', '반려동물', '기타'],
+            summary: { label: '가족 구성', keyword: false }
           },
           {
-            id: 'g-lifestyle-tempo',
-            label: '일상 생활 패턴은?',
+            id: 'p1-q2-home-time',
+            label: '평소 집에 머무르는 시간은 어느 정도인가요?',
             type: 'single-choice',
-            required: false,
-            options: ['집에서 보내는 시간이 많음', '출퇴근 중심 (저녁/주말만)', '재택근무 비중 높음'],
-            summary: { label: '생활패턴', keyword: false }
+            required: true,
+            options: [
+              '하루 대부분 집에서 생활합니다',
+              '주로 저녁/주말에 머뭅니다',
+              '생활보다 휴식/수면 위주로 이용합니다',
+              '구성원마다 생활 패턴이 다릅니다'
+            ],
+            summary: { label: '생활 패턴', keyword: false }
           },
           {
-            id: 'g-hosting',
-            label: '손님 초대 빈도는?',
+            id: 'p1-q3-weekend-pattern',
+            label: '주말에는 주로 어떤 방식으로 시간을 보내시나요? (복수 선택)',
+            type: 'multi-choice',
+            required: true,
+            options: [
+              '집에서 충분히 쉬며 보내는 편입니다',
+              '외출 / 외부 활동이 많은 편입니다',
+              '가족과 함께 시간을 보내는 편입니다',
+              '집안 정리 / 청소 / 관리에 시간을 씁니다',
+              '취미 / 자기계발 활동을 합니다',
+              '손님을 초대하거나 모임을 갖는 편입니다'
+            ],
+            summary: { label: '주말 사용 방식', keyword: false }
+          },
+          {
+            id: 'p1-q4-family-main-space',
+            label: '가족이 함께 있을 때 가장 자주 머무는 공간은 어디인가요?',
             type: 'single-choice',
-            required: false,
-            options: ['거의 없음', '가끔 (월 1-2회)', '자주 (주 1회 이상)'],
-            summary: { label: '손님 빈도', keyword: false }
+            required: true,
+            options: [
+              '거실에 자연스럽게 모이는 편입니다',
+              '주방/식탁에서 함께 보내는 시간이 많습니다',
+              '각자 방이나 개인 공간에서 보내는 편입니다',
+              '상황에 따라 유동적으로 달라집니다'
+            ],
+            summary: { label: '가족 공용 체류 공간', keyword: false }
+          },
+          {
+            id: 'p1-q5-main-activities',
+            label: '집에서 가장 자주 이루어지는 활동은 무엇인가요? (복수 선택)',
+            type: 'multi-choice',
+            required: true,
+            options: [
+              '휴식 / 미디어 시청 중심',
+              '식사 / 요리 / 다과 중심',
+              '업무 / 학습 / 집중 활동',
+              '취미 / 자기계발 / 독서',
+              '육아 / 놀이 / 가족 활동',
+              '손님 초대 / 교류 / 모임'
+            ],
+            summary: { label: '주요 활동', keyword: false }
+          },
+          {
+            id: 'p1-q6-role-of-home',
+            label: '당신에게 집은 어떤 역할에 더 가까운 공간인가요?',
+            type: 'single-choice',
+            required: true,
+            options: [
+              '하루의 피로를 풀고 쉬는 공간',
+              '가족과 시간을 보내는 중심 공간',
+              '혼자만의 루틴과 시간을 보내는 공간',
+              '일과 생활이 함께 이루어지는 공간',
+              '사람들과 관계를 나누는 공간'
+            ],
+            summary: { label: '집의 역할 인식', keyword: false }
           }
         ]
       },
       {
-        id: 'global-style',
-        title: '전체 스타일 방향',
+        id: 'part2-priority-values',
+        title: '설계 우선순위 / 가치 기준',
         questions: [
           {
-            id: 'g-style-direction',
-            label: '전체적으로 원하는 인테리어 분위기는?',
-            type: 'multi-choice',
-            required: true,
-            options: ['모던/미니멀', '내추럴/우드', '클래식/고급스러운', '인더스트리얼', '북유럽/스칸디나비안', '빈티지/레트로', '호텔식/리조트', '한국 전통 모던'],
-            summary: { label: '스타일', keyword: true }
-          },
-          {
-            id: 'g-color-tone',
-            label: '선호하는 색감 톤은?',
+            id: 'p2-q1-planning-priority',
+            label: '공간을 계획할 때 가장 중요하게 생각하는 요소는 무엇인가요?',
             type: 'single-choice',
             required: true,
-            options: ['무채색 계열 (화이트/그레이/블랙)', '웜톤 (베이지/브라운/크림)', '쿨톤 (블루/그린/민트)', '컬러 포인트 선호'],
-            summary: { label: '색감', keyword: true }
+            options: [
+              '공간이 넓고 개방감 있게 느껴지는 것',
+              '생활하기 편한 동선과 구조',
+              '충분한 수납과 정리의 용이함',
+              '깔끔하고 정돈된 분위기',
+              '유지관리 및 청소의 편리함',
+              '가족 간 소통과 교류'
+            ],
+            summary: { label: '공간 계획 최우선 요소', keyword: false }
           },
           {
-            id: 'g-material-pref',
-            label: '선호하는 소재 느낌은?',
-            type: 'tag',
-            required: false,
-            options: ['원목', '대리석', '콘크리트', '패브릭', '가죽', '메탈', '유리', '라탄'],
-            summary: { label: '소재', keyword: true }
-          },
-          {
-            id: 'g-priority-value',
-            label: '인테리어에서 가장 중요하게 생각하는 것은? (최대 3개 순위)',
-            type: 'priority',
+            id: 'p2-q2-design-vs-practical',
+            label: '디자인과 공간 구성 중 어느 쪽에 더 비중을 두고 싶으신가요?',
+            type: 'single-choice',
             required: true,
-            maxSelect: 3,
-            options: ['수납/정리', '심미성/디자인', '채광/밝기', '동선/편의성', '내구성/실용성', '청소 용이성', '아이 안전'],
-            summary: { label: '핵심 가치', keyword: true }
+            options: [
+              '분위기/디자인 완성도가 더 중요합니다',
+              '실용성과 사용 편의가 더 중요합니다',
+              '두 요소의 균형이 중요합니다'
+            ],
+            summary: { label: '디자인·실용 비중', keyword: false }
           },
           {
-            id: 'g-reference',
-            label: '참고하고 싶은 스타일이나 이미지 키워드가 있다면?',
-            type: 'short-text',
-            required: false,
-            placeholder: '예: 무인양품 느낌, 강남 모델하우스처럼...',
-            summary: { label: '레퍼런스', keyword: false }
+            id: 'p2-q3-flex-vs-optimal-vs-stable',
+            label: '공간 계획 시 어떤 방향을 더 선호하시나요?',
+            type: 'single-choice',
+            required: true,
+            options: [
+              '현재 생활 방식에 최적화된 구성',
+              '향후 변화까지 고려한 유연한 구성',
+              '누구나 편하게 사용할 수 있는 안정적인 구성'
+            ],
+            summary: { label: '공간 계획 방향', keyword: false }
+          },
+          {
+            id: 'p2-q4-expected-change',
+            label: '이번 프로젝트를 통해 가장 기대하는 변화는 무엇인가요?',
+            type: 'single-choice',
+            required: true,
+            options: [
+              '생활 만족도가 높아지는 것',
+              '공간 활용도가 좋아지는 것',
+              '전체 분위기/완성도가 좋아지는 것',
+              '관리와 유지가 편해지는 것',
+              '가족 간 생활 방식이 개선되는 것'
+            ],
+            summary: { label: '프로젝트 기대 변화', keyword: false }
           }
         ]
       },
       {
-        id: 'global-concerns',
-        title: '특별 요구사항',
+        id: 'part3-future-considerations',
+        title: '미래 고려사항',
         questions: [
           {
-            id: 'g-allergy',
-            label: '알레르기나 민감 반응이 있는 소재/물질이 있나요?',
-            type: 'short-text',
-            required: false,
-            placeholder: '없으면 빈칸으로',
-            summary: { label: '알레르기', keyword: false }
+            id: 'p3-q1-family-change-3to5y',
+            label: '향후 3~5년 내 가족 구성 변화 계획이 있으신가요?',
+            type: 'single-choice',
+            required: true,
+            options: [
+              '자녀 계획이 있습니다',
+              '자녀의 성장/독립 예정이 있습니다',
+              '가족/부모님 동거 가능성이 있습니다',
+              '특별한 변화 계획은 없습니다'
+            ],
+            summary: { label: '3~5년 가족 변화 계획', keyword: false }
           },
           {
-            id: 'g-must-keep',
+            id: 'p3-q2-lifestyle-change-3to5y',
+            label: '향후 생활 방식 변화 가능성이 있으신가요?',
+            type: 'single-choice',
+            required: true,
+            options: [
+              '재택/홈오피스 필요 가능성이 있습니다',
+              '취미/작업 공간이 필요해질 수 있습니다',
+              '수납/물품 증가가 예상됩니다',
+              '특별한 변화는 없을 것 같습니다'
+            ],
+            summary: { label: '생활 방식 변화 가능성', keyword: false }
+          },
+          {
+            id: 'p3-q3-tenure-plan',
+            label: '이번 공간은 어느 정도 기간 사용 예정이신가요?',
+            type: 'single-choice',
+            required: true,
+            options: ['단기 거주 예정 (5년 이하)', '중기 거주 예정 (5~10년)', '장기 실거주 예정'],
+            summary: { label: '예상 사용 기간', keyword: false }
+          }
+        ]
+      },
+      {
+        id: 'global-optional-appendix',
+        title: '추가 참고사항 (선택)',
+        questions: [
+          {
+            id: 'ga-must-keep',
             label: '반드시 유지하거나 재사용할 기존 가구/아이템이 있나요?',
             type: 'short-text',
             required: false,
             placeholder: '예: 피아노, 부모님께 받은 장롱...',
             summary: { label: '유지 아이템', keyword: false }
-          },
-          {
-            id: 'g-budget-priority',
-            label: '예산을 집중하고 싶은 공간 순위는?',
-            type: 'priority',
-            required: false,
-            maxSelect: 3,
-            options: ['거실', '주방', '안방', '욕실', '현관', '드레스룸'],
-            summary: { label: '예산 우선', keyword: false }
           }
         ]
       }
@@ -130,67 +219,45 @@ const INTERVIEW_DATA = {
   // 공간별 질문
   spaces: [
     {
-      id: 'entryway',
+      id: 'entrance',
       label: '현관',
       icon: '🚪',
       sections: [
         {
-          id: 'entryway-function',
-          title: '기능과 수납',
+          id: 'entrance-main',
+          title: '현관',
           questions: [
             {
-              id: 'ent-storage-scale',
-              label: '신발 수납 규모는 어느 정도 필요한가요?',
+              id: 'ent-middle-door',
+              label: '중문 계획은 어떻게 생각하고 계신가요?',
               type: 'single-choice',
               required: true,
-              options: ['최소 (20켤레 이하)', '중간 (20-40켤레)', '대형 (40켤레 이상)', '신발장 전면 확장 원함'],
-              summary: { label: '신발 수납', keyword: false }
+              options: ['필요합니다', '필요하지 않습니다', '아직 정해지지 않음'],
+              summary: { label: '중문 계획', keyword: false }
             },
             {
-              id: 'ent-storage-items',
-              label: '현관에 수납하고 싶은 것은?',
-              type: 'tag',
-              required: false,
-              options: ['우산', '골프백', '자전거', '유모차', '캐리어', '청소도구', '택배 보관'],
-              summary: { label: '수납 품목', keyword: false }
-            },
-            {
-              id: 'ent-bench',
-              label: '신발 착용용 벤치/의자가 필요한가요?',
+              id: 'ent-shoe-rack-width',
+              label: '현재 사용 중인 신발장 규모를 알려주세요. (대략적인 가로 길이 기준)',
               type: 'single-choice',
-              required: false,
-              options: ['필요함', '없어도 됨', '공간 여유 있으면 원함'],
-              summary: { label: '벤치', keyword: false }
-            }
-          ]
-        },
-        {
-          id: 'entryway-style',
-          title: '스타일',
-          questions: [
-            {
-              id: 'ent-style',
-              label: '현관 분위기 방향은?',
-              type: 'single-choice',
-              required: false,
-              options: ['깔끔하고 미니멀하게', '따뜻하고 아늑하게', '호텔처럼 고급스럽게', '기능 위주로 단순하게'],
-              summary: { label: '현관 스타일', keyword: true }
+              required: true,
+              options: ['600mm 이하', '600~1200mm', '1200~1800mm', '1800mm 이상'],
+              summary: { label: '신발장 가로 규모', keyword: false }
             },
             {
-              id: 'ent-floor',
-              label: '현관 바닥 소재 선호는?',
+              id: 'ent-shoe-inventory',
+              label: '현재 보유 중인 신발은 어느 정도인가요?',
               type: 'single-choice',
-              required: false,
-              options: ['타일 (포세린/대리석)', '원목마루 연결', '현 상태 유지'],
-              summary: { label: '현관 바닥', keyword: false }
+              required: true,
+              options: ['10켤레 이하', '10~20켤레', '20~40켤레', '40켤레 이상'],
+              summary: { label: '보유 신발 규모', keyword: false }
             },
             {
-              id: 'ent-memo',
-              label: '현관 관련 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '현관 메모', keyword: false }
+              id: 'ent-storage-satisfaction',
+              label: '현재 신발장/현관 수납은 어느 정도인가요?',
+              type: 'single-choice',
+              required: true,
+              options: ['여유 있음', '적당함', '부족함', '많이 부족함'],
+              summary: { label: '현관 수납 만족도', keyword: false }
             }
           ]
         }
@@ -198,97 +265,121 @@ const INTERVIEW_DATA = {
     },
 
     {
-      id: 'living-room',
-      label: '거실',
+      id: 'living',
+      label: '거실 / 공용부',
       icon: '🛋',
       sections: [
         {
-          id: 'lr-function',
-          title: '주 사용 목적',
+          id: 'living-main',
+          title: '거실 / 공용부',
           questions: [
             {
-              id: 'lr-main-use',
-              label: '거실을 주로 어떻게 사용하나요?',
-              type: 'multi-choice',
-              required: true,
-              options: ['TV 시청 중심', '가족 모임/대화', '독서/취미', '홈오피스 겸용', '아이 놀이공간'],
-              summary: { label: '거실 용도', keyword: true }
-            },
-            {
-              id: 'lr-tv',
-              label: 'TV 설치 방식은?',
+              id: 'liv-space-form',
+              label: '공용 공간은 어떤 형태로 구성되길 원하시나요?',
               type: 'single-choice',
               required: true,
-              options: ['벽걸이 (벽 매립)', 'TV장 위에', 'TV 없음/프로젝터', '미정'],
-              summary: { label: 'TV 방식', keyword: false }
-            }
-          ]
-        },
-        {
-          id: 'lr-style',
-          title: '스타일 및 소재',
-          questions: [
+              options: [
+                '소파 / TV 중심의 거실형 공간',
+                '식탁 / 다이닝 중심의 공용 공간',
+                '두 요소가 함께 있는 복합형 공간',
+                '비워진 라운지형 공간'
+              ],
+              summary: { label: '공용 공간 형태', keyword: true }
+            },
             {
-              id: 'lr-floor',
-              label: '거실 바닥재 선호는?',
+              id: 'liv-center-element',
+              label: '공용 공간의 중심이 되는 요소는 어떻게 계획하고 싶으신가요?',
               type: 'single-choice',
               required: true,
-              options: ['원목마루', '강마루', '타일/대리석', '카펫 일부 활용', '현 상태 유지'],
-              summary: { label: '거실 바닥', keyword: true }
+              options: [
+                'TV / 영상 시청 중심',
+                '오디오 / 취미 요소 중심',
+                '디자인 가구 / 오브제 중심',
+                '특별한 중심 요소 없이 비워진 공간'
+              ],
+              summary: { label: '공용 공간 중심 요소', keyword: true }
             },
             {
-              id: 'lr-sofa',
-              label: '소파 스타일 선호는?',
-              type: 'single-choice',
-              required: false,
-              options: ['패브릭 (린넨/벨벳)', '가죽', '모듈형 (배치 변경 가능)', '1인+3인 조합', '소파 없이 좌식'],
-              summary: { label: '소파', keyword: false }
-            },
-            {
-              id: 'lr-wall',
-              label: 'TV 뒷 벽/포인트 월 처리는?',
-              type: 'single-choice',
-              required: false,
-              options: ['페인트 포인트 컬러', '벽지 패턴', '우드 패널', '대리석/타일', '그냥 화이트'],
-              summary: { label: '포인트 월', keyword: false }
-            },
-            {
-              id: 'lr-lighting',
-              label: '거실 조명 방향은?',
+              id: 'liv-tv-direction',
+              label: 'TV 공간은 어떤 방향을 선호하시나요? (복수 선택 가능)',
               type: 'multi-choice',
               required: false,
-              options: ['간접조명 중심', '포인트 펜던트', '매립등 심플하게', '자연광 최대화', '스마트조명 연동'],
-              summary: { label: '조명', keyword: true }
-            }
-          ]
-        },
-        {
-          id: 'lr-storage',
-          title: '수납',
-          questions: [
+              showIf: { qId: 'liv-center-element', hasValue: 'TV / 영상 시청 중심' },
+              options: [
+                '벽걸이/심플한 구성',
+                '매립/반매립형 연출',
+                '아트월/포인트 디자인 포함',
+                '하부장/수납장 필요',
+                '젠다이/단올림 디자인 선호'
+              ],
+              summary: { label: 'TV 공간 방향', keyword: true }
+            },
             {
-              id: 'lr-storage-need',
-              label: '거실 수납 필요 규모는?',
+              id: 'liv-dining-table-size',
+              label: '희망하시는 식탁 규모를 선택해주세요. (가로 길이 기준)',
               type: 'single-choice',
               required: false,
-              options: ['최소화 (오픈 선반 정도)', '중간 (붙박이장 일부)', '대형 (벽면 수납 최대화)'],
-              summary: { label: '거실 수납', keyword: false }
+              showIf: {
+                qId: 'liv-space-form',
+                hasAnyValue: [
+                  '식탁 / 다이닝 중심의 공용 공간',
+                  '두 요소가 함께 있는 복합형 공간'
+                ]
+              },
+              options: [
+                '1200mm 이하',
+                '1200~1600mm',
+                '1600~2000mm',
+                '2000mm 이상',
+                '아직 정해지지 않음'
+              ],
+              summary: { label: '식탁 가로 규모', keyword: false }
             },
             {
-              id: 'lr-special-item',
-              label: '거실에 배치할 특별한 아이템이 있나요?',
-              type: 'tag',
+              id: 'liv-element-direction',
+              label: '해당 요소는 어떤 방향으로 계획되길 원하시나요?',
+              type: 'single-choice',
               required: false,
-              options: ['피아노', '오디오 기기', '대형 어항', '갤러리 월', '홈바', '식물/화분'],
-              summary: { label: '특별 아이템', keyword: false }
+              showIf: {
+                qId: 'liv-center-element',
+                hasAnyValue: [
+                  '오디오 / 취미 요소 중심',
+                  '디자인 가구 / 오브제 중심'
+                ]
+              },
+              options: [
+                '기능 중심으로 명확하게 배치',
+                '인테리어와 자연스럽게 어우러지게',
+                '공간의 포인트가 되도록 강조되게',
+                '수납/가구와 결합되게'
+              ],
+              summary: { label: '중심 요소 연출 방향', keyword: false }
             },
             {
-              id: 'lr-memo',
-              label: '거실 관련 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '거실 메모', keyword: false }
+              id: 'liv-atmosphere',
+              label: '공용 공간은 어떤 분위기로 운영되길 원하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '가구/기능이 채워진 안정감 있는 공간',
+                '여유롭고 비워진 공간',
+                '필요에 따라 유동적으로 활용 가능한 공간'
+              ],
+              summary: { label: '공용 공간 분위기', keyword: true }
+            },
+            {
+              id: 'liv-priority-focus',
+              label: '거실/공용부 계획 시 가장 중요하게 생각하는 요소는 무엇인가요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '개방감 / 공간감',
+                '편안한 휴식감',
+                '정돈된 연출 / 미니멀함',
+                '가족 중심 구조',
+                '활용성 / 다목적성'
+              ],
+              summary: { label: '거실/공용부 우선 요소', keyword: true }
             }
           ]
         }
@@ -301,84 +392,105 @@ const INTERVIEW_DATA = {
       icon: '🍳',
       sections: [
         {
-          id: 'kitchen-layout',
-          title: '레이아웃',
+          id: 'kitchen-main',
+          title: '주방',
           questions: [
             {
-              id: 'kitch-island',
-              label: '아일랜드/식탁 구성은?',
+              id: 'kitch-use-pattern',
+              label: '주방은 평소 어떤 방식으로 사용하시나요?',
               type: 'single-choice',
               required: true,
-              options: ['아일랜드 필수', '아일랜드+별도 식탁', '식탁만 (아일랜드 없이)', '공간 상황에 맞게'],
-              summary: { label: '아일랜드', keyword: true }
+              options: [
+                '간단한 조리 위주로 사용합니다',
+                '일반적인 가정식 조리를 자주 합니다',
+                '다양한 요리/베이킹 등 적극적으로 활용합니다',
+                '조리보다는 배달/간편식 위주입니다'
+              ],
+              summary: { label: '주방 사용 방식', keyword: false }
             },
             {
-              id: 'kitch-dining-size',
-              label: '식사 인원 기준은?',
-              type: 'single-choice',
-              required: false,
-              options: ['2인', '4인', '6인 이상', '손님 포함 확장형 원함'],
-              summary: { label: '식사 인원', keyword: false }
-            }
-          ]
-        },
-        {
-          id: 'kitchen-style',
-          title: '스타일 및 소재',
-          questions: [
+              id: 'kitch-priority-factors',
+              label: '주방 계획 시 가장 중요하게 생각하는 요소는 무엇인가요? (복수 선택 가능)',
+              type: 'multi-choice',
+              required: true,
+              options: [
+                '조리 동선의 효율성',
+                '넓은 작업 공간 확보',
+                '충분한 수납과 정리',
+                '깔끔하고 정돈된 디자인',
+                '가족/손님과 소통 가능한 구조'
+              ],
+              summary: { label: '주방 계획 우선 요소', keyword: true }
+            },
             {
-              id: 'kitch-style',
-              label: '주방 스타일 방향은?',
+              id: 'kitch-island-plan',
+              label: '아일랜드 계획 시 어떤 방향을 선호하시나요?',
               type: 'single-choice',
               required: true,
-              options: ['모던/미니멀 (무광/무손잡이)', '내추럴 (우드+화이트)', '클래식 (몰딩/유광)', '산업적 (메탈+콘크리트)'],
-              summary: { label: '주방 스타일', keyword: true }
+              options: [
+                '아일랜드 중심 구조를 원합니다',
+                '바체어가 결합된 아일랜드 구조를 원합니다',
+                '일반 식탁형 다이닝이 결합된 아일랜드 구조를 원합니다',
+                '아일랜드는 필요하지 않습니다',
+                '아직 정해지지 않아 제안을 받고 싶습니다'
+              ],
+              summary: { label: '아일랜드 계획', keyword: true }
             },
             {
-              id: 'kitch-counter',
-              label: '상판/카운터 소재 선호는?',
-              type: 'single-choice',
-              required: false,
-              options: ['인조대리석', '세라믹 상판', '천연대리석', '스테인리스', '원목'],
-              summary: { label: '카운터', keyword: false }
-            },
-            {
-              id: 'kitch-floor',
-              label: '주방 바닥 처리는?',
-              type: 'single-choice',
-              required: false,
-              options: ['거실 바닥과 동일하게', '타일로 구분', '현 상태 유지'],
-              summary: { label: '주방 바닥', keyword: false }
-            }
-          ]
-        },
-        {
-          id: 'kitchen-function',
-          title: '기능 및 수납',
-          questions: [
-            {
-              id: 'kitch-cook-freq',
-              label: '요리 빈도는?',
-              type: 'single-choice',
-              required: false,
-              options: ['거의 안 함 (간단한 것만)', '보통 (주 3-4회)', '매일 본격 요리'],
-              summary: { label: '요리 빈도', keyword: false }
-            },
-            {
-              id: 'kitch-storage-priority',
-              label: '주방 수납 우선순위는? (복수 선택)',
+              id: 'kitch-island-priorities',
+              label: '아일랜드 계획 시 중요하게 생각하는 요소는 무엇인가요? (복수 선택 가능)',
               type: 'multi-choice',
               required: false,
-              options: ['식재료 팬트리', '그릇/조리도구', '냉장고 빌트인', '식기세척기', '커피머신 전용 공간'],
-              summary: { label: '수납 우선', keyword: false }
+              showIf: {
+                qId: 'kitch-island-plan',
+                hasAnyValue: [
+                  '아일랜드 중심 구조를 원합니다',
+                  '바체어가 결합된 아일랜드 구조를 원합니다',
+                  '일반 식탁형 다이닝이 결합된 아일랜드 구조를 원합니다'
+                ]
+              },
+              options: [
+                '전/후면 모두 수납이 가능했으면 합니다',
+                '전면 디자인 마감까지 완성도 있게 구성되길 원합니다',
+                '조리/준비 공간이 넓었으면 합니다',
+                '간단한 식사/티타임이 가능했으면 합니다'
+              ],
+              summary: { label: '아일랜드 중요 요소', keyword: false }
             },
             {
-              id: 'kitch-memo',
-              label: '주방 관련 특별 요청사항',
-              type: 'short-text',
+              id: 'kitch-dining-scale',
+              label: '식사 공간은 어느 정도 규모를 계획하고 계신가요?',
+              type: 'single-choice',
               required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '주방 메모', keyword: false }
+              showIf: {
+                qId: 'kitch-island-plan',
+                hasAnyValue: [
+                  '바체어가 결합된 아일랜드 구조를 원합니다',
+                  '일반 식탁형 다이닝이 결합된 아일랜드 구조를 원합니다'
+                ]
+              },
+              options: [
+                '2인 규모',
+                '4인 규모',
+                '6인 규모',
+                '6인 이상 / 확장형 필요',
+                '아직 정해지지 않음'
+              ],
+              summary: { label: '식사 공간 규모', keyword: false }
+            },
+            {
+              id: 'kitch-storage-appliance',
+              label: '주방 수납/가전 계획 시 선호하시는 방향이 있다면 선택해주세요. (복수 선택 가능)',
+              type: 'multi-choice',
+              required: false,
+              options: [
+                '가전이 최대한 보이지 않도록 숨겨지길 원합니다',
+                '자주 사용하는 가전은 쉽게 꺼내 쓸 수 있길 원합니다',
+                '밥솥/소형가전은 별도 전용 공간이 있었으면 합니다',
+                '기능성 하드웨어가 적용된 구성을 선호합니다',
+                '특별히 없음 / 제안을 받고 싶음'
+              ],
+              summary: { label: '주방 수납·가전 선호', keyword: false }
             }
           ]
         }
@@ -386,67 +498,79 @@ const INTERVIEW_DATA = {
     },
 
     {
-      id: 'master-bedroom',
-      label: '안방',
+      id: 'bedroom',
+      label: '침실',
       icon: '🛏',
       sections: [
         {
-          id: 'mb-setup',
-          title: '기본 구성',
+          id: 'bedroom-main',
+          title: '침실',
           questions: [
             {
-              id: 'mb-bed-size',
-              label: '침대 사이즈는?',
+              id: 'bed-atmosphere',
+              label: '침실은 어떤 분위기로 계획되길 원하시나요?',
               type: 'single-choice',
               required: true,
-              options: ['퀸 (1600mm)', '킹 (1800mm)', '슈퍼킹 (2000mm)', '분리 싱글 2개'],
-              summary: { label: '침대', keyword: false }
+              options: [
+                '호텔처럼 정돈되고 안정감 있는 분위기',
+                '따뜻하고 편안한 분위기',
+                '미니멀하고 절제된 분위기',
+                '포인트/디자인 요소가 있는 분위기'
+              ],
+              summary: { label: '침실 분위기', keyword: true }
             },
             {
-              id: 'mb-tv',
-              label: '안방 TV 설치 여부는?',
-              type: 'single-choice',
-              required: false,
-              options: ['설치 원함 (벽걸이)', '설치 원함 (이동형)', '없어도 됨'],
-              summary: { label: '안방 TV', keyword: false }
-            },
-            {
-              id: 'mb-working',
-              label: '안방에 작업 공간(책상)이 필요한가요?',
-              type: 'single-choice',
-              required: false,
-              options: ['필요함', '없어도 됨', '작은 화장대 정도'],
-              summary: { label: '작업 공간', keyword: false }
-            }
-          ]
-        },
-        {
-          id: 'mb-style',
-          title: '스타일 및 분위기',
-          questions: [
-            {
-              id: 'mb-style',
-              label: '안방 분위기는?',
+              id: 'bed-size',
+              label: '계획 중인 침대 사이즈를 선택해주세요.',
               type: 'single-choice',
               required: true,
-              options: ['호텔식 고급스러움', '따뜻하고 아늑한 코지함', '심플하고 모던하게', '내추럴 우드 감성'],
-              summary: { label: '안방 분위기', keyword: true }
+              options: [
+                'SS / 슈퍼싱글',
+                'Q / 퀸',
+                'K / 킹',
+                'KK 이상 / 패밀리침대',
+                '아직 정해지지 않음'
+              ],
+              summary: { label: '침대 사이즈', keyword: false }
             },
             {
-              id: 'mb-lighting',
-              label: '안방 조명 방향은?',
+              id: 'bed-side-furniture',
+              label: '침대 주변 가구 계획은 어떻게 생각하고 계신가요? (복수 선택 가능)',
               type: 'multi-choice',
-              required: false,
-              options: ['간접조명 (수면 배려)', '스탠드/사이드 조명', '조도 조절 가능하게', '블라인드/암막 중요'],
-              summary: { label: '안방 조명', keyword: false }
+              required: true,
+              options: [
+                '별도 협탁이 필요합니다 (기성 제품 예정)',
+                '맞춤 제작 협탁을 원합니다',
+                '화장대가 필요합니다 (기성 제품 예정)',
+                '맞춤 제작 화장대를 원합니다',
+                '특별히 계획 없음'
+              ],
+              summary: { label: '침대 주변 가구', keyword: true }
             },
             {
-              id: 'mb-memo',
-              label: '안방 관련 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '안방 메모', keyword: false }
+              id: 'bed-frame-plan',
+              label: '침대 프레임은 어떤 방향을 계획하고 계신가요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '기성 침대 프레임 사용 예정',
+                '맞춤 제작 프레임 희망',
+                '아직 정해지지 않아 제안을 받고 싶음'
+              ],
+              summary: { label: '침대 프레임', keyword: false }
+            },
+            {
+              id: 'bed-headwall-plan',
+              label: '침대 헤드월/헤드보드 계획은 어떻게 생각하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '별도 없이 심플한 구성 선호',
+                '디자인 포인트가 되는 헤드월 제작 희망',
+                '수납/기능이 포함된 헤드월 희망',
+                '아직 정해지지 않음'
+              ],
+              summary: { label: '헤드월/헤드보드', keyword: false }
             }
           ]
         }
@@ -457,50 +581,87 @@ const INTERVIEW_DATA = {
       id: 'dressing-room',
       label: '드레스룸',
       icon: '👗',
+      optional: true,
       sections: [
         {
-          id: 'dr-function',
-          title: '기능과 구성',
+          id: 'dressing-room-main',
+          title: '드레스룸',
           questions: [
             {
-              id: 'dr-type',
-              label: '드레스룸 형태 선호는?',
+              id: 'dr-storage-approach',
+              label: '드레스룸/의류 수납은 어떤 방식으로 계획하고 싶으신가요?',
               type: 'single-choice',
               required: true,
-              options: ['오픈형 (노출 수납)', '도어형 (전체 가림)', '혼합형 (일부 오픈+일부 닫힘)'],
-              summary: { label: '드레스룸 형태', keyword: true }
+              options: [
+                '맞춤 제작 가구를 희망합니다',
+                '기성 가구/붙박이 활용 예정입니다',
+                '시스템장 형태를 희망합니다',
+                '아직 정해지지 않아 제안을 받고 싶습니다'
+              ],
+              summary: { label: '드레스룸 수납 방식', keyword: true }
             },
             {
-              id: 'dr-category',
-              label: '주로 수납할 의류 유형은?',
-              type: 'tag',
-              required: false,
-              options: ['정장/수트', '캐주얼 행거', '가방 컬렉션', '신발 (드레스룸 내)', '이불/시즌 용품', '액세서리'],
-              summary: { label: '수납 유형', keyword: false }
-            },
-            {
-              id: 'dr-mirror',
-              label: '전신 거울 위치는?',
+              id: 'dr-current-wardrobe-length',
+              label: '현재 사용 중인 옷장/드레스룸 규모를 알려주세요. (대략적인 길이 기준)',
               type: 'single-choice',
-              required: false,
-              options: ['드레스룸 내부', '안방 내부', '필요 없음'],
-              summary: { label: '거울', keyword: false }
+              required: true,
+              options: ['1200mm 이하', '1200~2400mm', '2400~3600mm', '3600mm 이상'],
+              summary: { label: '현재 옷장 길이', keyword: false }
             },
             {
-              id: 'dr-lighting',
-              label: '드레스룸 조명은?',
+              id: 'dr-clothing-volume',
+              label: '현재 의류/수납은 어느 정도인가요?',
               type: 'single-choice',
-              required: false,
-              options: ['밝고 균일하게 (색 확인 중요)', '간접조명으로 분위기있게', '기본 천장등'],
-              summary: { label: '드레스룸 조명', keyword: false }
+              required: true,
+              options: [
+                '여유가 있는 편입니다',
+                '적당한 수준입니다',
+                '다소 부족한 편입니다',
+                '많이 부족한 편입니다'
+              ],
+              summary: { label: '의류 수납 체감', keyword: false }
             },
             {
-              id: 'dr-memo',
-              label: '드레스룸 관련 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '드레스룸 메모', keyword: false }
+              id: 'dr-clothing-characteristics',
+              label: '보유 중인 의류/소지품 특성을 선택해주세요. (복수 선택 가능)',
+              type: 'multi-choice',
+              required: true,
+              options: [
+                '긴 옷/코트류가 많습니다',
+                '짧은 상/하의류가 많습니다',
+                '접어서 보관하는 의류가 많습니다',
+                '가방/잡화류가 많습니다',
+                '신발/액세서리류가 많습니다'
+              ],
+              summary: { label: '의류·소지품 특성', keyword: true }
+            },
+            {
+              id: 'dr-layout-priorities',
+              label: '드레스룸 구성 시 중요하게 생각하는 요소는 무엇인가요? (복수 선택 가능)',
+              type: 'multi-choice',
+              required: true,
+              options: [
+                '행거 중심 구성을 선호합니다',
+                '서랍 중심 구성을 선호합니다',
+                '선반/오픈수납 중심 구성을 선호합니다',
+                '전신거울/피팅 공간 필요',
+                '화장/스타일링 공간 필요'
+              ],
+              summary: { label: '드레스룸 구성 우선 요소', keyword: true }
+            },
+            {
+              id: 'dr-finish-style',
+              label: '드레스룸 마감/연출 방식은 어떤 방향을 선호하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '오픈형 시스템장 구조',
+                '가구 도어형으로 깔끔하게 정리되는 구조',
+                '유리도어 적용으로 고급스럽게 연출되는 구조',
+                '가구/유리도어 혼합형 구조',
+                '아직 정해지지 않아 제안을 받고 싶음'
+              ],
+              summary: { label: '드레스룸 마감·연출', keyword: true }
             }
           ]
         }
@@ -508,53 +669,89 @@ const INTERVIEW_DATA = {
     },
 
     {
-      id: 'kids-study',
-      label: '자녀방/서재',
+      id: 'study',
+      label: '서재 / 작업실',
       icon: '📚',
+      optional: true,
       sections: [
         {
-          id: 'ks-setup',
-          title: '방 용도와 구성',
+          id: 'study-main',
+          title: '서재 / 작업실',
           questions: [
             {
-              id: 'ks-purpose',
-              label: '이 방의 주 용도는?',
+              id: 'study-purpose',
+              label: '해당 공간은 주로 어떤 용도로 사용할 예정인가요? (복수 선택 가능)',
               type: 'multi-choice',
               required: true,
-              options: ['아이 침실', '아이 놀이/공부방', '홈오피스/서재', '게스트룸 겸용'],
-              summary: { label: '용도', keyword: true }
+              options: [
+                '재택근무 / 업무 공간',
+                '개인 공부 / 독서 공간',
+                '취미 / 작업 공간',
+                '게임 / 엔터테인먼트 공간',
+                '복합 용도로 활용 예정'
+              ],
+              summary: { label: '공간 용도', keyword: true }
             },
             {
-              id: 'ks-child-age',
-              label: '자녀 나이대는? (해당 시)',
+              id: 'study-users',
+              label: '주 사용 인원은 어떻게 되나요?',
               type: 'single-choice',
-              required: false,
-              options: ['영아 (0-3세)', '유아 (4-7세)', '초등 (8-13세)', '중고등 (14세 이상)', '해당 없음'],
-              summary: { label: '자녀 나이', keyword: false }
+              required: true,
+              options: ['1인 사용', '2인 사용', '상황에 따라 공동 사용'],
+              summary: { label: '주 사용 인원', keyword: false }
             },
             {
-              id: 'ks-desk',
-              label: '책상/학습 공간 필요도는?',
+              id: 'study-desk-plan',
+              label: '책상/데스크 구성은 어떻게 계획하고 계신가요?',
               type: 'single-choice',
-              required: false,
-              options: ['메인 공간 (넓은 책상 필수)', '보조 공간 (작은 책상)', '현재 불필요'],
-              summary: { label: '학습 공간', keyword: false }
+              required: true,
+              options: [
+                '기성 책상 배치 예정',
+                '맞춤 제작 데스크 희망',
+                '아직 정해지지 않아 제안을 받고 싶음'
+              ],
+              summary: { label: '책상·데스크', keyword: false }
             },
             {
-              id: 'ks-bed',
-              label: '침대 구성은?',
+              id: 'study-priorities',
+              label: '작업 공간 계획 시 중요하게 생각하는 요소는 무엇인가요? (복수 선택)',
+              type: 'multi-choice',
+              required: true,
+              options: [
+                '넓은 작업/데스크 공간',
+                '모니터/장비 배치 여유',
+                '수납/정리 효율',
+                '깔끔한 미니멀 디자인',
+                '분위기/무드 중심 연출'
+              ],
+              summary: { label: '작업 공간 우선 요소', keyword: true }
+            },
+            {
+              id: 'study-storage-needs',
+              label: '별도 수납/구성이 필요한 항목이 있다면 선택해주세요. (복수 선택)',
+              type: 'multi-choice',
+              required: true,
+              options: [
+                '책/서적 수납',
+                '서류/문서 정리',
+                '취미/작업 도구 수납',
+                '전시/디스플레이 공간',
+                '특별히 없음'
+              ],
+              summary: { label: '수납·구성 필요 항목', keyword: false }
+            },
+            {
+              id: 'study-atmosphere',
+              label: '공간 분위기는 어떤 방향을 선호하시나요?',
               type: 'single-choice',
-              required: false,
-              options: ['싱글 1개', '2인용 벙커침대', '다락형 침대', '침대 없음 (좌식/매트리스)'],
-              summary: { label: '침대 구성', keyword: false }
-            },
-            {
-              id: 'ks-memo',
-              label: '자녀방/서재 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '방 메모', keyword: false }
+              required: true,
+              options: [
+                '차분하고 집중되는 분위기',
+                '밝고 개방감 있는 분위기',
+                '무게감 있고 고급스러운 분위기',
+                '디자인 포인트가 있는 분위기'
+              ],
+              summary: { label: '공간 분위기', keyword: true }
             }
           ]
         }
@@ -562,91 +759,144 @@ const INTERVIEW_DATA = {
     },
 
     {
-      id: 'shared-bathroom',
-      label: '공용욕실',
-      icon: '🚿',
-      sections: [
-        {
-          id: 'sb-function',
-          title: '기능 및 스타일',
-          questions: [
-            {
-              id: 'sb-bath',
-              label: '욕조 설치 여부는?',
-              type: 'single-choice',
-              required: true,
-              options: ['욕조 필수', '욕조 제거 (샤워부스만)', '현 상태 유지'],
-              summary: { label: '욕조', keyword: true }
-            },
-            {
-              id: 'sb-style',
-              label: '욕실 스타일은?',
-              type: 'single-choice',
-              required: false,
-              options: ['밝고 깔끔한 화이트', '내추럴 타일 (테라코타/석재)', '다크 무드 (블랙/그레이)', '패턴 타일 포인트'],
-              summary: { label: '욕실 스타일', keyword: true }
-            },
-            {
-              id: 'sb-priority',
-              label: '욕실 우선 개선사항은?',
-              type: 'multi-choice',
-              required: false,
-              options: ['수납 추가', '환기 개선', '방수/곰팡이 방지', '조명 개선', '세면대 교체'],
-              summary: { label: '개선 우선', keyword: false }
-            },
-            {
-              id: 'sb-memo',
-              label: '공용욕실 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '공욕 메모', keyword: false }
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      id: 'master-bathroom',
-      label: '안방욕실',
+      id: 'bathroom',
+      label: '욕실',
       icon: '🛁',
+      optional: true,
+      repeatable: true,
+      maxRepeat: 3,
       sections: [
         {
-          id: 'mab-function',
-          title: '기능 및 스타일',
+          id: 'bathroom-setup',
+          title: '욕실 구성',
           questions: [
             {
-              id: 'mab-bath',
-              label: '안방욕실 욕조는?',
+              id: 'bath-input-mode',
+              label: '욕실 입력 방식은 어떻게 진행할까요?',
+              type: 'single-choice',
+              required: false,
+              options: ['자세히 입력하고 싶습니다 (권장)', '핵심만 간단히 입력하고 싶습니다'],
+              summary: { label: '욕실 입력 방식', keyword: false }
+            },
+            {
+              id: 'bath-q0-count',
+              label: '계획이 필요한 욕실은 몇 개인가요?',
               type: 'single-choice',
               required: true,
-              options: ['욕조 유지/설치 원함', '욕조 제거 (샤워부스 확장)', '프리스탠딩 욕조 원함'],
-              summary: { label: '안욕 욕조', keyword: true }
+              options: ['1개', '2개', '3개 이상'],
+              summary: { label: '욕실 계획 개수', keyword: false }
+            }
+          ]
+        },
+        {
+          id: 'bathroom-instance',
+          title: '욕실 상세',
+          questions: [
+            {
+              id: 'bath-label',
+              label: '해당 욕실의 명칭/용도를 선택해주세요.',
+              type: 'single-choice',
+              required: true,
+              options: ['공용욕실', '안방욕실', '자녀욕실', '게스트욕실', '사용자 입력'],
+              summary: { label: '욕실 라벨', keyword: false }
             },
             {
-              id: 'mab-style',
-              label: '안방욕실 분위기는?',
+              id: 'bath-q1-mood',
+              label: '욕실은 어떤 분위기로 계획되길 원하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '호텔 같은 고급스럽고 정돈된 분위기',
+                '미니멀하고 깔끔한 분위기',
+                '따뜻하고 편안한 분위기',
+                '디자인 포인트가 있는 분위기'
+              ],
+              summary: { label: '욕실 분위기', keyword: true }
+            },
+            {
+              id: 'bath-q2-use-type',
+              label: '해당 욕실은 어떤 용도로 주로 사용되나요?',
+              type: 'single-choice',
+              required: true,
+              options: ['공용 욕실', '부부 / 마스터 욕실', '자녀 / 개인 욕실', '게스트 욕실'],
+              summary: { label: '욕실 주 사용 용도', keyword: false }
+            },
+            {
+              id: 'bath-q3-bathtub-plan',
+              label: '욕조 계획은 어떻게 생각하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: ['욕조가 필요합니다', '욕조 없이 샤워 공간 위주를 선호합니다', '아직 정해지지 않아 제안을 받고 싶습니다'],
+              summary: { label: '욕조 계획', keyword: false }
+            },
+            {
+              id: 'bath-q4-shower-type',
+              label: '샤워 공간은 어떤 방식으로 계획되길 원하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '오픈형 샤워 공간',
+                '유리 파티션 구분형',
+                '타일 파티션 구분형',
+                '샤워부스 / 완전 분리형',
+                '아직 정해지지 않음'
+              ],
+              summary: { label: '샤워 공간 방식', keyword: false }
+            },
+            {
+              id: 'bath-q5-vanity-plan',
+              label: '욕실 가구/세면 공간은 어떤 방향을 선호하시나요?',
+              type: 'single-choice',
+              required: true,
+              options: [
+                '롱젠다이 + 상부 복합장 구성',
+                '젠다이 + 매립장 구성 (업그레이드 옵션)',
+                '카운터형 세면대 + 하부 가구수납 (업그레이드 옵션)',
+                '카운터형 세면대 + 하부 오픈선반 (업그레이드 옵션)',
+                '최소한의 심플한 구성'
+              ],
+              summary: { label: '세면·가구 구성 방향', keyword: false }
+            },
+            {
+              id: 'bath-q6-counter-sink-style',
+              label: '카운터형 세면대는 어떤 스타일을 선호하시나요?',
               type: 'single-choice',
               required: false,
-              options: ['호텔/스파 느낌', '깔끔한 화이트', '내추럴 석재', '다크 럭셔리'],
-              summary: { label: '안욕 스타일', keyword: true }
+              showIf: {
+                qId: 'bath-q5-vanity-plan',
+                hasAnyValue: [
+                  '카운터형 세면대 + 하부 가구수납 (업그레이드 옵션)',
+                  '카운터형 세면대 + 하부 오픈선반 (업그레이드 옵션)'
+                ]
+              },
+              options: ['언더볼 세면대', '타일 / 마감 일체형 세면대 (프리미엄 옵션)', '아직 정해지지 않음'],
+              summary: { label: '카운터형 세면대 스타일', keyword: false }
             },
             {
-              id: 'mab-double-sink',
-              label: '세면대 구성은?',
+              id: 'bath-q7-detail-options',
+              label: '욕실 디테일 옵션 중 선호하시는 항목을 선택해주세요. (복수 선택 가능)',
+              type: 'multi-choice',
+              required: false,
+              options: [
+                '매립형 수전 (업그레이드 옵션)',
+                '이노솔 / 평천장 (업그레이드 옵션)',
+                '도장 마감 천장 (프리미엄 옵션)',
+                '특별히 없음 / 제안을 받고 싶음'
+              ],
+              summary: { label: '욕실 디테일 옵션', keyword: false }
+            },
+            {
+              id: 'bath-q8-toilet-type',
+              label: '계획 중이신 변기 타입을 선택해주세요.',
               type: 'single-choice',
-              required: false,
-              options: ['1구 세면대', '2구 더블 세면대', '공간 여유 있으면 2구'],
-              summary: { label: '세면대', keyword: false }
-            },
-            {
-              id: 'mab-memo',
-              label: '안방욕실 특별 요청사항',
-              type: 'short-text',
-              required: false,
-              placeholder: '자유 입력...',
-              summary: { label: '안욕 메모', keyword: false }
+              required: true,
+              options: [
+                '원피스 / 투피스형 (기본 사양)',
+                '비데 일체형 (업그레이드 옵션)',
+                '벽걸이형 (프리미엄 옵션 / 기존 배수 구조에 따라 적용 여부 상이)',
+                '아직 정해지지 않음'
+              ],
+              summary: { label: '변기 타입', keyword: false }
             }
           ]
         }
@@ -657,10 +907,11 @@ const INTERVIEW_DATA = {
       id: 'laundry',
       label: '세탁실/다용도실',
       icon: '🧺',
+      optional: true,
       sections: [
         {
           id: 'lau-setup',
-          title: '구성 및 기능',
+          title: '실용적인 이야기',
           questions: [
             {
               id: 'lau-washer',
@@ -700,53 +951,68 @@ const INTERVIEW_DATA = {
     },
 
     {
-      id: 'other',
-      label: '기타',
+      id: 'extra-space',
+      label: '기타 공간',
+      icon: '🏠',
+      optional: true,
+      sections: [
+        {
+          id: 'extra-space',
+          title: '기타 공간',
+          questions: [
+            {
+              id: 'es-areas',
+              label: '추가 계획이 필요한 공간이 있다면 선택해주세요. (복수 선택 가능)',
+              type: 'multi-choice',
+              required: true,
+              options: [
+                '세탁실 / 유틸리티룸',
+                '아이방 / 놀이방',
+                '게스트룸',
+                '취미방 / 멀티룸',
+                '펫 공간',
+                '기타 특수 공간',
+                '별도 없음'
+              ],
+              summary: { label: '추가 계획 공간', keyword: true }
+            },
+            {
+              id: 'es-detail',
+              label: '위 공간에 특별히 필요한 기능/구성이 있다면 자유롭게 작성해주세요.',
+              type: 'short-text',
+              required: false,
+              placeholder: '자유 입력...',
+              summary: { label: '기타 공간 기능·구성', keyword: false }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      id: 'final-request',
+      label: '최종 요청사항',
       icon: '📝',
       sections: [
         {
-          id: 'other-general',
-          title: '기타 요청',
+          id: 'final-request',
+          title: '최종 요청사항',
           questions: [
             {
-              id: 'oth-space',
-              label: '추가로 논의하고 싶은 공간이 있나요?',
+              id: 'fr-must-haves',
+              label: '이번 프로젝트에서 꼭 반영되었으면 하는 요청사항이 있다면 작성해주세요.',
               type: 'short-text',
               required: false,
-              placeholder: '예: 발코니, 창고, 다락...',
-              summary: { label: '추가 공간', keyword: false }
+              placeholder: '자유 입력...',
+              summary: { label: '필수 반영 요청', keyword: true }
             },
             {
-              id: 'oth-concerns',
-              label: '현재 집에서 가장 불편한 점은? (Pain Point)',
+              id: 'fr-notes',
+              label: '설계/미팅 전 전달하고 싶은 기타 참고사항이 있다면 작성해주세요.',
               type: 'short-text',
               required: false,
-              placeholder: '수납 절대 부족, 채광 나쁨, 동선 최악 등...',
-              summary: { label: 'Pain Point', keyword: false }
-            },
-            {
-              id: 'oth-absolute-no',
-              label: '절대 원하지 않는 것이 있나요? (Absolute No)',
-              type: 'short-text',
-              required: false,
-              placeholder: '예: 벽지 사용 반대, 욕조 제거 반대, 블랙 계열 싫음...',
-              summary: { label: 'Absolute No', keyword: false }
-            },
-            {
-              id: 'oth-followup',
-              label: '후속 확인/검토가 필요한 사항이 있나요?',
-              type: 'short-text',
-              required: false,
-              placeholder: '예: 발코니 확장 가능 여부, 구조 변경 검토, 인허가 확인...',
-              summary: { label: '후속 검토', keyword: false }
-            },
-            {
-              id: 'oth-wishlist',
-              label: '인테리어 완성 후 꼭 실현하고 싶은 것은?',
-              type: 'short-text',
-              required: false,
-              placeholder: '내 집이 이렇게 됐으면 좋겠다...',
-              summary: { label: '위시리스트', keyword: true }
+              placeholder: '자유 입력...',
+              summary: { label: '기타 참고사항', keyword: false }
             }
           ]
         }

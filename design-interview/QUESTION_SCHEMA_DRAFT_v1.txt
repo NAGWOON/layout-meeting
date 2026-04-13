@@ -1,0 +1,395 @@
+# DASIFILL Design Interview — Question Schema Draft v1
+**작성일:** 2026-04-13  
+**상태:** 검수 전 초안 — questions-data.js 미반영  
+**기준:** Master Spec v1 (PART 1-5) + 기존 questions-data v3.0.0
+
+---
+
+## 범례
+
+| 기호 | 의미 |
+|------|------|
+| ✅ 재사용 | 기존 ID + 선택지 그대로 유지 |
+| ✏️ wording 변경 | ID 재사용, label/options 일부 수정 |
+| 🆕 신규 | 새 ID 생성, 기존 없음 |
+| 🔀 이동 | 기존 질문을 다른 섹션으로 재배치 |
+| ❌ 삭제 | 이번 버전에서 제거 |
+| 🔗 branch | showIf 조건 있음 |
+
+---
+
+## GLOBAL SPACE — 전체 선호도
+
+> Master Spec PART 1 · 2 · 3에 해당. 현재 5개 섹션 → 4개 섹션으로 재편.
+
+---
+
+### Section 1: `global-life` — 현재의 삶 이해
+> Master Spec PART 1 직접 대응.  
+> 기존 `global-life` 섹션을 확장. `global-lifestyle` 섹션과 통합.
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `g-household` | 현재 가족 구성은 어떻게 되시나요? | multi-choice | ✅ | 부부 둘 / 자녀 1명 / 자녀 2명 이상 / 반려동물 있음 / 부모님 동거 / 1인 거주 / 재택근무자 | — | ✏️ wording 소폭 변경 (기존: "거주 구성원은 어떻게 되나요?") |
+| 2 | `g-lifestyle-tempo` | 평일/주말 집에서 머무르는 시간은 어느 정도인가요? | single-choice | — | 주로 출퇴근 중심 (저녁·주말만) / 재택 비중 높음 (주 3일 이상) / 대부분 집에서 생활 (육아·프리랜서 등) | — | ✏️ wording 변경 |
+| 3 | `g-main-space` | 집에서 가장 오래 머무르는 공간은 어디인가요? | single-choice | — | 거실 / 주방·다이닝 / 안방 / 서재·작업실 / 특정 공간 없이 이동하며 생활 | — | 🆕 신규 |
+| 4 | `g-life-value` | 이 집에서의 생활 중 가장 소중한 것은? (복수 선택 가능) | multi-choice | — | 가족이 함께하는 시간 / 개인만의 조용한 시간 / 깔끔하고 정돈된 환경 / 손님과의 사교 / 취미·자기계발 / 효율적인 가사 동선 / 건강한 일상 루틴 | — | 🆕 신규 |
+| 5 | `g-sensory` | 집에 들어서는 순간 느끼고 싶은 감각은? | single-choice | — | 조용하고 고요한 / 따뜻하고 포근한 / 탁 트이고 넓은 / 생기 있고 활력 있는 / 안전하고 단단한 | — | ✅ 재사용 |
+| 6 | `g-energy-drain` | 지금 집에서 가장 에너지를 빼앗기는 것은? | short-text | — | placeholder: 예) 답답함, 어수선함, 수납 부족, 어두운 조명 | — | ✅ 재사용 |
+
+**섹션 변경 요약:**  
+- `g-household`, `g-lifestyle-tempo`: `global-lifestyle` → `global-life`로 이동 (섹션 통합)  
+- `g-main-space`, `g-life-value`: 신규 추가  
+- `g-future-life` (기존): ❌ `future-notes`와 내용 중복 → 삭제 검토  
+- `g-life-vision` (기존): ❌ Part 5 `oth-wishlist`과 중복 → 삭제 검토  
+- `g-hosting`: 🔀 lifestyle → concerns 섹션으로 이동
+
+---
+
+### Section 2: `global-style` — 스타일 방향
+> 기존 섹션 유지. 질문 순서 소폭 조정.
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `g-style-direction` | 전체적으로 원하는 인테리어 분위기는? | multi-choice | ✅ | 모던/미니멀 / 내추럴/우드 / 클래식/고급스러운 / 인더스트리얼 / 북유럽/스칸디나비안 / 빈티지/레트로 / 호텔식/리조트 / 한국 전통 모던 | — | ✅ 재사용 |
+| 2 | `g-color-tone` | 선호하는 색감 톤은? | single-choice | ✅ | 무채색 계열 (화이트/그레이/블랙) / 웜톤 (베이지/브라운/크림) / 쿨톤 (블루/그린/민트) / 컬러 포인트 선호 | — | ✅ 재사용 |
+| 3 | `g-material-pref` | 선호하는 소재 느낌은? | tag | — | 원목 / 대리석 / 콘크리트 / 패브릭 / 가죽 / 메탈 / 유리 / 라탄 | — | ✅ 재사용 |
+| 4 | `g-reference` | 참고하고 싶은 스타일이나 이미지 키워드가 있다면? | short-text | — | placeholder: 어떤 공간에서 "이런 집에 살고 싶다"고 느꼈나요? | — | ✅ 재사용 |
+
+---
+
+### Section 3: `global-priority` — 설계 우선순위
+> Master Spec PART 2 직접 대응. 기존 `global-concerns` 섹션을 재편.
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `g-priority-value` | 이번 인테리어에서 가장 중요하게 생각하는 것은? (최대 3개 순위) | priority | ✅ | 수납/정리 / 심미성/디자인 / 채광/밝기 / 동선/편의성 / 내구성/실용성 / 청소 용이성 / 아이 안전 | — | ✅ 재사용 |
+| 2 | `g-budget-priority` | 예산을 집중하고 싶은 공간 순위는? (최대 3개) | priority | — | 거실 / 주방 / 안방 / 욕실 / 현관 / 드레스룸 | — | ✅ 재사용 |
+| 3 | `g-must-have` | 예산과 무관하게 반드시 구현하고 싶은 요소가 있나요? | short-text | — | placeholder: 예) 대형 아일랜드, 드레스룸 전신 거울, 서재 집중 공간 | — | 🆕 신규 |
+| 4 | `g-must-keep` | 반드시 유지하거나 재사용할 기존 가구/아이템이 있나요? | short-text | — | placeholder: 예) 피아노, 부모님께 받은 장롱 | — | ✅ 재사용 |
+| 5 | `g-allergy` | 알레르기나 민감 반응이 있는 소재/물질이 있나요? | short-text | — | placeholder: 없으면 빈칸으로 | — | ✅ 재사용 |
+| 6 | `g-hosting` | 손님 초대 빈도는? | single-choice | — | 거의 없음 / 가끔 (월 1-2회) / 자주 (주 1회 이상) | — | 🔀 이동 (기존 lifestyle → priority) |
+
+---
+
+### Section 4: `global-future` — 미래의 이 집
+> Master Spec PART 3 직접 대응. `future-pet` 신규 추가.
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `future-tenure` | 앞으로 이 공간에서 얼마나 거주할 예정이신가요? | single-choice | — | 1-2년 (단기) / 3-5년 (중기) / 5-10년 (장기) / 10년 이상 / 정착 | — | ✏️ wording 변경 |
+| 2 | `future-family-change` | 향후 가족 구성 변화 계획이 있으신가요? | multi-choice | — | 추가 자녀 계획 / 부모님·어른 동거 가능성 / 1인 독립 가능성 (자녀 분가) / 변화 없음 | — | ✏️ 반려동물 항목 제거 (별도 질문으로 분리) |
+| 3 | `future-pet` | 반려동물 계획이 있으신가요? | single-choice | — | 현재 없고 계획도 없음 / 향후 입양 계획 있음 / 현재 있음 (이미 반영 필요) | — | 🆕 신규 |
+| 4 | `future-workhome` | 재택/업무 환경 변화 계획이 있으신가요? | single-choice | — | 장기적으로 재택 유지·증가 / 점진적으로 줄어들 예정 / 현재와 비슷하게 유지 / 재택 없음 | — | ✏️ wording 변경 |
+| 5 | `future-aging` | 노후·장기 거주를 고려하고 계신가요? | multi-choice | — | 단차 제거 (무장애 동선) / 안전 손잡이 공간 확보 / 넓은 욕실 접근성 / 고려 불필요 (현 단계) | — | 🔗 showIf: future-tenure → 5년 이상 | ✏️ wording 변경 |
+| 6 | `future-notes` | 미래 변화로 설계에 반영해야 할 사항이 있다면? | short-text | — | placeholder: 예) 5년 후 어머니 모실 예정, 가변형 벽체 가능성 | — | ✅ 재사용 |
+
+---
+
+---
+
+## SPACE 1: 현관 (`entryway`)
+
+> 기존 구조 유지. 섹션 2개 유지.
+
+### Section 1: `entryway-function` — 당신의 일상 동선
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `ent-storage-scale` | 신발 수납 규모는 어느 정도 필요한가요? | single-choice | ✅ | 최소 (20켤레 이하) / 중간 (20-40켤레) / 대형 (40켤레 이상) / 신발장 전면 확장 원함 | — | ✅ 재사용 |
+| 2 | `ent-storage-items` | 현관에 수납하고 싶은 것은? | tag | — | 우산 / 골프백 / 자전거 / 유모차 / 캐리어 / 청소도구 / 택배 보관 | — | ✅ 재사용 |
+| 3 | `ent-bench` | 신발 착용용 벤치/의자가 필요한가요? | single-choice | — | 필요함 / 없어도 됨 / 공간 여유 있으면 원함 | — | ✅ 재사용 |
+
+### Section 2: `entryway-style` — 현관의 성격
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `ent-style` | 현관 분위기 방향은? | single-choice | — | 깔끔하고 미니멀하게 / 따뜻하고 아늑하게 / 호텔처럼 고급스럽게 / 기능 위주로 단순하게 | — | ✅ 재사용 |
+| 2 | `ent-floor` | 현관 바닥 소재 선호는? | single-choice | — | 타일 (포세린/대리석) / 원목마루 연결 / 현 상태 유지 | — | ✅ 재사용 |
+| 3 | `ent-feeling` | 하루를 마치고 돌아왔을 때 현관이 어떤 말을 건네줬으면 하나요? | short-text | — | placeholder: 예) 수고했어 / 이제 쉬어도 돼 | — | ✅ 재사용 |
+| 4 | `ent-memo` | 현관 관련 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+---
+
+## SPACE 2: 거실 (`living-room`)
+
+> Master Spec PART 4 Living.  
+> **핵심 branch 추가:** TV 여부 / 오디오 시스템 / 다이닝 겸용 분기.
+
+### Section 1: `lr-function` — 거실에서의 생활
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `lr-main-use` | 거실을 주로 어떻게 사용하나요? | multi-choice | ✅ | TV 시청 중심 / 가족 모임·대화 / 독서·취미 / 홈오피스 겸용 / 아이 놀이공간 / 다이닝 겸용 (식사도 거실에서) | — | ✏️ "다이닝 겸용" 옵션 추가 |
+| 2 | `lr-tv` | TV 설치 방식은? | single-choice | ✅ | 벽걸이 (벽 매립) / TV장 위에 / TV 없음 / 프로젝터 사용 | — | ✅ 재사용 |
+| 3 | `lr-wfh-needs` | 거실 홈오피스 공간은 어떻게 구성할까요? | single-choice | — | 고정 데스크 공간 확보 / 접이식·이동형 테이블 / 소파 사이드 미니 테이블 / 별도 방 사용 (거실 최소화) | 🔗 lr-main-use: 홈오피스 겸용 | ✅ 재사용 |
+| 4 | `lr-kids-floor` | 아이 놀이 공간 바닥 소재는? | single-choice | — | 러그·카펫 구역 분리 / 원목 그대로 (러그 없이) / 쿠션 매트 시공 / 바닥 난방 최대화 | 🔗 lr-main-use: 아이 놀이공간 | ✅ 재사용 |
+| 5 | `lr-dining-area` | 거실에 다이닝 공간(식탁)도 배치하나요? | single-choice | — | 거실+식탁 통합형 원함 / 주방 쪽에 분리 배치 / 아일랜드로 대체 | 🔗 lr-main-use: 다이닝 겸용 | 🆕 신규 |
+| 6 | `lr-audio` | 오디오 시스템이 필요한가요? | single-choice | — | 불필요 (TV 사운드바 정도) / 홈시어터 스피커 배치 원함 / 하이파이 오디오 전용 공간 필요 | 🔗 lr-special-item: 오디오 기기 선택 시 | 🆕 신규 |
+
+### Section 2: `lr-style` — 거실의 성격
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `lr-floor` | 거실 바닥재 선호는? | single-choice | ✅ | 원목마루 / 강마루 / 타일·대리석 / 카펫 일부 활용 / 현 상태 유지 | — | ✅ 재사용 |
+| 2 | `lr-sofa` | 소파 스타일 선호는? | single-choice | — | 패브릭 (린넨/벨벳) / 가죽 / 모듈형 (배치 변경 가능) / 1인+3인 조합 / 소파 없이 좌식 | — | ✅ 재사용 |
+| 3 | `lr-wall` | TV 뒷 벽/포인트 월 처리는? | single-choice | — | 페인트 포인트 컬러 / 벽지 패턴 / 우드 패널 / 대리석·타일 / 그냥 화이트 | 🔗 lr-tv: 비어있지 않고 "TV 없음/프로젝터" 아닐 때 | ✅ 재사용 |
+| 4 | `lr-lighting` | 거실 조명 방향은? | multi-choice | — | 간접조명 중심 / 포인트 펜던트 / 매립등 심플하게 / 자연광 최대화 / 스마트조명 연동 | — | ✅ 재사용 |
+
+### Section 3: `lr-storage` — 거실 수납 계획
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `lr-storage-need` | 거실 수납 필요 규모는? | single-choice | — | 최소화 (오픈 선반 정도) / 중간 (붙박이장 일부) / 대형 (벽면 수납 최대화) | — | ✅ 재사용 |
+| 2 | `lr-special-item` | 거실에 배치할 특별한 아이템이 있나요? | tag | — | 피아노 / 오디오 기기 / 대형 어항 / 갤러리 월 / 홈바 / 식물·화분 | — | ✅ 재사용 |
+| 3 | `lr-feeling` | 이 공간에서 가장 좋아질 것 같은 시간은 언제인가요? | short-text | — | placeholder: 예) 일요일 오전 햇살이 들어올 때 / 저녁에 가족이 모일 때 | — | ✅ 재사용 |
+| 4 | `lr-memo` | 거실 관련 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+**Branch 로직 요약 (거실):**
+```
+lr-main-use = '홈오피스 겸용'  → lr-wfh-needs 노출
+lr-main-use = '아이 놀이공간'  → lr-kids-floor 노출
+lr-main-use = '다이닝 겸용'    → lr-dining-area 노출  [신규]
+lr-special-item ∋ '오디오 기기' → lr-audio 노출  [신규]
+lr-tv ≠ 'TV 없음/프로젝터'    → lr-wall 노출
+```
+
+---
+
+## SPACE 3: 주방 (`kitchen`)
+
+> Master Spec PART 4 Kitchen.  
+> Branch 로직 기존 유지. 가스/전기 인덕션 질문 신규 추가.
+
+### Section 1: `kitchen-layout` — 주방 구성
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `kitch-island` | 아일랜드/식탁 구성은? | single-choice | ✅ | 아일랜드 필수 / 아일랜드+별도 식탁 / 식탁만 (아일랜드 없이) / 공간 상황에 맞게 | — | ✅ 재사용 |
+| 2 | `kitch-dining-size` | 식사 인원 기준은? | single-choice | — | 2인 / 4인 / 6인 이상 / 손님 포함 확장형 원함 | 🔗 kitch-island: 식탁 있는 경우 | ✅ 재사용 |
+| 3 | `kitch-bar-seat` | 아일랜드 바체어가 필요한가요? | single-choice | — | 필수 — 식사·간식 공간으로 활용 / 원함 (가능하면) / 불필요 — 아일랜드만 작업대로 | 🔗 kitch-island: 아일랜드 포함 경우 | ✅ 재사용 |
+
+### Section 2: `kitchen-style` — 주방의 성격
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `kitch-style` | 주방 스타일 방향은? | single-choice | ✅ | 모던/미니멀 (무광/무손잡이) / 내추럴 (우드+화이트) / 클래식 (몰딩/유광) / 산업적 (메탈+콘크리트) | — | ✅ 재사용 |
+| 2 | `kitch-counter` | 상판/카운터 소재 선호는? | single-choice | — | 인조대리석 / 세라믹 상판 / 천연대리석 / 스테인리스 / 원목 | — | ✅ 재사용 |
+| 3 | `kitch-floor` | 주방 바닥 처리는? | single-choice | — | 거실 바닥과 동일하게 / 타일로 구분 / 현 상태 유지 | — | ✅ 재사용 |
+
+### Section 3: `kitchen-function` — 실용적인 이야기
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `kitch-cook-freq` | 요리 빈도는? | single-choice | — | 거의 안 함 (간단한 것만) / 보통 (주 3-4회) / 매일 본격 요리 | — | ✅ 재사용 |
+| 2 | `kitch-cooktop` | 쿡탑 방식 선호는? | single-choice | — | 가스 (화력 중심) / 인덕션 (안전·청소 우선) / 하이브리드 (가스+인덕션) / 미정 | — | 🆕 신규 |
+| 3 | `kitch-hood` | 후드/환기 방식 선호는? | single-choice | — | 빌트인 매립형 (슬림) / 아일랜드 펜던트 후드 / 일반 상부 후드 / 강력 환기 최우선 | 🔗 kitch-cook-freq: 매일 본격 요리 | ✅ 재사용 |
+| 4 | `kitch-storage-priority` | 주방 수납 우선순위는? | multi-choice | — | 식재료 팬트리 / 그릇·조리도구 / 냉장고 빌트인 / 식기세척기 / 커피머신 전용 공간 | — | ✅ 재사용 |
+| 5 | `kitch-feeling` | 주방에서 보내는 시간이 당신에게 어떤 의미인가요? | short-text | — | placeholder: 예) 혼자만의 시간 / 가족과 함께하는 시간 | — | ✅ 재사용 |
+| 6 | `kitch-memo` | 주방 관련 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+**Branch 로직 요약 (주방):**
+```
+kitch-island ∋ 아일랜드         → kitch-bar-seat 노출
+kitch-island ∋ 식탁              → kitch-dining-size 노출
+kitch-cook-freq = '매일 본격 요리' → kitch-hood 노출
+```
+
+---
+
+## SPACE 4: 안방 (`master-bedroom`)
+
+> 기존 구조 유지. 질문 변경 없음.
+
+### Section 1: `mb-setup` — 안방에 필요한 것들
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `mb-bed-size` | 침대 사이즈는? | single-choice | ✅ | 퀸 (1600mm) / 킹 (1800mm) / 슈퍼킹 (2000mm) / 분리 싱글 2개 | — | ✅ 재사용 |
+| 2 | `mb-tv` | 안방 TV 설치 여부는? | single-choice | — | 설치 원함 (벽걸이) / 설치 원함 (이동형) / 없어도 됨 | — | ✅ 재사용 |
+| 3 | `mb-working` | 안방에 작업 공간(책상)이 필요한가요? | single-choice | — | 필요함 / 없어도 됨 / 작은 화장대 정도 | — | ✅ 재사용 |
+
+### Section 2: `mb-style` — 안방의 감정 온도
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `mb-style` | 안방 분위기는? | single-choice | ✅ | 호텔식 고급스러움 / 따뜻하고 아늑한 코지함 / 심플하고 모던하게 / 내추럴 우드 감성 | — | ✅ 재사용 |
+| 2 | `mb-lighting` | 안방 조명 방향은? | multi-choice | — | 간접조명 (수면 배려) / 스탠드·사이드 조명 / 조도 조절 가능하게 / 블라인드·암막 중요 | — | ✅ 재사용 |
+| 3 | `mb-feeling` | 잠들기 전 마지막으로 눈에 담는 공간이 어떤 감정을 줘야 하나요? | short-text | — | placeholder: 예) 고요함 / 따뜻함 / 정돈된 안도감 | — | ✅ 재사용 |
+| 4 | `mb-memo` | 안방 관련 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+---
+
+## SPACE 5: 드레스룸 (`dressing-room`) — optional
+
+> 기존 구조 유지. 질문 변경 없음.
+
+### Section 1: `dr-function` — 드레스룸 구성
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `dr-type` | 드레스룸 형태 선호는? | single-choice | ✅ | 오픈형 (노출 수납) / 도어형 (전체 가림) / 혼합형 (일부 오픈+일부 닫힘) | — | ✅ 재사용 |
+| 2 | `dr-category` | 주로 수납할 의류 유형은? | tag | — | 정장·수트 / 캐주얼 행거 / 가방 컬렉션 / 신발 (드레스룸 내) / 이불·시즌 용품 / 액세서리 | — | ✅ 재사용 |
+| 3 | `dr-mirror` | 전신 거울 위치는? | single-choice | — | 드레스룸 내부 / 안방 내부 / 필요 없음 | — | ✅ 재사용 |
+| 4 | `dr-lighting` | 드레스룸 조명은? | single-choice | — | 밝고 균일하게 (색 확인 중요) / 간접조명으로 분위기있게 / 기본 천장등 | — | ✅ 재사용 |
+| 5 | `dr-feeling` | 옷을 고르는 시간이 어떤 경험이어야 하나요? | short-text | — | — | — | ✅ 재사용 |
+| 6 | `dr-memo` | 드레스룸 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+---
+
+## SPACE 6: 자녀방 (`kids-study`) — optional, repeatable (max 2)
+
+> 기존 구조 유지. 질문 변경 없음.
+
+### Section 1: `ks-setup` — 이 방의 역할
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `ks-purpose` | 이 방의 주 용도는? | multi-choice | ✅ | 아이 침실 / 아이 놀이·공부방 / 홈오피스·서재 / 게스트룸 겸용 | — | ✅ 재사용 |
+| 2 | `ks-child-age` | 자녀 나이대는? (해당 시) | single-choice | — | 영아 (0-3세) / 유아 (4-7세) / 초등 (8-13세) / 중고등 (14세 이상) / 해당 없음 | 🔗 ks-purpose: 아이 침실 또는 아이 놀이·공부방 | ✅ 재사용 |
+| 3 | `ks-desk` | 책상·학습 공간 필요도는? | single-choice | — | 메인 공간 (넓은 책상 필수) / 보조 공간 (작은 책상) / 현재 불필요 | — | ✅ 재사용 |
+| 4 | `ks-bed` | 침대 구성은? | single-choice | — | 싱글 1개 / 2인용 벙커침대 / 다락형 침대 / 침대 없음 (좌식·매트리스) | 🔗 ks-purpose: 아이 침실 또는 게스트룸 겸용 | ✅ 재사용 |
+| 5 | `ks-memo` | 자녀방 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+---
+
+## SPACE 7: 서재·홈오피스 (`study`) — optional 🆕 **신규 공간**
+
+> Master Spec PART 4 Study에 해당.  
+> 현재 `kids-study`의 홈오피스 옵션을 별도 공간으로 분리.  
+> 선택적 공간 (optional: true). 자녀방과 독립 관리.
+
+### Section 1: `study-setup` — 서재의 역할
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `study-purpose` | 이 공간을 어떻게 활용할 계획인가요? | multi-choice | ✅ | 재택근무 전용 업무 공간 / 독서·공부 집중 공간 / 취미·창작 작업실 / 부부 공동 서재 / 게스트룸 겸용 | — | 🆕 신규 |
+| 2 | `study-desk` | 책상 구성은? | single-choice | ✅ | 1인용 고정 책상 / 2인용 나란히 배치 / 넓은 작업대형 (L자·ㄷ자) / 접이식·이동형 | — | 🆕 신규 |
+| 3 | `study-monitor` | 모니터·작업 장비 규모는? | single-choice | — | 노트북 1대 / 모니터 1대 + 노트북 / 듀얼 모니터 이상 / 작업 장비 없음 | 🔗 study-purpose: 재택근무 전용 또는 취미·창작 | 🆕 신규 |
+| 4 | `study-storage` | 서재 수납 필요사항은? | multi-choice | — | 책 (벽면 책장) / 서류·파일 / 취미 용품 (악기·화구 등) / 수납 최소화 | — | 🆕 신규 |
+| 5 | `study-door` | 서재 문 / 소음 차단 요구는? | single-choice | — | 완전 차단 (도어 필수) / 반투명 슬라이딩 선호 / 개방형 (문 없어도 됨) | — | 🆕 신규 |
+| 6 | `study-feeling` | 이 공간에서 어떤 상태가 되고 싶으신가요? | short-text | — | placeholder: 예) 집중력이 올라가는 느낌 / 창의력이 자극되는 느낌 / 조용히 나만의 시간 | — | 🆕 신규 |
+| 7 | `study-memo` | 서재 관련 특별 요청사항 | short-text | — | — | — | 🆕 신규 |
+
+---
+
+## SPACE 8: 공용욕실 (`shared-bathroom`) — optional, repeatable (max 2)
+
+> **핵심 branch 추가:** 세면대 타입 선택 → 카운터형 세부 분기.
+
+### Section 1: `sb-function` — 욕실 이야기
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `sb-bath` | 욕조 설치 여부는? | single-choice | ✅ | 욕조 필수 / 욕조 제거 (샤워부스만) / 현 상태 유지 | — | ✅ 재사용 |
+| 2 | `sb-sink-type` | 세면대 타입 선호는? | single-choice | — | 단일 벽부형 (일반) / 카운터형 (하부장+상판) / 매립형 (언더카운터) | — | 🆕 신규 |
+| 3 | `sb-sink-counter` | 카운터 소재·길이 선호는? | single-choice | — | 인조대리석 단품 (600mm) / 세라믹 상판 롱카운터 (900mm+) / 우드 선반형 / 소재 무관 (설계에 맡김) | 🔗 sb-sink-type: 카운터형 또는 매립형 | 🆕 신규 |
+| 4 | `sb-style` | 욕실 스타일은? | single-choice | — | 밝고 깔끔한 화이트 / 내추럴 타일 (테라코타·석재) / 다크 무드 (블랙·그레이) / 패턴 타일 포인트 | — | ✅ 재사용 |
+| 5 | `sb-priority` | 욕실 우선 개선사항은? | multi-choice | — | 수납 추가 / 환기 개선 / 방수·곰팡이 방지 / 조명 개선 / 세면대 교체 | — | ✅ 재사용 |
+| 6 | `sb-memo` | 공용욕실 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+**Branch 로직 요약 (공용욕실):**
+```
+sb-sink-type = '카운터형' 또는 '매립형' → sb-sink-counter 노출
+```
+
+---
+
+## SPACE 9: 안방욕실 (`master-bathroom`) — optional
+
+> **핵심 branch 추가:** 세면대 타입 → 카운터형 세부 분기 (공용욕실과 동일 패턴).
+
+### Section 1: `mab-function` — 안방욕실 이야기
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `mab-bath` | 안방욕실 욕조는? | single-choice | ✅ | 욕조 유지·설치 원함 / 욕조 제거 (샤워부스 확장) / 프리스탠딩 욕조 원함 | — | ✅ 재사용 |
+| 2 | `mab-double-sink` | 세면대 구성은? | single-choice | — | 1구 세면대 / 2구 더블 세면대 / 공간 여유 있으면 2구 | — | ✅ 재사용 |
+| 3 | `mab-sink-type` | 세면대 타입 선호는? | single-choice | — | 단일 벽부형 / 카운터형 (하부장+상판) / 매립형 / 스탠딩 선반형 | — | 🆕 신규 |
+| 4 | `mab-sink-counter` | 카운터 소재·스타일 선호는? | single-choice | — | 대리석 롱카운터 / 세라믹 상판 / 우드 선반형 / 설계에 맡김 | 🔗 mab-sink-type: 카운터형 또는 매립형 | 🆕 신규 |
+| 5 | `mab-style` | 안방욕실 분위기는? | single-choice | — | 호텔·스파 느낌 / 깔끔한 화이트 / 내추럴 석재 / 다크 럭셔리 | — | ✅ 재사용 |
+| 6 | `mab-memo` | 안방욕실 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+---
+
+## SPACE 10: 세탁실·다용도실 (`laundry`) — optional
+
+> 기존 구조 유지. 질문 변경 없음.
+
+### Section 1: `lau-setup` — 실용적인 이야기
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `lau-washer` | 세탁기·건조기 구성은? | single-choice | ✅ | 세탁기+건조기 (상하 스택) / 세탁기+건조기 (나란히) / 드럼 세탁기만 / 통돌이 세탁기 | — | ✅ 재사용 |
+| 2 | `lau-sink` | 세탁실 싱크·개수대 필요 여부는? | single-choice | — | 필요함 / 없어도 됨 / 있으면 좋겠음 | — | ✅ 재사용 |
+| 3 | `lau-storage` | 다용도실 추가 수납 필요사항은? | tag | — | 청소도구 / 세제류 / 비상식품·음료 / 공구류 / 계절가전 | — | ✅ 재사용 |
+| 4 | `lau-memo` | 세탁실 특별 요청사항 | short-text | — | — | — | ✅ 재사용 |
+
+---
+
+## SPACE 11: 기타 (`other`)
+
+> Master Spec PART 5 최종 요청사항 직접 대응.  
+> `g-must-have` 신규 추가로 중복 줄임. `oth-concerns` wording 강화.
+
+### Section 1: `other-general` — 꼭 하고 싶은 이야기
+
+| # | ID | Wording | Type | Required | Options | showIf | 상태 |
+|---|----|---------|----- |----------|---------|--------|------|
+| 1 | `oth-space` | 추가로 논의하고 싶은 공간이 있나요? | short-text | — | placeholder: 예) 발코니, 창고, 다락 | — | ✅ 재사용 |
+| 2 | `oth-concerns` | 현재 집에서 가장 불편한 점은? | short-text | — | placeholder: 지금 집으로 돌아올 때 마음이 무거워지는 이유가 있다면? | — | ✅ 재사용 |
+| 3 | `oth-absolute-no` | 절대 원하지 않는 것이 있나요? (Absolute No) | short-text | — | placeholder: 예) 벽지 사용 반대, 블랙 계열 싫음 | — | ✅ 재사용 |
+| 4 | `oth-followup` | 후속 확인·검토가 필요한 사항이 있나요? | short-text | — | placeholder: 예) 발코니 확장 가능 여부, 구조 변경 검토 | — | ✅ 재사용 |
+| 5 | `oth-wishlist` | 꼭 반영되었으면 하는 최종 요청사항은? | short-text | — | placeholder: 눈을 감고 완성된 집을 상상해보세요. 무엇이 보이나요? | — | ✏️ wording 변경 (Master Spec PART 5: "꼭 반영되었으면 하는 요청사항") |
+
+---
+
+---
+
+## Summary-Builder 수정 범위
+
+> 신규 질문에 대한 SENTENCE_TEMPLATES 추가 필요 항목.
+
+| ID | 템플릿 초안 |
+|----|------------|
+| `g-main-space` | `집에서 가장 많은 시간을 보내는 공간 **${v}** — 해당 공간 설계에 우선순위 집중 검토` |
+| `g-life-value` | `생활 방식 핵심 가치: **${v}** — 공간 기획 전 과정에서 지속 참조` |
+| `g-must-have` | `"${v}" — 예산·구조 무관하게 반드시 실현. 설계 초반 포함 여부 확정 필요` |
+| `future-pet` | `반려동물 계획 **${v}** — 바닥 소재·내구성·청소 동선 설계 시 반영` |
+| `lr-dining-area` | `거실 다이닝 구성 **${v}** — 식탁 규격·동선 및 조명 연동 계획 반영` |
+| `lr-audio` | `오디오 시스템 **${v}** — 스피커 위치·배선·방음 처리 사전 협의 필요` |
+| `kitch-cooktop` | `쿡탑 방식 **${v}** — 가스 라인·전기 용량·안전 계획 반영` |
+| `study-purpose` | `서재 용도 **${v}** 확정 — 책상 배치·조명·수납 구성 기준` |
+| `study-desk` | `책상 구성 **${v}** — 콘센트 위치·모니터 암 보강·조명 각도 계획` |
+| `study-door` | `서재 소음 차단 **${v}** — 도어 방식 및 단열재 계획 반영` |
+| `sb-sink-type` | `공용욕실 세면대 **${v}** — 배관·하부장 규격·상판 소재 연동 설계` |
+| `sb-sink-counter` | `카운터 소재·규격 **${v}** — 배관 위치 및 거울장 연동 계획` |
+| `mab-sink-type` | `안방욕실 세면대 **${v}** — 배관·상판 소재·조명 연동 계획` |
+| `mab-sink-counter` | `안방욕실 카운터 **${v}** — 럭셔리 마감재 샘플 제안 기준` |
+
+---
+
+## 전체 변경 요약
+
+| 구분 | 항목 수 | 내용 |
+|------|---------|------|
+| ✅ 재사용 (unchanged) | 54개 | 기존 질문 그대로 |
+| ✏️ wording 변경 | 7개 | ID 유지, label·options 소폭 수정 |
+| 🔀 섹션 이동 | 2개 | g-hosting, g-household (섹션 재편) |
+| 🆕 신규 질문 | 16개 | g-main-space, g-life-value, g-must-have, future-pet, lr-dining-area, lr-audio, kitch-cooktop, study-purpose, study-desk, study-monitor, study-storage, study-door, study-feeling, study-memo, sb-sink-type, sb-sink-counter, mab-sink-type, mab-sink-counter |
+| 🆕 신규 공간 | 1개 | study (서재·홈오피스) |
+| ❌ 삭제 검토 | 2개 | g-life-vision (oth-wishlist와 중복), g-future-life (future-notes와 중복) |
+| 📝 summary-builder | 14개 | 신규 질문 SENTENCE_TEMPLATES 추가 |
+
+---
+
+## 검수 요청 포인트
+
+1. **g-main-space** 신규 질문 — "가장 오래 머무는 공간" 옵션이 적절한가?
+2. **g-life-value** 신규 질문 — single vs multi-choice? 현재 multi로 설계
+3. **study 공간 분리** — `kids-study`에서 홈오피스 옵션 제거 여부 확인 필요
+4. **g-life-vision / g-future-life 삭제** — 현재 감성 질문으로 가치가 있음. 유지 또는 삭제 결정 필요
+5. **future-family-change에서 반려동물 항목 제거** — future-pet로 분리. 동의 여부 확인
+6. **욕실 세면대 branch** — sb-sink-type/sb-sink-counter 2단계 분기가 적절한가?
+7. **kitch-cooktop 신규** — 가스/인덕션 선택이 이 단계에서 필요한가? (시공 설계 단계 질문일 수 있음)
+8. **oth-wishlist wording** — Master Spec PART 5와 맞추되, 기존 감성 placeholder 유지 여부

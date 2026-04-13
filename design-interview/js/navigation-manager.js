@@ -35,9 +35,10 @@ const NavigationManager = (function () {
     if (state.currentSectionIdx < space.sections.length - 1) {
       selectSection(state.currentSectionIdx + 1);
     } else {
-      const allSpaces = AppState.getAllSpaces();
-      const idx = allSpaces.findIndex(s => s.id === state.currentSpaceId);
-      if (idx < allSpaces.length - 1) selectSpace(allSpaces[idx + 1].id);
+      // Use active spaces only for next navigation
+      const activeSpaces = AppState.getActiveSpaces();
+      const idx = activeSpaces.findIndex(s => s.id === state.currentSpaceId);
+      if (idx < activeSpaces.length - 1) selectSpace(activeSpaces[idx + 1].id);
     }
   }
 
@@ -46,10 +47,11 @@ const NavigationManager = (function () {
     if (state.currentSectionIdx > 0) {
       selectSection(state.currentSectionIdx - 1);
     } else {
-      const allSpaces = AppState.getAllSpaces();
-      const idx = allSpaces.findIndex(s => s.id === state.currentSpaceId);
+      // Use active spaces only for prev navigation
+      const activeSpaces = AppState.getActiveSpaces();
+      const idx = activeSpaces.findIndex(s => s.id === state.currentSpaceId);
       if (idx > 0) {
-        const prevSpace = allSpaces[idx - 1];
+        const prevSpace = activeSpaces[idx - 1];
         AppState.setCurrentSpace(prevSpace.id);
         AppState.setCurrentSection(prevSpace.sections.length - 1);
         UIRender.renderSpaceNav();
@@ -74,7 +76,8 @@ const NavigationManager = (function () {
   function focusNextQuestion(fromQId, direction) {
     const section = AppState.getCurrentSection();
     if (!section) return;
-    const qs = section.questions;
+    // Only navigate to visible (showIf-passing) questions
+    const qs = AppState.getVisibleQuestions(section);
     const currentIdx = fromQId ? qs.findIndex(q => q.id === fromQId) : -1;
     const nextIdx = currentIdx + direction;
     if (nextIdx >= 0 && nextIdx < qs.length) {
@@ -88,8 +91,9 @@ const NavigationManager = (function () {
   function focusFirstUnanswered() {
     const section = AppState.getCurrentSection();
     if (!section) return;
-    const unanswered = section.questions.find(q => !AppState.hasAnswer(q.id));
-    setFocusedQuestion(unanswered ? unanswered.id : (section.questions[0] || {}).id || null);
+    const visible   = AppState.getVisibleQuestions(section);
+    const unanswered = visible.find(q => !AppState.hasAnswer(q.id));
+    setFocusedQuestion(unanswered ? unanswered.id : (visible[0] || {}).id || null);
   }
 
   function flashAnswered(qId) {
@@ -104,9 +108,9 @@ const NavigationManager = (function () {
 
   function selectOptionByNumber(qId, num) {
     let qData = null;
-    AppState.getAllSpaces().forEach(sp =>
+    AppState.getActiveSpaces().forEach(sp =>
       sp.sections.forEach(sec =>
-        sec.questions.forEach(q => { if (q.id === qId) qData = q; })
+        sec.questions.forEach(q => { if (q.id === qId && AppState.evaluateCondition(q.showIf)) qData = q; })
       )
     );
     if (!qData || !qData.options) return;

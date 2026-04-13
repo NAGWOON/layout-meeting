@@ -1,19 +1,73 @@
 /* ============================================
-   STORAGE — design_interview_v1_* namespace
-   기존 layout_meeting_v2_* / layout_logo_v1 과 완전 분리
+   STORAGE — design_interview_v2_* namespace
+   v1 is kept read-only for backward compatibility.
+   New sessions always write to v2.
    ============================================ */
 
-const STORAGE_KEY    = 'design_interview_v1_session';   // 진행 중 세션
-const CONFIG_KEY     = 'design_interview_v1_config';    // 텔레그램 설정
-const CLIENT_INDEX   = 'design_interview_v1_index';     // 고객 목록
-const CLIENT_PREFIX  = 'design_interview_v1_client_';   // 고객별 저장
+// ── v2 keys (active namespace) ───────────────
+const STORAGE_KEY_V2   = 'design_interview_v2_session';
+const CLIENT_INDEX_V2  = 'design_interview_v2_index';
+const CLIENT_PREFIX_V2 = 'design_interview_v2_client_';
+
+// ── v1 keys (legacy, read-only) ──────────────
+const STORAGE_KEY_V1   = 'design_interview_v1_session';
+const CLIENT_INDEX_V1  = 'design_interview_v1_index';
+const CLIENT_PREFIX_V1 = 'design_interview_v1_client_';
+
+/** Renamed space ids (questions-data MASTER 정렬) — 세션 복원 시 한 번 정규화 */
+function _migrateSpaceIdsV2(state) {
+  if (!state || typeof state !== 'object') return;
+  const map = {
+    entryway: 'entrance',
+    'living-room': 'living',
+    'master-bedroom': 'bedroom',
+    'kids-study': 'study',
+    'shared-bathroom': 'bathroom',
+    'master-bathroom': 'bathroom'
+  };
+  if (map[state.currentSpaceId]) state.currentSpaceId = map[state.currentSpaceId];
+  if (state.currentSpaceId === 'other') state.currentSpaceId = 'extra-space';
+
+  if (state.spaceActivation && typeof state.spaceActivation === 'object') {
+    if (Object.prototype.hasOwnProperty.call(state.spaceActivation, 'other')) {
+      const v = state.spaceActivation.other;
+      delete state.spaceActivation.other;
+      state.spaceActivation['extra-space'] = v;
+      state.spaceActivation['final-request'] = v;
+    }
+    Object.keys(map).forEach(oldId => {
+      if (!Object.prototype.hasOwnProperty.call(state.spaceActivation, oldId)) return;
+      const v = state.spaceActivation[oldId];
+      delete state.spaceActivation[oldId];
+      state.spaceActivation[map[oldId]] = v;
+    });
+  }
+
+  if (!state.spaceInstances || typeof state.spaceInstances !== 'object') {
+    state.spaceInstances = {};
+  }
+  if (!state.spaceInstances.bathroom) {
+    const legacySharedCount = state.spaceInstances['shared-bathroom'] || 1;
+    state.spaceInstances.bathroom = legacySharedCount;
+  }
+  delete state.spaceInstances['shared-bathroom'];
+  delete state.spaceInstances['master-bathroom'];
+
+  if (!state.bathroomMeta || typeof state.bathroomMeta !== 'object') {
+    state.bathroomMeta = { count: state.spaceInstances.bathroom || 1, inputMode: '' };
+  }
+  if (!Array.isArray(state.bathrooms)) state.bathrooms = [];
+}
+
+// ── Shared keys (no versioning needed) ───────
+const CONFIG_KEY = 'design_interview_v1_config';   // sessionStorage — no migrate needed
 
 const InterviewStorage = {
 
-  // ── 현재 진행 세션 ──────────────────────────
+  // ── 현재 진행 세션 (v2) ──────────────────────
   save(state) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, savedAt: Date.now() }));
+      localStorage.setItem(STORAGE_KEY_V2, JSON.stringify({ ...state, savedAt: Date.now() }));
       return true;
     } catch (e) {
       console.warn('[design-interview] save failed', e);
@@ -21,35 +75,57 @@ const InterviewStorage = {
     }
   },
 
+  // Load: try v2 first, then fall back to v1 (read-only migration).
   load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
+      const v2 = localStorage.getItem(STORAGE_KEY_V2);
+      if (v2) {
+        const state = JSON.parse(v2);
+        _migrateSpaceIdsV2(state);
+        return state;
+      }
+
+      // v1 fallback: read legacy session and normalise field names
+      const v1raw = localStorage.getItem(STORAGE_KEY_V1);
+      if (!v1raw) return null;
+      const v1 = JSON.parse(v1raw);
+      // Normalise: meetingDate → briefDate (v1 used meetingDate)
+      if (v1.meetingDate !== undefined && v1.briefDate === undefined) {
+        v1.briefDate = v1.meetingDate;
+        delete v1.meetingDate;
+      }
+      // Ensure new fields present with defaults
+      if (!v1.spaceActivation) v1.spaceActivation = {};
+      if (!v1.spaceInstances)  v1.spaceInstances  = {};
+      _migrateSpaceIdsV2(v1);
+      return v1;
     } catch (e) { return null; }
   },
 
   clear() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    try {
+      localStorage.removeItem(STORAGE_KEY_V2);
+      localStorage.removeItem(STORAGE_KEY_V1);
+    } catch (e) {}
   },
 
-  // ── 고객별 영구 보관 ────────────────────────
-  // 현재 세션을 고객 레코드로 저장하고 고유 ID 반환
+  // ── 고객별 영구 보관 (v2) ────────────────────
   archiveClient(state) {
     try {
       const clientId = String(Date.now());
-      const key = CLIENT_PREFIX + clientId;
+      const key = CLIENT_PREFIX_V2 + clientId;
       localStorage.setItem(key, JSON.stringify({ ...state, clientId, archivedAt: Date.now() }));
 
-      // 인덱스 갱신 (최신 순, 최대 30개)
       const index = this.loadIndex();
       index.unshift({
         clientId,
-        projectName:  state.projectName  || '(이름 없음)',
-        spaceName:    state.spaceName    || '',
-        meetingDate:  state.meetingDate  || '',
-        archivedAt:   Date.now()
+        projectName: state.projectName || '(이름 없음)',
+        spaceName:   state.spaceName   || '',
+        briefDate:   state.briefDate   || '',
+        archivedAt:  Date.now(),
+        _v: 2
       });
-      localStorage.setItem(CLIENT_INDEX, JSON.stringify(index.slice(0, 30)));
+      localStorage.setItem(CLIENT_INDEX_V2, JSON.stringify(index.slice(0, 30)));
       return clientId;
     } catch (e) {
       console.warn('[design-interview] archiveClient failed', e);
@@ -57,23 +133,34 @@ const InterviewStorage = {
     }
   },
 
+  // Load a specific archived client (checks v2 then v1)
   loadClient(clientId) {
     try {
-      const raw = localStorage.getItem(CLIENT_PREFIX + clientId);
-      return raw ? JSON.parse(raw) : null;
+      const v2 = localStorage.getItem(CLIENT_PREFIX_V2 + clientId);
+      if (v2) return JSON.parse(v2);
+      const v1 = localStorage.getItem(CLIENT_PREFIX_V1 + clientId);
+      return v1 ? JSON.parse(v1) : null;
     } catch (e) { return null; }
   },
 
+  // Returns merged v2 + v1 index (v2 first, then legacy)
   loadIndex() {
     try {
-      const raw = localStorage.getItem(CLIENT_INDEX);
+      const v2raw = localStorage.getItem(CLIENT_INDEX_V2);
+      const v2    = v2raw ? JSON.parse(v2raw) : [];
+      return v2;
+    } catch (e) { return []; }
+  },
+
+  // Legacy v1 index (read-only access for historical records)
+  loadLegacyIndex() {
+    try {
+      const raw = localStorage.getItem(CLIENT_INDEX_V1);
       return raw ? JSON.parse(raw) : [];
     } catch (e) { return []; }
   },
 
-  // ── 텔레그램 설정 ───────────────────────────
-  // sessionStorage 사용: 탭을 닫으면 토큰이 메모리에서 소멸됨.
-  // 기존 localStorage 저장값은 첫 로드 시 자동 마이그레이션 후 삭제.
+  // ── 텔레그램 설정 (sessionStorage) ──────────
   saveConfig(config) {
     try {
       sessionStorage.setItem(CONFIG_KEY, JSON.stringify(config));

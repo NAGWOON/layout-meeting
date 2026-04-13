@@ -16,17 +16,10 @@ const SummaryManager = (function () {
     const answers = AppState.state.answers;
     let bodyHtml = '';
 
-    // Global preferences block
-    const gRows = SummaryBuilder.panelRows(INTERVIEW_DATA.globalPreferences, answers);
-    if (gRows.must.length || gRows.nice.length || gRows.notes.length) {
-      const isCurrent = AppState.state.currentSpaceId === 'global';
-      bodyHtml += buildPanelSpaceBlock(INTERVIEW_DATA.globalPreferences, gRows, isCurrent);
-    }
-
-    // Per-space blocks (only spaces with answers)
-    INTERVIEW_DATA.spaces.forEach(space => {
+    // All active spaces (includes virtual repeatable instances)
+    AppState.getActiveSpaces().forEach(space => {
       const rows = SummaryBuilder.panelRows(space, answers);
-      if (!rows.must.length && !rows.nice.length && !rows.notes.length) return;
+      if (!rows.must.length && !rows.nice.length && !rows.notes.length && !rows.reason) return;
       const isCurrent = AppState.state.currentSpaceId === space.id;
       bodyHtml += buildPanelSpaceBlock(space, rows, isCurrent);
     });
@@ -37,7 +30,7 @@ const SummaryManager = (function () {
 
     // Special sections (pain / no / follow-up)
     const sp = SummaryBuilder.specialSections(answers);
-    const hasSpecial = sp.painPoints || sp.absoluteNo || sp.followUp || sp.allergy;
+    const hasSpecial = sp.painPoints || sp.absoluteNo || sp.followUp;
     if (hasSpecial) bodyHtml += buildPanelSpecialBlock(sp);
 
     // Keywords
@@ -54,12 +47,12 @@ const SummaryManager = (function () {
 
     panel.innerHTML = `
       <div class="summary-header">
-        실시간 요약
+        브리프 미리보기
         <span class="summary-total-count">${ProgressManager.getTotalAnswered()}개</span>
       </div>
       <div class="summary-body">${bodyHtml}</div>
       <div class="summary-footer">
-        <button class="summary-copy-btn" id="btnSummaryCopy">📋 회의록 복사</button>
+        <button class="summary-copy-btn" id="btnSummaryCopy">📋 브리프 복사</button>
       </div>`;
 
     panel.querySelectorAll('[data-goto-space]').forEach(el => {
@@ -67,7 +60,7 @@ const SummaryManager = (function () {
     });
     panel.querySelector('#btnSummaryCopy').addEventListener('click', () => {
       copyToClipboard(buildMarkdown());
-      AppState.showToast('회의록이 복사되었습니다');
+      AppState.showToast('브리프가 복사되었습니다');
     });
   }
 
@@ -122,9 +115,6 @@ const SummaryManager = (function () {
     let html = `<div class="summary-special-block">
       <div class="summary-special-title">⚠️ 주의사항</div>`;
 
-    if (sp.allergy) {
-      html += `<div class="summary-special-row danger">🚫 알레르기: ${AppState.escapeHtml(sp.allergy)}</div>`;
-    }
     if (sp.absoluteNo) {
       SummaryBuilder._splitLines(sp.absoluteNo).forEach(l => {
         html += `<div class="summary-special-row danger">🚫 ${AppState.escapeHtml(l)}</div>`;

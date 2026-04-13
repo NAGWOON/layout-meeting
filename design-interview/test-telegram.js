@@ -32,7 +32,7 @@ const SummaryBuilder = sandbox.SummaryBuilder;
 const state = {
   projectName: '김지은',
   spaceName:   '84㎡ 아파트 (판교)',
-  meetingDate: '2026-04-11',
+  briefDate: '2026-04-11',
   answers: {
 
     /* ── 전체 선호도 ── */
@@ -49,55 +49,49 @@ const state = {
     'g-budget-priority':  ['거실', '주방', '안방'],
 
     /* ── 현관 ── */
-    'ent-storage-scale':  '중간 (20-40켤레)',
-    'ent-storage-items':  ['우산', '택배 보관'],
-    'ent-bench':          '공간 여유 있으면 원함',
-    'ent-style':          '깔끔하고 미니멀하게',
-    'ent-floor':          '타일 (포세린/대리석)',
-    'ent-memo':           null,
+    'ent-middle-door':          '필요합니다',
+    'ent-shoe-rack-width':      '1200~1800mm',
+    'ent-shoe-inventory':       '10~20켤레',
+    'ent-storage-satisfaction': '적당함',
 
-    /* ── 거실 ── */
-    'lr-main-use':        ['TV 시청 중심', '가족 모임/대화'],
-    'lr-tv':              '벽걸이 (벽 매립)',
-    'lr-floor':           '원목마루',
-    'lr-sofa':            '패브릭 (린넨/벨벳)',
-    'lr-wall':            '우드 패널',
-    'lr-lighting':        ['간접조명 중심', '매립등 심플하게'],
-    'lr-storage-need':    '중간 (붙박이장 일부)',
-    'lr-special-item':    ['갤러리 월'],
-    'lr-memo':            '창가 쪽에 독서 코너 희망',
+    /* ── 거실 / 공용부 ── */
+    'liv-space-form':       '두 요소가 함께 있는 복합형 공간',
+    'liv-center-element':   'TV / 영상 시청 중심',
+    'liv-tv-direction':     ['벽걸이/심플한 구성', '하부장/수납장 필요'],
+    'liv-dining-table-size': '1600~2000mm',
+    'liv-atmosphere':       '가구/기능이 채워진 안정감 있는 공간',
+    'liv-priority-focus':   '개방감 / 공간감',
 
     /* ── 주방 ── */
-    'kitch-island':           '아일랜드+별도 식탁',
-    'kitch-dining-size':      '4인',
-    'kitch-style':            '모던/미니멀 (무광/무손잡이)',
-    'kitch-counter':          '세라믹 상판',
-    'kitch-floor':            '거실 바닥과 동일하게',
-    'kitch-cook-freq':        '보통 (주 3-4회)',
-    'kitch-storage-priority': ['식재료 팬트리', '식기세척기', '커피머신 전용 공간'],
-    'kitch-memo':             null,
+    'kitch-use-pattern':        '일반적인 가정식 조리를 자주 합니다',
+    'kitch-priority-factors':   ['조리 동선의 효율성', '충분한 수납과 정리'],
+    'kitch-island-plan':        '바체어가 결합된 아일랜드 구조를 원합니다',
+    'kitch-island-priorities':  ['전/후면 모두 수납이 가능했으면 합니다', '간단한 식사/티타임이 가능했으면 합니다'],
+    'kitch-dining-scale':       '4인 규모',
+    'kitch-storage-appliance':  ['자주 사용하는 가전은 쉽게 꺼내 쓸 수 있길 원합니다'],
 
-    /* ── 안방 ── */
-    'mb-bed-size': '킹 (1800mm)',
-    'mb-tv':       '없어도 됨',
-    'mb-working':  '작은 화장대 정도',
-    'mb-style':    '호텔식 고급스러움',
-    'mb-lighting': ['간접조명 (수면 배려)', '블라인드/암막 중요'],
-    'mb-memo':     '헤드보드 뒤 간접조명 필수',
+    /* ── 침실 ── */
+    'bed-atmosphere':      '호텔처럼 정돈되고 안정감 있는 분위기',
+    'bed-size':            'K / 킹',
+    'bed-side-furniture':  ['화장대가 필요합니다 (기성 제품 예정)', '별도 협탁이 필요합니다 (기성 제품 예정)'],
+    'bed-frame-plan':      '기성 침대 프레임 사용 예정',
+    'bed-headwall-plan':   '디자인 포인트가 되는 헤드월 제작 희망',
 
     /* ── 드레스룸 ── */
-    'dr-type':     '혼합형 (일부 오픈+일부 닫힘)',
-    'dr-category': ['정장/수트', '캐주얼 행거', '가방 컬렉션', '액세서리'],
-    'dr-mirror':   '드레스룸 내부',
-    'dr-lighting': '밝고 균일하게 (색 확인 중요)',
-    'dr-memo':     null,
+    'dr-storage-approach':           '맞춤 제작 가구를 희망합니다',
+    'dr-current-wardrobe-length':    '2400~3600mm',
+    'dr-clothing-volume':            '적당한 수준입니다',
+    'dr-clothing-characteristics':   ['긴 옷/코트류가 많습니다', '가방/잡화류가 많습니다'],
+    'dr-layout-priorities':          ['행거 중심 구성을 선호합니다', '전신거울/피팅 공간 필요'],
+    'dr-finish-style':               '가구 도어형으로 깔끔하게 정리되는 구조',
 
-    /* ── 자녀방 ── */
-    'ks-purpose':   ['아이 침실', '아이 놀이/공부방'],
-    'ks-child-age': '유아 (4-7세)',
-    'ks-desk':      '보조 공간 (작은 책상)',
-    'ks-bed':       '싱글 1개',
-    'ks-memo':      '바닥재 안전 최우선, 코너 마감 라운딩 처리',
+    /* ── 서재 / 작업실 ── */
+    'study-purpose':       ['재택근무 / 업무 공간', '개인 공부 / 독서 공간'],
+    'study-users':         '1인 사용',
+    'study-desk-plan':     '맞춤 제작 데스크 희망',
+    'study-priorities':    ['넓은 작업/데스크 공간', '수납/정리 효율'],
+    'study-storage-needs': ['서류/문서 정리', '책/서적 수납'],
+    'study-atmosphere':    '차분하고 집중되는 분위기',
 
     /* ── 공용욕실 ── */
     'sb-bath':     '욕조 제거 (샤워부스만)',
@@ -117,12 +111,14 @@ const state = {
     'lau-storage': ['청소도구', '세제류', '계절가전'],
     'lau-memo':    null,
 
-    /* ── 기타 ── */
-    'oth-space':       null,
-    'oth-concerns':    '주방 환기가 안 좋아 음식 냄새가 거실까지 퍼짐\n현관 수납공간이 너무 좁아 항상 물건이 넘침',
-    'oth-absolute-no': '싸구려 느낌의 마감재 (저가형 강화마루, 페이퍼 타일 등)\n주방 오픈선반 — 먼지 쌓이는 구조 싫어함',
-    'oth-followup':    '안방욕실 방수 상태 현장 확인 필요\n거실 창 쪽 바닥 단차 여부 확인\n자녀방 콘센트 위치 재배치 검토',
-    'oth-wishlist':    '아침에 눈 떴을 때 빛이 자연스럽게 들어오는 거실, 퇴근 후 호텔 느낌의 안방욕실',
+    /* ── 기타 공간 ── */
+    'es-areas':  ['세탁실 / 유틸리티룸', '펫 공간'],
+    'es-detail': '반려견 목욕 공간과 건조 존을 유틸 쪽에 두고 싶음',
+
+    /* ── 최종 요청사항 ── */
+    'fr-must-haves':
+      '아침에 눈 떴을 때 빛이 자연스럽게 들어오는 거실, 퇴근 후 호텔 느낌의 안방욕실',
+    'fr-notes': '안방욕실 방수 상태 현장 확인 필요. 거실 창 쪽 바닥 단차 여부 확인.',
   }
 };
 
@@ -149,7 +145,7 @@ function buildTelegramCard() {
   lines.push(`📋 <b>1차 디자인 인터뷰</b>`);
   lines.push(`👤 고객: <b>${esc(state.projectName)}</b>`);
   if (state.spaceName)   lines.push(`🏠 공간: ${esc(state.spaceName)}`);
-  if (state.meetingDate) lines.push(`📅 일자: ${esc(state.meetingDate)}`);
+  if (state.briefDate) lines.push(`📅 일자: ${esc(state.briefDate)}`);
   lines.push('');
 
   if (style  && style.length)    lines.push(`<b>스타일:</b> ${esc([].concat(style).join(', '))}`);

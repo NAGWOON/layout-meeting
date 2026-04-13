@@ -12,35 +12,138 @@ const UIRender = (function () {
     const nav = document.getElementById('spaceNav');
     if (!nav) return;
 
-    const allSpaces = AppState.getAllSpaces();
-    let html = `<div class="nav-header">공간 선택</div><div class="space-list">`;
+    const rawSpaces    = AppState.getAllSpaces();
+    const activeSpaces = AppState.getActiveSpaces();  // includes virtual instances
+    let html = `<div class="nav-header">공간 구성</div><div class="space-list">`;
 
-    allSpaces.forEach((space, i) => {
-      const isActive  = space.id === AppState.state.currentSpaceId;
-      const complete  = ProgressManager.isSpaceComplete(space.id);
-      const { answered, total } = ProgressManager.getSpaceProgress(space.id);
-      const progressText = total > 0 ? `${answered}/${total}` : '';
+    rawSpaces.forEach((space, i) => {
+      const isEnabled = AppState.isSpaceActive(space.id);
 
-      let cls = 'space-item';
-      if (isActive)  cls += ' active';
-      if (complete)  cls += ' complete';
+      if (i === 0) {
+        // ── Global space (never optional) ──────────
+        html += _buildSpaceItem(space, false, false, false);
+        html += `<div class="nav-divider"></div>`;
+        return;
+      }
 
-      html += `
-        <div class="${cls}" data-space="${space.id}">
-          <span class="space-icon">${space.icon}</span>
-          <span class="space-label">${space.label}</span>
-          ${progressText ? `<span class="space-progress">${progressText}</span>` : ''}
+      if (!isEnabled) {
+        // Excluded optional space — show greyed out with "+" toggle
+        html += _buildSpaceItem(space, false, true, false);
+        return;
+      }
+
+      if (!space.repeatable) {
+        // Normal active space
+        html += _buildSpaceItem(space, false, false, space.optional);
+        return;
+      }
+
+      // ── Repeatable space: show all instances ───
+      const count  = AppState.state.spaceInstances[space.id] || 1;
+      const maxRep = space.maxRepeat || 2;
+      const isBathroom = space.id === 'bathroom';
+
+      // Instance 1 uses original id
+      html += _buildSpaceItem(space, false, false, space.optional);
+
+      // Instance 2+ (virtual) — with × remove button
+      for (let n = 2; n <= count; n++) {
+        const vId    = `${space.id}_${n}`;
+        const vSpace = activeSpaces.find(s => s.id === vId);
+        if (vSpace) html += _buildSpaceItem(vSpace, !isBathroom, false, false);
+      }
+
+      // "+ 추가" row if not at max (bathroom은 Q0 개수로만 관리)
+      if (!isBathroom && count < maxRep) {
+        html += `<div class="space-add-btn" data-add-space="${space.id}">
+          <span class="space-add-icon">+</span>
+          <span class="space-add-label">${space.label} 추가</span>
         </div>`;
-
-      if (i === 0) html += `<div class="nav-divider"></div>`;
+      }
     });
 
     html += `</div>`;
     nav.innerHTML = html;
 
+    // Navigation click (only active, non-excluded spaces navigate)
     nav.querySelectorAll('.space-item').forEach(el => {
-      el.addEventListener('click', () => NavigationManager.selectSpace(el.dataset.space));
+      el.addEventListener('click', e => {
+        if (e.target.closest('.space-toggle-btn, .space-remove-btn')) return;
+        if (!el.classList.contains('space-excluded')) {
+          NavigationManager.selectSpace(el.dataset.space);
+        }
+      });
     });
+
+    // Toggle space activation (optional spaces)
+    nav.querySelectorAll('.space-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const spaceId   = btn.dataset.toggleSpace;
+        const nowActive = AppState.isSpaceActive(spaceId);
+        AppState.setSpaceActivation(spaceId, !nowActive);
+        if (nowActive && AppState.state.currentSpaceId === spaceId) {
+          const first = AppState.getActiveSpaces()[0];
+          if (first) NavigationManager.selectSpace(first.id);
+        }
+      });
+    });
+
+    // Remove instance button (instance 2+)
+    nav.querySelectorAll('.space-remove-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const spaceId = btn.dataset.removeSpace;
+        const num     = parseInt(btn.dataset.removeNum);
+        AppState.removeSpaceInstance(spaceId, num);
+      });
+    });
+
+    // Add instance button
+    nav.querySelectorAll('.space-add-btn').forEach(el => {
+      el.addEventListener('click', () => {
+        const spaceId = el.dataset.addSpace;
+        const added   = AppState.addSpaceInstance(spaceId);
+        if (added) {
+          const count = AppState.state.spaceInstances[spaceId] || 1;
+          NavigationManager.selectSpace(`${spaceId}_${count}`);
+        }
+      });
+    });
+  }
+
+  // Build one space nav row
+  function _buildSpaceItem(space, isVirtualInstance, isExcluded, isOptionalActive) {
+    const currentSpaceId = AppState.state.currentSpaceId;
+    const isActive       = space.id === currentSpaceId && !isExcluded;
+    const complete       = !isExcluded && ProgressManager.isSpaceComplete(space.id);
+    const { answered, total } = ProgressManager.getSpaceProgress(space.id);
+    const progressText   = !isExcluded && total > 0 ? `${answered}/${total}` : '';
+
+    let cls = 'space-item';
+    if (isActive)           cls += ' active';
+    if (complete)           cls += ' complete';
+    if (isExcluded)         cls += ' space-excluded';
+    if (isOptionalActive || space.optional) cls += ' space-optional';
+
+    // Controls
+    let controlBtn = '';
+    if (isVirtualInstance) {
+      // × remove button for instances 2+
+      controlBtn = `<button class="space-remove-btn" data-remove-space="${space._instanceOf}" data-remove-num="${space._instanceNum}" title="이 공간 제거">×</button>`;
+    } else if (isExcluded || isOptionalActive || space.optional) {
+      // toggle button for optional spaces
+      const nowActive = !isExcluded;
+      controlBtn = `<button class="space-toggle-btn" data-toggle-space="${space.id}" title="${nowActive ? '이 공간 제외' : '이 공간 포함'}">${nowActive ? '−' : '+'}</button>`;
+    }
+
+    return `
+      <div class="${cls}" data-space="${space.id}">
+        <span class="space-icon">${space.icon}</span>
+        <span class="space-label">${AppState.escapeHtml(space.label)}</span>
+        ${progressText ? `<span class="space-progress">${progressText}</span>` : ''}
+        ${controlBtn}
+      </div>`;
   }
 
   // ── Section tabs (update only, no full re-render) ─
@@ -71,10 +174,10 @@ const UIRender = (function () {
     const state       = AppState.state;
     const sections    = space.sections;
     const curSec      = sections[state.currentSectionIdx];
-    const isLastSection = state.currentSectionIdx === sections.length - 1;
-    const allSpaces   = AppState.getAllSpaces();
-    const spaceIdx    = allSpaces.findIndex(s => s.id === state.currentSpaceId);
-    const isLastSpace = spaceIdx === allSpaces.length - 1;
+    const isLastSection  = state.currentSectionIdx === sections.length - 1;
+    const activeSpaces   = AppState.getActiveSpaces();
+    const spaceIdx       = activeSpaces.findIndex(s => s.id === state.currentSpaceId);
+    const isLastSpace    = spaceIdx === activeSpaces.length - 1;
 
     // Section tabs
     const tabsHtml = sections.map((sec, i) => {
@@ -89,14 +192,14 @@ const UIRender = (function () {
     // Questions
     const questionsHtml = curSec.questions.map(q => QuestionRenderer.renderQuestion(q)).join('');
 
-    // Section progress
+    // Section progress (visible questions only)
     const secAnswered = ProgressManager.getSectionAnswerCount(curSec);
-    const secTotal    = curSec.questions.length;
+    const secTotal    = AppState.getVisibleQuestions(curSec).length;
     const secPct      = secTotal > 0 ? Math.round(secAnswered / secTotal * 100) : 0;
 
     // Footer nav labels
-    const prevLabel = '← 이전';
-    const nextLabel = (isLastSection && isLastSpace) ? '완료' : (isLastSection ? '다음 공간 →' : '다음 →');
+    const prevLabel = 'Prev';
+    const nextLabel = (isLastSection && isLastSpace) ? 'Finish' : 'Next';
     const isPrevDisabled = state.currentSectionIdx === 0 && spaceIdx === 0;
 
     canvas.innerHTML = `

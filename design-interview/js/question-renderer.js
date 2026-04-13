@@ -10,6 +10,12 @@ const QuestionRenderer = (function () {
   // ── Render question block ─────────────────────
 
   function renderQuestion(q) {
+    // Branch logic: if showIf condition is false, render a hidden placeholder.
+    // The element is kept in the DOM so re-evaluation on answer change works.
+    if (q.showIf && !AppState.evaluateCondition(q.showIf)) {
+      return `<div class="question-block question-conditional-hidden" data-qid="${AppState.escapeAttr(q.id)}" aria-hidden="true"></div>`;
+    }
+
     const answered = AppState.hasAnswer(q.id);
     const unansweredClass = q.required && !answered ? ' question-unanswered' : '';
     const requiredDot = q.required ? `<span class="question-required">●</span>` : '';
@@ -124,6 +130,7 @@ const QuestionRenderer = (function () {
       const current = AppState.getAnswer(qid);
       AppState.setAnswer(qid, current === val ? null : val);
       rerenderQuestion(qid);
+      rerenderConditionalSiblings(qid);   // update showIf-dependent questions
       NavigationManager.flashAnswered(qid);
       if (current !== val) setTimeout(() => NavigationManager.focusNextQuestion(qid, 1), 220);
       else setTimeout(() => NavigationManager.setFocusedQuestion(qid), 10);
@@ -135,6 +142,7 @@ const QuestionRenderer = (function () {
       else current.splice(idx, 1);
       AppState.setAnswer(qid, current);
       rerenderQuestion(qid);
+      rerenderConditionalSiblings(qid);   // update showIf-dependent questions
       NavigationManager.flashAnswered(qid);
 
     } else if (type === 'priority') {
@@ -153,7 +161,7 @@ const QuestionRenderer = (function () {
     if (!block) return;
 
     let qData = null;
-    AppState.getAllSpaces().forEach(sp =>
+    AppState.getActiveSpaces().forEach(sp =>
       sp.sections.forEach(sec =>
         sec.questions.forEach(q => { if (q.id === qid) qData = q; })
       )
@@ -177,10 +185,32 @@ const QuestionRenderer = (function () {
     if (progEl) progEl.textContent = `${ProgressManager.getTotalAnswered()}개 답변 완료`;
   }
 
+  // Re-render any questions in the current section whose showIf references the changed qId.
+  // This makes conditional questions appear/disappear immediately on answer change.
+  function rerenderConditionalSiblings(changedQId) {
+    const section = AppState.getCurrentSection();
+    if (!section) return;
+    section.questions.forEach(q => {
+      if (!q.showIf) return;
+      if (q.id === changedQId) return;
+      if (_conditionReferencesQId(q.showIf, changedQId)) rerenderQuestion(q.id);
+    });
+  }
+
+  // Recursively checks if a condition tree references a specific question ID
+  function _conditionReferencesQId(cond, qId) {
+    if (!cond) return false;
+    if (cond.all) return cond.all.some(c => _conditionReferencesQId(c, qId));
+    if (cond.any) return cond.any.some(c => _conditionReferencesQId(c, qId));
+    if (cond.not) return _conditionReferencesQId(cond.not, qId);
+    return cond.qId === qId;
+  }
+
   return {
     renderQuestion,
     bindQuestionEvents,
     handleOptionClick,
-    rerenderQuestion
+    rerenderQuestion,
+    rerenderConditionalSiblings
   };
 })();

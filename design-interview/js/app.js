@@ -147,7 +147,7 @@
   function initHeaderButtons() {
     document.getElementById('btnCopy').addEventListener('click', () => {
       SummaryManager.copyToClipboard(SummaryManager.buildMarkdown());
-      AppState.showToast('회의록이 복사되었습니다');
+      AppState.showToast('브리프가 복사되었습니다');
     });
 
     document.getElementById('btnMarkdown').addEventListener('click', () => {
@@ -190,7 +190,7 @@
       <div class="completion-card">
         <div class="completion-check">✓</div>
         <p class="completion-title">${AppState.escapeHtml(name)}</p>
-        <p class="completion-sub">텔레그램으로 전송되었습니다</p>
+        <p class="completion-sub">브리프가 전송되었습니다</p>
       </div>`;
     document.body.appendChild(overlay);
     requestAnimationFrame(() => {
@@ -226,8 +226,8 @@
       await tgSendDocument(
         cfg,
         SummaryManager.buildMarkdown(),
-        `${name}_interview.md`,
-        `📎 ${AppState.state.projectName || '고객'} 전체 회의록`
+        `DASIFILL_Brief_${name}.md`,
+        `📎 ${AppState.state.projectName || '고객'} 전체 브리프 파일 첨부`
       );
       AppState.showToast('텔레그램 전송 완료 ✓');
       showCompletionOverlay();
@@ -245,23 +245,26 @@
     const answers = AppState.state.answers;
     const sp = SummaryBuilder.specialSections(answers);
     const kw = SummaryBuilder.collectKeywords(answers);
-    const style    = answers['g-style-direction'];
-    const color    = answers['g-color-tone'];
-    const priority = answers['g-priority-value'];
+    const household = answers['p1-q1-household'];
+    const planningPriority = answers['p2-q1-planning-priority'];
+    const balance = answers['p2-q2-design-vs-practical'];
+    const tenure = answers['p3-q3-tenure-plan'];
 
     const lines = [];
-    lines.push(`📋 <b>1차 디자인 인터뷰</b>`);
+    lines.push(`📋 <b>DASIFILL 디자인 브리프</b>`);
     lines.push(`👤 고객: <b>${esc(AppState.state.projectName || '(미입력)')}</b>`);
     if (AppState.state.spaceName)   lines.push(`🏠 공간: ${esc(AppState.state.spaceName)}`);
-    if (AppState.state.meetingDate) lines.push(`📅 일자: ${esc(AppState.state.meetingDate)}`);
+    if (AppState.state.briefDate) lines.push(`📅 일자: ${esc(AppState.state.briefDate)}`);
     lines.push('');
 
-    if (style && style.length)
-      lines.push(`<b>스타일:</b> ${esc([].concat(style).join(', '))}`);
-    if (color)
-      lines.push(`<b>색감:</b> ${esc(color)}`);
-    if (priority && priority.length)
-      lines.push(`<b>핵심 가치:</b> ${esc(priority.join(' → '))}`);
+    if (household && household.length)
+      lines.push(`<b>가족 구성:</b> ${esc(household.join(', '))}`);
+    if (planningPriority)
+      lines.push(`<b>공간 계획 최우선:</b> ${esc(planningPriority)}`);
+    if (balance)
+      lines.push(`<b>디자인·실용 비중:</b> ${esc(balance)}`);
+    if (tenure)
+      lines.push(`<b>예상 사용 기간:</b> ${esc(tenure)}`);
 
     if (sp.absoluteNo) {
       lines.push('');
@@ -278,7 +281,7 @@
     lines.push('');
     lines.push(`🏷 ${kw.slice(0, 8).map(k => '#' + k.replace(/\s/g, '_')).join(' ')}`);
     lines.push('');
-    lines.push(`📎 전체 회의록 파일 첨부`);
+    lines.push(`📎 전체 브리프 파일 첨부`);
 
     return lines.join('\n');
   }
@@ -408,19 +411,19 @@
       InterviewStorage.save(AppState.state);
 
       // Clear header fields
-      ['projectName', 'spaceName', 'meetingDate'].forEach(field => {
+      ['projectName', 'spaceName', 'briefDate'].forEach(field => {
         const elId = field === 'projectName' ? 'fieldProjectName'
                    : field === 'spaceName'   ? 'fieldSpaceName'
-                   : 'fieldMeetingDate';
+                   : 'fieldBriefDate';
         const el = document.getElementById(elId);
-        if (el) el.textContent = field === 'meetingDate' ? AppState.state.meetingDate : '';
+        if (el) el.textContent = field === 'briefDate' ? AppState.state.briefDate : '';
       });
 
       closeNewClientConfirm();
       UIRender.renderSpaceNav();
       UIRender.renderQuestionCanvas();
       SummaryManager.renderSummaryPanel();
-      AppState.showToast('새 고객 인터뷰를 시작합니다');
+      AppState.showToast('새 브리프를 시작합니다');
     });
   }
 
