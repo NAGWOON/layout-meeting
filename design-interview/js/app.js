@@ -16,12 +16,17 @@
   //     .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
   //   출력된 해시를 아래 PIN_HASH 에 붙여넣기.
   //
-  //   현재 PIN: 1234
-  const PIN_HASH   = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+  //   현재 PIN: 1004
+  const PIN_HASH   = '75992a5ac67ff644d3063976c2effd10bdd93fcc109798e3d5c1acf2e530d01a';
   const AUTH_KEY   = 'brief_v1_auth';
+  const FORCE_GATE_PREVIEW = new URLSearchParams(window.location.search).get('previewGate') === '1';
+  /** 복사·MD·헤더 즉시 전송 등 스태프 도구: `?staff=1` */
+  const STAFF_TOOLS = new URLSearchParams(window.location.search).get('staff') === '1';
 
   let _pinAttempts    = 0;
   let _pinLockedUntil = 0;
+  let _settingsPinAttempts    = 0;
+  let _settingsPinLockedUntil = 0;
 
   async function _hashPin(pin) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
@@ -82,6 +87,14 @@
 
   function _initPinGate() {
     const digits = [...document.querySelectorAll('.pin-digit')];
+    const startBtn = document.getElementById('pinGateStartBtn');
+
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        if (digits[0]) digits[0].focus();
+      });
+    }
+
     digits.forEach((digit, i) => {
       digit.addEventListener('input', () => {
         digit.value = digit.value.replace(/\D/g, '').slice(0, 1);
@@ -104,9 +117,18 @@
     if (digits[0]) digits[0].focus();
   }
 
+  function applyStaffToolsMode() {
+    document.body.dataset.staffTools = STAFF_TOOLS ? '1' : '0';
+  }
+
   function boot() {
+    if (FORCE_GATE_PREVIEW) {
+      const gate = document.getElementById('pinGate');
+      if (gate) gate.style.display = '';
+      _initPinGate();
+      return;
+    }
     if (sessionStorage.getItem(AUTH_KEY) === '1') {
-      // 이미 이 세션에서 인증됨 — 게이트 즉시 숨김
       const gate = document.getElementById('pinGate');
       if (gate) gate.style.display = 'none';
       init();
@@ -145,12 +167,12 @@
   // ==========================================
 
   function initHeaderButtons() {
-    document.getElementById('btnCopy').addEventListener('click', () => {
+    document.getElementById('btnCopy')?.addEventListener('click', () => {
       SummaryManager.copyToClipboard(SummaryManager.buildMarkdown());
       AppState.showToast('브리프가 복사되었습니다');
     });
 
-    document.getElementById('btnMarkdown').addEventListener('click', () => {
+    document.getElementById('btnMarkdown')?.addEventListener('click', () => {
       const name = (AppState.state.projectName || 'interview').replace(/\s+/g, '_');
       SummaryManager.downloadFile(
         SummaryManager.buildMarkdown(),
@@ -160,9 +182,10 @@
       AppState.showToast('Markdown 다운로드');
     });
 
-    document.getElementById('btnTelegram').addEventListener('click', sendToTelegram);
+    document.getElementById('btnTelegram')?.addEventListener('click', sendToTelegram);
     document.getElementById('btnSettings').addEventListener('click', openSettings);
     document.getElementById('btnNewClient').addEventListener('click', openNewClientConfirm);
+    document.getElementById('btnResetSession')?.addEventListener('click', openResetSessionModal);
 
     updateTelegramBtn();
   }
@@ -206,19 +229,58 @@
   // TELEGRAM
   // ==========================================
 
-  async function sendToTelegram() {
+  function openFinishSendModal() {
+    const ov = document.getElementById('finishSendOverlay');
+    if (ov) ov.classList.add('open');
+  }
+
+  function closeFinishSendModal() {
+    const ov = document.getElementById('finishSendOverlay');
+    if (ov) ov.classList.remove('open');
+  }
+
+  window.DASIFILL_openFinishSendModal = openFinishSendModal;
+
+  function initFinishSendModal() {
+    const ov = document.getElementById('finishSendOverlay');
+    if (!ov) return;
+    const close = () => closeFinishSendModal();
+    document.getElementById('btnCloseFinishSend')?.addEventListener('click', close);
+    document.getElementById('btnFinishSendCancel')?.addEventListener('click', close);
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    document.getElementById('btnFinishSendConfirm')?.addEventListener('click', () => {
+      sendBriefToTelegram({ fromFinish: true });
+    });
+  }
+
+  async function sendBriefToTelegram(options) {
+    const fromFinish = !!(options && options.fromFinish);
     const cfg = InterviewStorage.loadConfig();
     if (!cfg.botToken || !cfg.chatId) {
+      closeFinishSendModal();
       openSettings();
-      AppState.showToast('먼저 텔레그램 설정을 입력해주세요');
+      AppState.showToast('연결 설정이 필요합니다. ⚙를 눌러 액세스 코드 후 Bot Token·Chat ID를 입력해 주세요.');
       return;
     }
 
     const btn = document.getElementById('btnTelegram');
-    btn.disabled = true;
-    btn.classList.add('sending');
-    btn.textContent = '전송 중...';
+    const confirmBtn = document.getElementById('btnFinishSendConfirm');
+    const cancelBtn = document.getElementById('btnFinishSendCancel');
 
+    function setSending(on) {
+      if (!fromFinish && btn) {
+        btn.disabled = on;
+        btn.classList.toggle('sending', on);
+        btn.textContent = on ? '전송 중...' : '전송';
+      }
+      if (fromFinish && confirmBtn) {
+        confirmBtn.disabled = on;
+        if (cancelBtn) cancelBtn.disabled = on;
+        confirmBtn.textContent = on ? '전송 중...' : '전송';
+      }
+    }
+
+    setSending(true);
     try {
       await tgSendMessage(cfg, buildTelegramCard());
 
@@ -230,15 +292,54 @@
         `📎 ${AppState.state.projectName || '고객'} 전체 브리프 파일 첨부`
       );
       AppState.showToast('텔레그램 전송 완료 ✓');
+      closeFinishSendModal();
       showCompletionOverlay();
     } catch (err) {
       console.error('[Telegram] 전송 실패', err);
-      AppState.showToast('전송 실패 — 설정을 확인해주세요');
+      AppState.showToast('전송 실패 — 연결 설정의 토큰·Chat ID를 확인한 뒤 다시 시도해 주세요');
     } finally {
-      btn.disabled = false;
-      btn.classList.remove('sending');
-      btn.textContent = '전송';
+      setSending(false);
     }
+  }
+
+  function sendToTelegram() {
+    sendBriefToTelegram({ fromFinish: false });
+  }
+
+  // ── 처음부터 (세션 초기화, 아카이브 없음) ───
+
+  function openResetSessionModal() {
+    document.getElementById('resetSessionOverlay')?.classList.add('open');
+  }
+
+  function closeResetSessionModal() {
+    document.getElementById('resetSessionOverlay')?.classList.remove('open');
+  }
+
+  function initResetSessionModal() {
+    const ov = document.getElementById('resetSessionOverlay');
+    if (!ov) return;
+    const close = () => closeResetSessionModal();
+    document.getElementById('btnCloseResetSession')?.addEventListener('click', close);
+    document.getElementById('btnResetSessionCancel')?.addEventListener('click', close);
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    document.getElementById('btnResetSessionConfirm')?.addEventListener('click', () => {
+      AppState.resetState();
+      InterviewStorage.save(AppState.state);
+      ['projectName', 'spaceName', 'briefDate'].forEach(field => {
+        const elId = field === 'projectName' ? 'fieldProjectName'
+                   : field === 'spaceName'   ? 'fieldSpaceName'
+                   : 'fieldBriefDate';
+        const el = document.getElementById(elId);
+        if (el) el.textContent = field === 'briefDate' ? AppState.state.briefDate : '';
+      });
+      closeResetSessionModal();
+      UIRender.renderSpaceNav();
+      UIRender.renderQuestionCanvas();
+      SummaryManager.renderSummaryPanel();
+      setTimeout(NavigationManager.focusFirstUnanswered, 100);
+      AppState.showToast('처음부터 다시 시작합니다');
+    });
   }
 
   function buildTelegramCard() {
@@ -293,47 +394,191 @@
       .replace(/>/g, '&gt;');
   }
 
-  async function tgSendMessage(cfg, html) {
+  function normalizeBotToken(raw) {
+    return String(raw || '').trim();
+  }
+
+  /** Chat ID는 문자열로 유지(큰 정수 정밀도·@채널명 유지). 보이지 않는 공백 제거 */
+  function normalizeTelegramChatId(raw) {
+    return String(raw || '')
+      .trim()
+      .replace(/[\u200B-\u200D\uFEFF]/g, '');
+  }
+
+  async function tgGetMe(botToken) {
+    const token = normalizeBotToken(botToken);
+    const res = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) {
+      throw new Error(data.description || `HTTP ${res.status}`);
+    }
+    return data;
+  }
+
+  /**
+   * @param {object} cfg
+   * @param {string} text
+   * @param {{ parseMode?: 'HTML'|'plain' }} [opts]  연결 테스트는 plain 권장(HTML 엔티티 오류 방지)
+   */
+  async function tgSendMessage(cfg, text, opts) {
+    const token = normalizeBotToken(cfg.botToken);
+    const chatId = normalizeTelegramChatId(cfg.chatId);
+    if (!token || !chatId) {
+      throw new Error('Bot Token 또는 Chat ID가 비어 있습니다');
+    }
+    const mode = opts && opts.parseMode === 'plain' ? 'plain' : 'HTML';
+    const payload = { chat_id: chatId, text };
+    if (mode === 'HTML') payload.parse_mode = 'HTML';
+
     const res = await fetch(
-      `https://api.telegram.org/bot${cfg.botToken}/sendMessage`, {
+      `https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: cfg.chatId, text: html, parse_mode: 'HTML' })
+      body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.description || `HTTP ${res.status}`);
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) {
+      throw new Error(data.description || `HTTP ${res.status}`);
     }
-    return res.json();
+    return data;
   }
 
   async function tgSendDocument(cfg, content, filename, caption) {
+    const token = normalizeBotToken(cfg.botToken);
+    const chatId = normalizeTelegramChatId(cfg.chatId);
+    if (!token || !chatId) {
+      throw new Error('Bot Token 또는 Chat ID가 비어 있습니다');
+    }
     const blob = new Blob([content], { type: 'text/plain' });
     const form = new FormData();
-    form.append('chat_id', cfg.chatId);
+    form.append('chat_id', chatId);
     form.append('document', blob, filename);
     if (caption) form.append('caption', caption);
 
     const res = await fetch(
-      `https://api.telegram.org/bot${cfg.botToken}/sendDocument`, {
+      `https://api.telegram.org/bot${token}/sendDocument`, {
       method: 'POST',
       body: form
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.description || `HTTP ${res.status}`);
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) {
+      throw new Error(data.description || `HTTP ${res.status}`);
     }
-    return res.json();
+    return data;
   }
 
   // ==========================================
-  // SETTINGS MODAL
+  // SETTINGS — PIN 게이트 후 텔레그램 폼
   // ==========================================
 
+  function _showSettingsPinError(msg) {
+    const el = document.getElementById('settingsPinError');
+    if (el) el.textContent = msg;
+    const modal = document.querySelector('#settingsPinOverlay .settings-modal');
+    if (modal) {
+      modal.classList.remove('shake');
+      void modal.offsetWidth;
+      modal.classList.add('shake');
+    }
+  }
+
+  function _clearSettingsPinDigits() {
+    document.querySelectorAll('.settings-pin-digit').forEach(d => { d.value = ''; });
+    const first = document.querySelector('.settings-pin-digit');
+    if (first) first.focus();
+  }
+
+  async function _verifySettingsPin() {
+    const now = Date.now();
+    if (now < _settingsPinLockedUntil) {
+      const secs = Math.ceil((_settingsPinLockedUntil - now) / 1000);
+      _showSettingsPinError(`${secs}초 후 다시 시도해주세요`);
+      return;
+    }
+    const digits = [...document.querySelectorAll('.settings-pin-digit')].map(d => d.value).join('');
+    if (digits.length < 4) return;
+    const hash = await _hashPin(digits);
+    if (hash === PIN_HASH) {
+      document.getElementById('settingsPinError').textContent = '';
+      closeSettingsPinOverlay();
+      _clearSettingsPinDigits();
+      showSettingsModal();
+    } else {
+      _settingsPinAttempts++;
+      if (_settingsPinAttempts >= 3) {
+        _settingsPinLockedUntil = Date.now() + 60_000;
+        _settingsPinAttempts = 0;
+        _showSettingsPinError('잠시 후 다시 시도해주세요 (60초)');
+      } else {
+        _showSettingsPinError('코드가 올바르지 않습니다');
+      }
+      _clearSettingsPinDigits();
+    }
+  }
+
+  function initSettingsPinModal() {
+    const ov = document.getElementById('settingsPinOverlay');
+    if (!ov) return;
+    const digits = [...document.querySelectorAll('.settings-pin-digit')];
+    const close = () => {
+      closeSettingsPinOverlay();
+      _clearSettingsPinDigits();
+      const err = document.getElementById('settingsPinError');
+      if (err) err.textContent = '';
+    };
+
+    document.getElementById('btnCloseSettingsPin')?.addEventListener('click', close);
+    document.getElementById('btnCancelSettingsPin')?.addEventListener('click', close);
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+
+    digits.forEach((digit, i) => {
+      digit.addEventListener('input', () => {
+        digit.value = digit.value.replace(/\D/g, '').slice(0, 1);
+        if (digit.value && i < digits.length - 1) digits[i + 1].focus();
+        if (digits.every(d => d.value)) _verifySettingsPin();
+      });
+      digit.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !digit.value && i > 0) {
+          digits[i - 1].value = '';
+          digits[i - 1].focus();
+        }
+      });
+      digit.addEventListener('paste', e => {
+        e.preventDefault();
+        const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 4);
+        pasted.split('').forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
+        if (pasted.length === 4) _verifySettingsPin();
+      });
+    });
+  }
+
+  function openSettingsPinOverlay() {
+    const ov = document.getElementById('settingsPinOverlay');
+    if (ov) {
+      _clearSettingsPinDigits();
+      const err = document.getElementById('settingsPinError');
+      if (err) err.textContent = '';
+      ov.classList.add('open');
+      setTimeout(() => {
+        const first = document.querySelector('.settings-pin-digit');
+        if (first) first.focus();
+      }, 50);
+    }
+  }
+
+  function closeSettingsPinOverlay() {
+    document.getElementById('settingsPinOverlay')?.classList.remove('open');
+  }
+
+  /** ⚙ 또는 설정 필요 시 — 먼저 액세스 코드(PIN) 확인 */
   function openSettings() {
+    openSettingsPinOverlay();
+  }
+
+  function showSettingsModal() {
     const cfg = InterviewStorage.loadConfig();
-    document.getElementById('inputBotToken').value = cfg.botToken || '';
-    document.getElementById('inputChatId').value   = cfg.chatId  || '';
+    document.getElementById('inputBotToken').value = normalizeBotToken(cfg.botToken || '');
+    document.getElementById('inputChatId').value   = normalizeTelegramChatId(cfg.chatId || '');
     document.getElementById('settingsOverlay').classList.add('open');
   }
 
@@ -348,8 +593,8 @@
     });
 
     document.getElementById('btnSaveSettings').addEventListener('click', () => {
-      const token  = document.getElementById('inputBotToken').value.trim();
-      const chatId = document.getElementById('inputChatId').value.trim();
+      const token  = normalizeBotToken(document.getElementById('inputBotToken').value);
+      const chatId = normalizeTelegramChatId(document.getElementById('inputChatId').value);
       InterviewStorage.saveConfig({ botToken: token, chatId });
       AppState.showToast('설정이 저장되었습니다');
       closeSettings();
@@ -357,8 +602,8 @@
     });
 
     document.getElementById('btnTestTelegram').addEventListener('click', async () => {
-      const token  = document.getElementById('inputBotToken').value.trim();
-      const chatId = document.getElementById('inputChatId').value.trim();
+      const token  = normalizeBotToken(document.getElementById('inputBotToken').value);
+      const chatId = normalizeTelegramChatId(document.getElementById('inputChatId').value);
       if (!token || !chatId) {
         AppState.showToast('Bot Token과 Chat ID를 입력해주세요');
         return;
@@ -367,11 +612,24 @@
       btn.disabled    = true;
       btn.textContent = '테스트 중...';
       try {
-        await tgSendMessage({ botToken: token, chatId },
-          '✅ <b>DASIFILL 디자인 인터뷰 앱</b>\n연결이 정상 확인되었습니다.');
+        await tgGetMe(token);
+        await tgSendMessage(
+          { botToken: token, chatId },
+          '✅ DASIFILL 디자인 인터뷰 앱 — 연결이 정상 확인되었습니다.',
+          { parseMode: 'plain' }
+        );
         AppState.showToast('테스트 메시지 전송 성공 ✓');
       } catch (err) {
-        AppState.showToast(`연결 실패: ${err.message}`);
+        const raw = (err && err.message) ? err.message : String(err);
+        let detail = raw;
+        if (/Failed to fetch|NetworkError|Load failed|fetch/i.test(raw)) {
+          detail = '네트워크에서 api.telegram.org에 연결하지 못했습니다. HTTPS로 배포했는지, 방화벽/확장 프로그램을 확인해 주세요.';
+        } else if (/Unauthorized|401/i.test(raw)) {
+          detail = 'Bot Token이 잘못되었거나 만료되었습니다. BotFather에서 토큰을 확인해 주세요.';
+        } else if (/chat not found|PEER_ID|400/i.test(raw)) {
+          detail = 'Chat ID가 잘못되었거나, 이 채팅에 봇이 맞지 않습니다. 개인 DM이면 봇에게 /start 했는지 확인해 주세요.';
+        }
+        AppState.showToast(`연결 실패: ${detail}`);
       } finally {
         btn.disabled    = false;
         btn.textContent = '연결 테스트';
@@ -432,10 +690,14 @@
   // ==========================================
 
   function init() {
+    applyStaffToolsMode();
     AppState.loadSavedState();
     initHeader();
     initHeaderButtons();
+    initSettingsPinModal();
     initSettingsModal();
+    initFinishSendModal();
+    initResetSessionModal();
     initNewClientModal();
     NavigationManager.initKeyboardShortcuts();
     UIRender.renderSpaceNav();
@@ -449,5 +711,10 @@
   } else {
     boot();
   }
+
+  // 데모 스크립트(js/demo-session.js) 또는 콘솔에서 전송 검증용
+  window.__DASIFILL_sendBriefToTelegram = function (opts) {
+    return sendBriefToTelegram(opts || { fromFinish: false });
+  };
 
 })();

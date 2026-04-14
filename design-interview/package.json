@@ -1,0 +1,11 @@
+{
+  "name": "design-interview-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo:e2e": "node scripts/run-demo-e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1"
+  }
+}

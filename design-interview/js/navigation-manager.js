@@ -39,6 +39,9 @@ const NavigationManager = (function () {
       const activeSpaces = AppState.getActiveSpaces();
       const idx = activeSpaces.findIndex(s => s.id === state.currentSpaceId);
       if (idx < activeSpaces.length - 1) selectSpace(activeSpaces[idx + 1].id);
+      else if (typeof window.DASIFILL_openFinishSendModal === 'function') {
+        window.DASIFILL_openFinishSendModal();
+      }
     }
   }
 

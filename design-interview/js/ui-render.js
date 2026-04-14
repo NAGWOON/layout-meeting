@@ -110,6 +110,8 @@ const UIRender = (function () {
         }
       });
     });
+
+    updateGlobalProgress();
   }
 
   // Build one space nav row
@@ -236,11 +238,24 @@ const UIRender = (function () {
     // Restore focus
     const fqId = AppState.getFocusedQId();
     if (fqId) setTimeout(() => NavigationManager.setFocusedQuestion(fqId), 10);
+    updateGlobalProgress();
+  }
+
+  function updateGlobalProgress() {
+    const fill = document.getElementById('globalProgressFill');
+    const text = document.getElementById('globalProgressText');
+    const count = document.getElementById('globalProgressCount');
+    if (!fill || !text || !count) return;
+    const { answered, total, pct } = ProgressManager.getOverallProgress();
+    fill.style.width = `${pct}%`;
+    text.textContent = `${pct}%`;
+    count.textContent = `${answered} / ${total}`;
   }
 
   return {
     renderSpaceNav,
     updateSectionTabs,
-    renderQuestionCanvas
+    renderQuestionCanvas,
+    updateGlobalProgress
   };
 })();

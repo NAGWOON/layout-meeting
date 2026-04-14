@@ -7,26 +7,50 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231A1A1A'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui' font-size='18' font-weight='700' fill='white'>D</text></svg>">
 </head>
-<body>
+<body data-staff-tools="0">
 
   <!-- ══════════════════════════════════════
-       PIN GATE — 진입 보호 화면
-       이 화면은 앱 로드 전 전체를 가립니다.
+       PIN GATE — 브랜드 커버 진입 화면
        PIN 변경: js/app.js 상단 PIN_HASH 참조.
        ══════════════════════════════════════ -->
   <div id="pinGate" class="pin-gate">
-    <div class="pin-gate-card">
-      <img src="logo.png" alt="DASIFILL" class="pin-gate-logo">
-      <p class="pin-gate-wordmark">Design Brief</p>
-      <p class="pin-gate-hint">접속 코드를 입력해주세요</p>
-      <div class="pin-digits" id="pinDigits">
-        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-        <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+
+    <!-- LEFT: Brand + Auth -->
+    <div class="pg-left">
+      <div class="pg-left-inner">
+
+        <div class="pg-brand">
+          <img src="logo.png" alt="DASIFILL" class="pg-logo">
+          <span class="pg-portal-tag">Private Brief Portal</span>
+        </div>
+
+        <div class="pg-headline-block">
+          <h1 class="pg-headline">더 나은 공간을 위한<br>여정을 시작합니다.</h1>
+        </div>
+
+        <div class="pg-auth-block pin-gate-card">
+          <p class="pg-code-label">Access Code</p>
+          <div class="pg-digits" id="pinDigits">
+            <input class="pg-digit pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pg-digit pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pg-digit pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+            <input class="pg-digit pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+          </div>
+          <button class="pg-continue-btn" id="pinGateStartBtn" type="button">Continue</button>
+          <p class="pg-error" id="pinError"></p>
+        </div>
+
+        <p class="pg-footer-note">DASIFILL &mdash; Interior Design Studio</p>
+
       </div>
-      <p class="pin-gate-error" id="pinError"></p>
     </div>
+
+    <!-- RIGHT: Particle Sphere Visual -->
+    <div class="pg-right">
+      <canvas id="sphereCanvas" class="pg-sphere-canvas"></canvas>
+      <div class="pg-right-vignette" aria-hidden="true"></div>
+    </div>
+
   </div>
 
   <div id="app">
@@ -61,12 +85,22 @@
       </div>
       <div class="header-actions">
         <button class="action-btn new-client-btn" id="btnNewClient" title="새 브리프 시작">새 브리프</button>
+        <button class="action-btn reset-session-btn" id="btnResetSession" title="같은 세션에서 답변만 처음부터">처음부터</button>
         <span class="header-vsep"></span>
-        <button class="action-btn" id="btnCopy" title="브리프 클립보드 복사">복사</button>
-        <button class="action-btn" id="btnMarkdown" title="Markdown 파일 다운로드">MD</button>
-        <button class="action-btn telegram-btn" id="btnTelegram" title="텔레그램으로 전송">전송</button>
-        <button class="action-btn icon-btn" id="btnSettings" title="텔레그램 설정">⚙</button>
+        <button class="action-btn staff-tools" type="button" id="btnCopy" title="브리프 클립보드 복사 (스태프)">복사</button>
+        <button class="action-btn staff-tools" type="button" id="btnMarkdown" title="Markdown 다운로드 (스태프)">MD</button>
+        <button class="action-btn telegram-btn staff-tools" type="button" id="btnTelegram" title="텔레그램으로 즉시 전송 (스태프)">전송</button>
+        <button class="action-btn icon-btn" type="button" id="btnSettings" title="연결 설정 (코드 필요)">⚙</button>
         <span class="save-indicator" id="saveIndicator">저장됨</span>
+      </div>
+      <div class="header-progress" id="globalProgressWrap" aria-label="전체 진행률">
+        <div class="header-progress-track">
+          <div class="header-progress-fill" id="globalProgressFill" style="width:0%"></div>
+        </div>
+        <div class="header-progress-meta">
+          <span id="globalProgressText">0%</span>
+          <span id="globalProgressCount">0 / 0</span>
+        </div>
       </div>
     </header>
 
@@ -94,6 +128,29 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- 설정 진입 PIN (⚙ → 이 화면 → 텔레그램 설정) -->
+  <div class="settings-overlay" id="settingsPinOverlay">
+    <div class="settings-modal narrow">
+      <div class="settings-header">
+        <span>설정 확인</span>
+        <button class="settings-close" id="btnCloseSettingsPin" type="button">✕</button>
+      </div>
+      <div class="settings-body">
+        <p class="confirm-sub settings-pin-lead">텔레그램 연결 설정을 열려면<br>액세스 코드를 입력하세요.</p>
+        <div class="pg-digits settings-pin-row" id="settingsPinDigits">
+          <input class="pg-digit settings-pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="PIN 1">
+          <input class="pg-digit settings-pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="PIN 2">
+          <input class="pg-digit settings-pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="PIN 3">
+          <input class="pg-digit settings-pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="PIN 4">
+        </div>
+        <p class="pg-error settings-pin-error" id="settingsPinError"></p>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-btn" id="btnCancelSettingsPin" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Settings Modal -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-modal">
@@ -111,10 +168,47 @@
         <input class="settings-input" id="inputChatId" type="text"
                placeholder="-100xxxxxxxxxx 또는 @채널명" autocomplete="off">
         <p class="settings-hint">개인: @userinfobot 에 /start 전송 후 확인<br>채널: 채널 링크에서 숫자 ID 확인</p>
+        <p class="settings-hint settings-persist-note">저장하면 이 기기·브라우저에 유지됩니다. 탭을 닫거나 브라우저를 재실행해도 동일 환경에서 이어집니다.</p>
       </div>
       <div class="settings-footer">
         <button class="settings-btn" id="btnTestTelegram">연결 테스트</button>
         <button class="settings-btn primary" id="btnSaveSettings">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finish → Telegram confirm -->
+  <div class="settings-overlay" id="finishSendOverlay">
+    <div class="settings-modal narrow">
+      <div class="settings-header">
+        <span>브리프 전송</span>
+        <button class="settings-close" id="btnCloseFinishSend" type="button">✕</button>
+      </div>
+      <div class="settings-body">
+        <p class="confirm-text">텔레그램으로 브리프를 전송하시겠습니까?</p>
+        <p class="confirm-sub">전송이 완료되면 확인 화면이 표시됩니다. 연결이 되지 않으면 관리자에게 문의해 주세요.</p>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-btn" id="btnFinishSendCancel" type="button">취소</button>
+        <button class="settings-btn primary" id="btnFinishSendConfirm" type="button">전송</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset session (처음부터) -->
+  <div class="settings-overlay" id="resetSessionOverlay">
+    <div class="settings-modal narrow">
+      <div class="settings-header">
+        <span>처음부터 다시</span>
+        <button class="settings-close" id="btnCloseResetSession" type="button">✕</button>
+      </div>
+      <div class="settings-body">
+        <p class="confirm-text">답변·진행률·요약과 헤더의 고객명·공간·작성일이 모두 초기화됩니다.</p>
+        <p class="confirm-sub">이전 세션을 아카이브하지 않습니다. (<strong>새 브리프</strong>는 저장 후 새 고객으로 시작합니다.)</p>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-btn" id="btnResetSessionCancel" type="button">취소</button>
+        <button class="settings-btn primary" id="btnResetSessionConfirm" type="button">처음부터</button>
       </div>
     </div>
   </div>
@@ -137,6 +231,7 @@
     </div>
   </div>
 
+  <script src="js/sphere-canvas.js"></script>
   <script src="js/questions-data.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/summary-builder.js"></script>
@@ -147,5 +242,7 @@
   <script src="js/summary-manager.js"></script>
   <script src="js/ui-render.js"></script>
   <script src="js/app.js"></script>
+  <!-- 내부 검증: ?demo=1 일 때만 30평 데모 시나리오 자동 입력 + 텔레그램 전송 시도 -->
+  <script src="js/demo-session.js"></script>
 </body>
 </html>

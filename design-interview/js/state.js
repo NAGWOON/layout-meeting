@@ -214,7 +214,14 @@ const AppState = (function () {
       const count = sp.repeatable ? (state.spaceInstances[sp.id] || 1) : 1;
       for (let i = 1; i <= count; i++) {
         if (i === 1) {
-          result.push(sp);                    // original — unchanged
+          if (sp.id === 'bathroom') {
+            result.push({
+              ...sp,
+              label: _resolveBathroomLabel(1) || sp.label
+            });
+          } else {
+            result.push(sp);                  // original — unchanged
+          }
         } else {
           const prefix = `${sp.id}_${i}`;
           const label = sp.id === 'bathroom'

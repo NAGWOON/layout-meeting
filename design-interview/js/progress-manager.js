@@ -49,10 +49,28 @@ const ProgressManager = (function () {
     return count;
   }
 
+  // Overall required progress across all active spaces (visible only)
+  function getOverallProgress() {
+    let total = 0;
+    let answered = 0;
+    AppState.getActiveSpaces().forEach(sp =>
+      sp.sections.forEach(sec =>
+        AppState.getVisibleQuestions(sec).forEach(q => {
+          if (!q.required) return;
+          total++;
+          if (AppState.hasAnswer(q.id)) answered++;
+        })
+      )
+    );
+    const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+    return { answered, total, pct };
+  }
+
   return {
     getSpaceProgress,
     isSpaceComplete,
     getSectionAnswerCount,
-    getTotalAnswered
+    getTotalAnswered,
+    getOverallProgress
   };
 })();

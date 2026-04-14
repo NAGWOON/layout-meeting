@@ -60,7 +60,7 @@ function _migrateSpaceIdsV2(state) {
 }
 
 // ── Shared keys (no versioning needed) ───────
-const CONFIG_KEY = 'design_interview_v1_config';   // sessionStorage — no migrate needed
+const CONFIG_KEY = 'design_interview_v1_config';   // localStorage — Telegram bot settings (persistent)
 
 const InterviewStorage = {
 
@@ -160,23 +160,23 @@ const InterviewStorage = {
     } catch (e) { return []; }
   },
 
-  // ── 텔레그램 설정 (sessionStorage) ──────────
+  // ── 텔레그램 설정 (localStorage, 영구) ───────
   saveConfig(config) {
     try {
-      sessionStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
     } catch (e) {}
   },
 
   loadConfig() {
     try {
+      const persisted = localStorage.getItem(CONFIG_KEY);
+      if (persisted) return JSON.parse(persisted);
+      // sessionStorage 구버전 → localStorage로 1회 마이그레이션
       const session = sessionStorage.getItem(CONFIG_KEY);
-      if (session) return JSON.parse(session);
-      // 구버전 localStorage 마이그레이션 (1회)
-      const legacy = localStorage.getItem(CONFIG_KEY);
-      if (legacy) {
-        sessionStorage.setItem(CONFIG_KEY, legacy);
-        localStorage.removeItem(CONFIG_KEY);
-        return JSON.parse(legacy);
+      if (session) {
+        localStorage.setItem(CONFIG_KEY, session);
+        sessionStorage.removeItem(CONFIG_KEY);
+        return JSON.parse(session);
       }
       return { botToken: '', chatId: '' };
     } catch (e) { return { botToken: '', chatId: '' }; }
