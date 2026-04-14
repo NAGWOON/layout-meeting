@@ -8,7 +8,7 @@
   'use strict';
 
   /** Worker 배포 주소, 끝의 / 제외. 예: https://dasifill-brief.xxx.workers.dev */
-  window.__BRIEF_PROXY_URL__ = 'dasifill0438##';
+  window.__BRIEF_PROXY_URL__ = 'https://dasifill-brief-proxy.jianvet.workers.dev';
 
   /** Worker 시크릿 BRIEF_API_KEY 와 동일 */
   window.__BRIEF_PROXY_KEY__ = 'dasifill0438##';
