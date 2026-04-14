@@ -190,13 +190,30 @@
     updateTelegramBtn();
   }
 
+  function briefProxyBase() {
+    const u = window.__BRIEF_PROXY_URL__;
+    return u && String(u).trim() ? String(u).trim().replace(/\/$/, '') : '';
+  }
+
+  function useBriefProxy() {
+    return !!briefProxyBase();
+  }
+
+  /** 프록시 URL + API 키가 있으면 어떤 기기에서도 전송 가능 */
+  function briefProxyReady() {
+    return useBriefProxy() && String(window.__BRIEF_PROXY_KEY__ || '').trim().length > 0;
+  }
+
   function updateTelegramBtn() {
     const cfg = InterviewStorage.loadConfig();
     const btn = document.getElementById('btnTelegram');
     if (!btn) return;
-    const configured = !!(cfg.botToken && cfg.chatId);
+    const localOk = !!(cfg.botToken && cfg.chatId);
+    const configured = briefProxyReady() || localOk;
     btn.disabled     = !configured;
-    btn.title        = configured ? '텔레그램으로 전송' : '텔레그램 설정이 필요합니다 (⚙ 클릭)';
+    btn.title        = configured
+      ? (briefProxyReady() ? '디자이너에게 브리프 전송 (프록시)' : '텔레그램으로 전송')
+      : (useBriefProxy() ? '프록시 API 키를 brief-proxy-config.js에 설정해 주세요' : '텔레그램 설정이 필요합니다 (⚙ 클릭)');
     btn.style.opacity = configured ? '' : '0.4';
     btn.style.cursor  = configured ? '' : 'not-allowed';
   }
@@ -229,6 +246,41 @@
   // TELEGRAM
   // ==========================================
 
+  async function sendBriefViaProxy() {
+    const base = briefProxyBase();
+    const key = String(window.__BRIEF_PROXY_KEY__ || '').trim();
+    const name = (AppState.state.projectName || 'interview').replace(/\s+/g, '_');
+    const res = await fetch(`${base}/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: key,
+        cardHtml: buildTelegramCard(),
+        markdown: SummaryManager.buildMarkdown(),
+        markdownFilename: `DASIFILL_Brief_${name}.md`,
+        caption: `📎 ${AppState.state.projectName || '고객'} 전체 브리프 파일 첨부`
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.error || data.description || `HTTP ${res.status}`);
+    }
+  }
+
+  async function briefProxyTestConnection() {
+    const base = briefProxyBase();
+    const key = String(window.__BRIEF_PROXY_KEY__ || '').trim();
+    const res = await fetch(`${base}/test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.error || data.description || `HTTP ${res.status}`);
+    }
+  }
+
   function openFinishSendModal() {
     const ov = document.getElementById('finishSendOverlay');
     if (ov) ov.classList.add('open');
@@ -256,10 +308,17 @@
   async function sendBriefToTelegram(options) {
     const fromFinish = !!(options && options.fromFinish);
     const cfg = InterviewStorage.loadConfig();
-    if (!cfg.botToken || !cfg.chatId) {
+
+    if (briefProxyReady()) {
+      /* 프록시만으로 전송 — 기기에 토큰 불필요 */
+    } else if (!cfg.botToken || !cfg.chatId) {
       closeFinishSendModal();
-      openSettings();
-      AppState.showToast('연결 설정이 필요합니다. ⚙를 눌러 액세스 코드 후 Bot Token·Chat ID를 입력해 주세요.');
+      if (useBriefProxy() && !briefProxyReady()) {
+        AppState.showToast('프록시 API 키가 필요합니다. js/brief-proxy-config.js(__BRIEF_PROXY_KEY__)를 확인해 주세요.');
+      } else {
+        openSettings();
+        AppState.showToast('연결 설정이 필요합니다. ⚙에서 액세스 코드 후 Bot Token·Chat ID를 입력해 주세요.');
+      }
       return;
     }
 
@@ -276,27 +335,35 @@
       if (fromFinish && confirmBtn) {
         confirmBtn.disabled = on;
         if (cancelBtn) cancelBtn.disabled = on;
-        confirmBtn.textContent = on ? '전송 중...' : '전송';
+        confirmBtn.textContent = on ? '보내는 중...' : '보내기';
       }
     }
 
     setSending(true);
     try {
-      await tgSendMessage(cfg, buildTelegramCard());
+      if (briefProxyReady()) {
+        await sendBriefViaProxy();
+      } else {
+        await tgSendMessage(cfg, buildTelegramCard());
 
-      const name = (AppState.state.projectName || 'interview').replace(/\s+/g, '_');
-      await tgSendDocument(
-        cfg,
-        SummaryManager.buildMarkdown(),
-        `DASIFILL_Brief_${name}.md`,
-        `📎 ${AppState.state.projectName || '고객'} 전체 브리프 파일 첨부`
-      );
-      AppState.showToast('텔레그램 전송 완료 ✓');
+        const name = (AppState.state.projectName || 'interview').replace(/\s+/g, '_');
+        await tgSendDocument(
+          cfg,
+          SummaryManager.buildMarkdown(),
+          `DASIFILL_Brief_${name}.md`,
+          `📎 ${AppState.state.projectName || '고객'} 전체 브리프 파일 첨부`
+        );
+      }
+      AppState.showToast('전송이 완료되었습니다 ✓');
       closeFinishSendModal();
       showCompletionOverlay();
     } catch (err) {
       console.error('[Telegram] 전송 실패', err);
-      AppState.showToast('전송 실패 — 연결 설정의 토큰·Chat ID를 확인한 뒤 다시 시도해 주세요');
+      AppState.showToast(
+        briefProxyReady()
+          ? '전송 실패 — 프록시(Worker) 설정·네트워크를 확인해 주세요'
+          : '전송 실패 — 연결 설정의 토큰·Chat ID를 확인한 뒤 다시 시도해 주세요'
+      );
     } finally {
       setSending(false);
     }
@@ -575,14 +642,48 @@
     openSettingsPinOverlay();
   }
 
+  function updateSettingsProxyHint() {
+    const el = document.getElementById('settingsProxyHint');
+    if (!el) return;
+    el.hidden = !useBriefProxy();
+  }
+
   function showSettingsModal() {
     const cfg = InterviewStorage.loadConfig();
     document.getElementById('inputBotToken').value = normalizeBotToken(cfg.botToken || '');
     document.getElementById('inputChatId').value   = normalizeTelegramChatId(cfg.chatId || '');
+    updateSettingsProxyHint();
     document.getElementById('settingsOverlay').classList.add('open');
   }
 
+  let _settingsInputSaveTimer = null;
+
+  /** 입력값을 즉시 localStorage에 반영 (자동 저장). showToast: 명시적 저장 버튼일 때만 true 권장 */
+  function persistTelegramSettingsFromInputs(showToast) {
+    const token  = normalizeBotToken(document.getElementById('inputBotToken').value);
+    const chatId = normalizeTelegramChatId(document.getElementById('inputChatId').value);
+    const ok = InterviewStorage.saveConfig({ botToken: token, chatId });
+    updateTelegramBtn();
+    if (showToast) {
+      if (ok) AppState.showToast('설정이 저장되었습니다');
+      else AppState.showToast('저장에 실패했습니다. 브라우저 저장 공간을 확인해 주세요');
+    }
+    return ok;
+  }
+
+  function schedulePersistTelegramSettings() {
+    clearTimeout(_settingsInputSaveTimer);
+    _settingsInputSaveTimer = setTimeout(() => persistTelegramSettingsFromInputs(false), 450);
+  }
+
   function closeSettings() {
+    clearTimeout(_settingsInputSaveTimer);
+    persistTelegramSettingsFromInputs(false);
+    document.getElementById('settingsOverlay').classList.remove('open');
+  }
+
+  function closeSettingsWithoutPersist() {
+    clearTimeout(_settingsInputSaveTimer);
     document.getElementById('settingsOverlay').classList.remove('open');
   }
 
@@ -592,38 +693,58 @@
       if (e.target === e.currentTarget) closeSettings();
     });
 
+    ['inputBotToken', 'inputChatId'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', schedulePersistTelegramSettings);
+      el.addEventListener('blur', () => {
+        clearTimeout(_settingsInputSaveTimer);
+        persistTelegramSettingsFromInputs(false);
+      });
+    });
+
     document.getElementById('btnSaveSettings').addEventListener('click', () => {
-      const token  = normalizeBotToken(document.getElementById('inputBotToken').value);
-      const chatId = normalizeTelegramChatId(document.getElementById('inputChatId').value);
-      InterviewStorage.saveConfig({ botToken: token, chatId });
-      AppState.showToast('설정이 저장되었습니다');
-      closeSettings();
-      updateTelegramBtn();
+      persistTelegramSettingsFromInputs(true);
+      closeSettingsWithoutPersist();
     });
 
     document.getElementById('btnTestTelegram').addEventListener('click', async () => {
-      const token  = normalizeBotToken(document.getElementById('inputBotToken').value);
-      const chatId = normalizeTelegramChatId(document.getElementById('inputChatId').value);
-      if (!token || !chatId) {
-        AppState.showToast('Bot Token과 Chat ID를 입력해주세요');
-        return;
-      }
       const btn = document.getElementById('btnTestTelegram');
       btn.disabled    = true;
       btn.textContent = '테스트 중...';
       try {
-        await tgGetMe(token);
-        await tgSendMessage(
-          { botToken: token, chatId },
-          '✅ DASIFILL 디자인 인터뷰 앱 — 연결이 정상 확인되었습니다.',
-          { parseMode: 'plain' }
-        );
-        AppState.showToast('테스트 메시지 전송 성공 ✓');
+        if (useBriefProxy()) {
+          if (!String(window.__BRIEF_PROXY_KEY__ || '').trim()) {
+            AppState.showToast('brief-proxy-config.js에 __BRIEF_PROXY_KEY__를 입력해 주세요');
+            return;
+          }
+          await briefProxyTestConnection();
+          AppState.showToast('프록시 연결 확인됨 ✓');
+        } else {
+          const token  = normalizeBotToken(document.getElementById('inputBotToken').value);
+          const chatId = normalizeTelegramChatId(document.getElementById('inputChatId').value);
+          if (!token || !chatId) {
+            AppState.showToast('Bot Token과 Chat ID를 입력해주세요');
+            return;
+          }
+          await tgGetMe(token);
+          await tgSendMessage(
+            { botToken: token, chatId },
+            '✅ DASIFILL 디자인 인터뷰 앱 — 연결이 정상 확인되었습니다.',
+            { parseMode: 'plain' }
+          );
+          persistTelegramSettingsFromInputs(false);
+          AppState.showToast('연결 확인됨 · 설정이 저장되었습니다');
+        }
       } catch (err) {
         const raw = (err && err.message) ? err.message : String(err);
         let detail = raw;
         if (/Failed to fetch|NetworkError|Load failed|fetch/i.test(raw)) {
-          detail = '네트워크에서 api.telegram.org에 연결하지 못했습니다. HTTPS로 배포했는지, 방화벽/확장 프로그램을 확인해 주세요.';
+          detail = useBriefProxy()
+            ? '프록시 URL에 연결하지 못했습니다. Worker 배포 주소·CORS·네트워크를 확인해 주세요.'
+            : '네트워크에서 api.telegram.org에 연결하지 못했습니다. HTTPS로 배포했는지, 방화벽/확장 프로그램을 확인해 주세요.';
+        } else if (/unauthorized|401/i.test(raw) && useBriefProxy()) {
+          detail = '프록시 API 키가 Worker 시크릿 BRIEF_API_KEY와 일치하는지 확인해 주세요.';
         } else if (/Unauthorized|401/i.test(raw)) {
           detail = 'Bot Token이 잘못되었거나 만료되었습니다. BotFather에서 토큰을 확인해 주세요.';
         } else if (/chat not found|PEER_ID|400/i.test(raw)) {
@@ -635,6 +756,8 @@
         btn.textContent = '연결 테스트';
       }
     });
+
+    updateSettingsProxyHint();
   }
 
   // ==========================================

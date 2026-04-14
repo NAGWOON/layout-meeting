@@ -1,0 +1,9 @@
+# wrangler.toml — workers 폴더에서 `npx wrangler deploy`
+name = "dasifill-brief-proxy"
+main = "send-brief-proxy.mjs"
+compatibility_date = "2024-10-01"
+
+# 대시보드에서 시크릿 설정 권장:
+# wrangler secret put TELEGRAM_BOT_TOKEN
+# wrangler secret put TELEGRAM_CHAT_ID
+# wrangler secret put BRIEF_API_KEY

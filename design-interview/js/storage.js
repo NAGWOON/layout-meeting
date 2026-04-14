@@ -164,7 +164,11 @@ const InterviewStorage = {
   saveConfig(config) {
     try {
       localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-    } catch (e) {}
+      return true;
+    } catch (e) {
+      console.warn('[design-interview] 텔레그램 설정 저장 실패', e);
+      return false;
+    }
   },
 
   loadConfig() {
