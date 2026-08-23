@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASIFILL Progress</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #ffffff; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+    color: #16181d;
+    padding: 8px;
+  }
+  .wrap {
+    max-width: 860px; margin: 0 auto;
+    border: 1px solid #ececee; border-radius: 12px;
+    padding: 20px 24px 18px;
+    background: #ffffff;
+  }
+  .n { font-variant-numeric: tabular-nums; }
+
+  .row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .info { font-size: 12px; color: #9aa0a8; line-height: 1.9; letter-spacing: -0.1px; }
+  .info b { color: #16181d; font-weight: 700; }
+  .info .t { font-size: 13px; font-weight: 700; color: #16181d; letter-spacing: -0.3px; }
+  .pct { font-size: 48px; font-weight: 250; letter-spacing: -2.5px; line-height: 0.9; white-space: nowrap; }
+  .pct b { font-weight: 800; }
+
+  .bar { margin-top: 14px; height: 2px; background: #ececee; position: relative; border-radius: 1px; }
+  .fill {
+    position: absolute; left: 0; top: 0; height: 2px; width: 0%;
+    background: #16181d; border-radius: 1px;
+    transition: width 1s cubic-bezier(.4,0,.2,1);
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 4px; }
+    .wrap { padding: 16px 18px 14px; }
+    .pct { font-size: 36px; letter-spacing: -1.8px; }
+    .info { font-size: 11px; line-height: 1.8; }
+  }
+
+  /* 다크 스킨 (?theme=dark) */
+  body[data-theme="dark"] { background: transparent; }
+  body[data-theme="dark"] .wrap { background: #101114; border-color: #202329; }
+  body[data-theme="dark"] .info { color: #5c626b; }
+  body[data-theme="dark"] .info b { color: #f5f6f7; }
+  body[data-theme="dark"] .info .t { color: #f5f6f7; }
+  body[data-theme="dark"] .pct { color: #f5f6f7; }
+  body[data-theme="dark"] .bar { background: #23262c; }
+  body[data-theme="dark"] .fill { background: #f5f6f7; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row">
+      <div class="info">
+        <div class="t" id="title">공사 진행</div>
+        <span id="dates"></span><br><span id="remain"></span>
+      </div>
+      <span class="pct n" id="pctNum"><b>0</b>%</span>
+    </div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+  </div>
+
+<script>
+  // 기본 사용법 (날짜 기반 자동 진행 — 프로젝트당 1회 입력이 전부):
+  //   ?start=2026-08-08&end=2026-11-13
+  //   → 오늘 날짜 기준으로 퍼센트·남은 일수가 매일 자동 갱신됩니다.
+  // 옵션:
+  //   pct=42     : 수동 오버라이드 (실제 공정과 어긋날 때만)
+  //   t=공사 진행 : 좌측 상단 제목 변경 (예: t=디자인 진행)
+  //   theme=dark : 다크 카드
+  const q = new URLSearchParams(location.search);
+  if (q.get("theme") === "dark") document.body.dataset.theme = "dark";
+  if (q.get("t")) document.getElementById("title").textContent = q.get("t");
+
+  const startStr = q.get("start");
+  const endStr = q.get("end");
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  let pct = 0;
+  if (q.has("pct")) {
+    pct = Math.max(0, Math.min(100, parseFloat(q.get("pct"))));
+  } else if (startStr && endStr) {
+    const s = new Date(startStr + "T00:00:00");
+    const e = new Date(endStr + "T00:00:00");
+    if (!isNaN(s) && !isNaN(e) && e > s) {
+      pct = Math.max(0, Math.min(100, Math.round(((today - s) / (e - s)) * 100)));
+    }
+  }
+
+  document.getElementById("pctNum").innerHTML = "<b>" + pct + "</b>%";
+  requestAnimationFrame(() => {
+    document.getElementById("fill").style.width = pct + "%";
+  });
+
+  const fmt = (str) => {
+    const d = new Date(str + "T00:00:00");
+    return isNaN(d) ? "" : (d.getMonth() + 1) + "." + String(d.getDate()).padStart(2, "0");
+  };
+  if (startStr && endStr) {
+    document.getElementById("dates").innerHTML =
+      `시작 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`;
+  }
+  if (endStr) {
+    const e = new Date(endStr + "T00:00:00");
+    if (!isNaN(e)) {
+      const left = Math.round((e - today) / 86400000);
+      document.getElementById("remain").innerHTML =
+        left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>");
+    }
+  }
+</script>
+</body>
+</html>
