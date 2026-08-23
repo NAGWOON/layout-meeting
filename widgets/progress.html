@@ -10,24 +10,24 @@
   body {
     font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
     color: #16181d;
-    padding: 8px;
+    padding: 4px;
   }
   .wrap {
     max-width: 860px; margin: 0 auto;
     border: 1px solid #ececee; border-radius: 10px;
-    padding: 13px 18px 12px;
+    padding: 10px 16px 11px;
     background: #ffffff;
   }
   .n { font-variant-numeric: tabular-nums; }
 
-  .row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-  .info { font-size: 11.5px; color: #9aa0a8; line-height: 1.65; letter-spacing: -0.1px; }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+  .info { font-size: 11.5px; color: #9aa0a8; letter-spacing: -0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .info b { color: #16181d; font-weight: 700; }
-  .info .t { font-size: 12px; font-weight: 700; color: #16181d; letter-spacing: -0.3px; margin-bottom: 1px; }
-  .pct { font-size: 30px; font-weight: 300; letter-spacing: -1.4px; line-height: 0.9; white-space: nowrap; }
-  .pct b { font-weight: 800; }
+  .info .t { font-size: 12px; margin-right: 6px; }
+  .info .sep { color: #d5d7da; margin: 0 5px; }
+  .pct { font-size: 19px; font-weight: 800; letter-spacing: -0.6px; white-space: nowrap; }
 
-  .bar { margin-top: 10px; height: 2px; background: #ececee; position: relative; border-radius: 1px; }
+  .bar { margin-top: 8px; height: 2px; background: #ececee; position: relative; border-radius: 1px; }
   .fill {
     position: absolute; left: 0; top: 0; height: 2px; width: 0%;
     background: #16181d; border-radius: 1px;
@@ -36,9 +36,10 @@
 
   @media (max-width: 560px) {
     body { padding: 2px; }
-    .wrap { padding: 11px 14px 10px; }
-    .pct { font-size: 25px; letter-spacing: -1.1px; }
-    .info { font-size: 10.5px; line-height: 1.6; }
+    .wrap { padding: 9px 12px 10px; }
+    .info { font-size: 10.5px; }
+    .info .t { font-size: 11px; }
+    .pct { font-size: 16px; }
   }
 
   /* 다크 스킨 (?theme=dark) */
@@ -46,7 +47,7 @@
   body[data-theme="dark"] .wrap { background: #101114; border-color: #202329; }
   body[data-theme="dark"] .info { color: #5c626b; }
   body[data-theme="dark"] .info b { color: #f5f6f7; }
-  body[data-theme="dark"] .info .t { color: #f5f6f7; }
+  body[data-theme="dark"] .info .sep { color: #2a2d33; }
   body[data-theme="dark"] .pct { color: #f5f6f7; }
   body[data-theme="dark"] .bar { background: #23262c; }
   body[data-theme="dark"] .fill { background: #f5f6f7; }
@@ -56,10 +57,9 @@
   <div class="wrap">
     <div class="row">
       <div class="info">
-        <div class="t" id="title">공사 진행</div>
-        <span id="dates"></span><br><span id="remain"></span>
+        <b class="t" id="title">프로젝트 진행</b><span id="detail"></span>
       </div>
-      <span class="pct n" id="pctNum"><b>0</b>%</span>
+      <span class="pct n" id="pctNum">0%</span>
     </div>
     <div class="bar"><div class="fill" id="fill"></div></div>
   </div>
@@ -70,7 +70,7 @@
   //   → 오늘 날짜 기준으로 퍼센트·남은 일수가 매일 자동 갱신됩니다.
   // 옵션:
   //   pct=42     : 수동 오버라이드 (실제 공정과 어긋날 때만)
-  //   t=공사 진행 : 좌측 상단 제목 변경 (예: t=디자인 진행)
+  //   t=공사 진행 : 제목 변경
   //   theme=dark : 다크 카드
   const q = new URLSearchParams(location.search);
   if (q.get("theme") === "dark") document.body.dataset.theme = "dark";
@@ -91,7 +91,7 @@
     }
   }
 
-  document.getElementById("pctNum").innerHTML = "<b>" + pct + "</b>%";
+  document.getElementById("pctNum").textContent = pct + "%";
   requestAnimationFrame(() => {
     document.getElementById("fill").style.width = pct + "%";
   });
@@ -100,18 +100,17 @@
     const d = new Date(str + "T00:00:00");
     return isNaN(d) ? "" : (d.getMonth() + 1) + "." + String(d.getDate()).padStart(2, "0");
   };
-  if (startStr && endStr) {
-    document.getElementById("dates").innerHTML =
-      `시작 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`;
-  }
+  let parts = [];
+  if (startStr && endStr) parts.push(`시작 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`);
   if (endStr) {
     const e = new Date(endStr + "T00:00:00");
     if (!isNaN(e)) {
       const left = Math.round((e - today) / 86400000);
-      document.getElementById("remain").innerHTML =
-        left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>");
+      parts.push(left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>"));
     }
   }
+  document.getElementById("detail").innerHTML =
+    parts.length ? '<span class="sep">·</span>' + parts.join('<span class="sep">·</span>') : "";
 </script>
 </body>
 </html>
