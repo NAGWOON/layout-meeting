@@ -51,6 +51,12 @@
   body[data-theme="dark"] .pct { color: #f5f6f7; }
   body[data-theme="dark"] .bar { background: #23262c; }
   body[data-theme="dark"] .fill { background: #f5f6f7; }
+
+  /* 다크모드 뷰어 대응: 주변이 어두우면 카드를 한 톤 띄움 (elevated) */
+  @media (prefers-color-scheme: dark) {
+    body[data-theme="dark"] .wrap { background: #1b1e24; border-color: #2b2f37; }
+    body[data-theme="dark"] .bar { background: #2b2f37; }
+  }
 </style>
 </head>
 <body>
@@ -80,18 +86,26 @@
   const endStr = q.get("end");
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
+  // 진행률 기준: 착공일(start) → 준공일(end). 착공 전에는 % 대신 착공 카운트다운 표시.
+  const s = startStr ? new Date(startStr + "T00:00:00") : null;
+  const e = endStr ? new Date(endStr + "T00:00:00") : null;
+  const preStart = s && !isNaN(s) && today < s && !q.has("pct");
+
   let pct = 0;
   if (q.has("pct")) {
     pct = Math.max(0, Math.min(100, parseFloat(q.get("pct"))));
-  } else if (startStr && endStr) {
-    const s = new Date(startStr + "T00:00:00");
-    const e = new Date(endStr + "T00:00:00");
-    if (!isNaN(s) && !isNaN(e) && e > s) {
-      pct = Math.max(0, Math.min(100, Math.round(((today - s) / (e - s)) * 100)));
-    }
+  } else if (s && e && !isNaN(s) && !isNaN(e) && e > s) {
+    pct = Math.max(0, Math.min(100, Math.round(((today - s) / (e - s)) * 100)));
   }
 
-  document.getElementById("pctNum").textContent = pct + "%";
+  const pctEl = document.getElementById("pctNum");
+  if (preStart) {
+    const dToStart = Math.round((s - today) / 86400000);
+    pctEl.textContent = "착공 D-" + dToStart;
+    pctEl.style.fontSize = "15px";
+  } else {
+    pctEl.textContent = pct + "%";
+  }
   requestAnimationFrame(() => {
     document.getElementById("fill").style.width = pct + "%";
   });
@@ -101,13 +115,10 @@
     return isNaN(d) ? "" : (d.getMonth() + 1) + "." + String(d.getDate()).padStart(2, "0");
   };
   let parts = [];
-  if (startStr && endStr) parts.push(`시작 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`);
-  if (endStr) {
-    const e = new Date(endStr + "T00:00:00");
-    if (!isNaN(e)) {
-      const left = Math.round((e - today) / 86400000);
-      parts.push(left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>"));
-    }
+  if (startStr && endStr) parts.push(`착공 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`);
+  if (e && !isNaN(e)) {
+    const left = Math.round((e - today) / 86400000);
+    parts.push(left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>"));
   }
   document.getElementById("detail").innerHTML =
     parts.length ? '<span class="sep">·</span>' + parts.join('<span class="sep">·</span>') : "";
