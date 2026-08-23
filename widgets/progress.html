@@ -9,84 +9,124 @@
   html, body { background: #ffffff; }
   body {
     font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
-    color: #16181d;
+    color: #f5f6f7;
     padding: 4px;
   }
   .wrap {
     max-width: 860px; margin: 0 auto;
-    border: 1px solid #ececee; border-radius: 10px;
-    padding: 10px 16px 11px;
-    background: #ffffff;
+    display: flex; align-items: stretch;
+    border-radius: 12px; overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #1b1d22 0%, #0f1013 42%, #16181d 72%, #0c0d10 100%);
+    border: 1px solid #26292f; border-top-color: #343841;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  /* 사선 광택 */
+  .wrap::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.05) 46%, transparent 58%);
   }
   .n { font-variant-numeric: tabular-nums; }
 
-  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
-  .info { font-size: 11.5px; color: #9aa0a8; letter-spacing: -0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .info b { color: #16181d; font-weight: 700; }
-  .info .t { font-size: 12px; margin-right: 6px; }
-  .info .sep { color: #d5d7da; margin: 0 5px; }
-  .pct { font-size: 19px; font-weight: 800; letter-spacing: -0.6px; white-space: nowrap; }
+  /* 좌측 % 블록 */
+  .sp-l {
+    padding: 12px 24px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    border-right: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.02);
+    min-width: 108px;
+  }
+  .cap { font-size: 10px; color: #6b7078; letter-spacing: 2px; margin-bottom: 3px; display: none; }
+  .pctBig {
+    font-size: 27px; font-weight: 800; letter-spacing: -1px; line-height: 1;
+    background: linear-gradient(180deg, #ffffff 0%, #d5d8de 48%, #949aa4 66%, #e7eaee 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    white-space: nowrap;
+  }
 
-  .bar { margin-top: 8px; height: 2px; background: #ececee; position: relative; border-radius: 1px; }
+  /* 우측 정보 + 바 */
+  .sp-r { flex: 1; padding: 11px 18px 12px; display: flex; flex-direction: column; justify-content: center; gap: 8px; min-width: 0; }
+  .l1 { font-size: 12px; font-weight: 700; color: #f5f6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .l1 .detail { font-weight: 400; font-size: 11.5px; color: #5c626b; margin-left: 8px; }
+  .l1 .detail b { color: #b9bec6; font-weight: 700; }
+  .l1 .sep { color: #2e323a; margin: 0 5px; }
+
+  .bar {
+    height: 5px; border-radius: 3px; position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #08090b, #191c21);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.05);
+  }
   .fill {
-    position: absolute; left: 0; top: 0; height: 2px; width: 0%;
-    background: #16181d; border-radius: 1px;
+    position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #ffffff 0%, #d9dce1 38%, #a8aeb8 62%, #e2e5e9 100%);
+    box-shadow: 0 0 7px rgba(255,255,255,.22);
     transition: width 1s cubic-bezier(.4,0,.2,1);
   }
 
   @media (max-width: 560px) {
     body { padding: 2px; }
-    .wrap { padding: 9px 12px 10px; }
-    .info { font-size: 10.5px; }
-    .info .t { font-size: 11px; }
-    .pct { font-size: 16px; }
+    .sp-l { padding: 10px 14px; min-width: 84px; }
+    .pctBig { font-size: 21px; }
+    .sp-r { padding: 9px 12px 10px; gap: 6px; }
+    .l1 { font-size: 11px; }
+    .l1 .detail { font-size: 10px; margin-left: 5px; }
   }
 
-  /* 다크 스킨 (?theme=dark) */
-  body[data-theme="dark"] { background: transparent; }
-  body[data-theme="dark"] .wrap { background: #101114; border-color: #202329; }
-  body[data-theme="dark"] .info { color: #5c626b; }
-  body[data-theme="dark"] .info b { color: #f5f6f7; }
-  body[data-theme="dark"] .info .sep { color: #2a2d33; }
-  body[data-theme="dark"] .pct { color: #f5f6f7; }
-  body[data-theme="dark"] .bar { background: #23262c; }
-  body[data-theme="dark"] .fill { background: #f5f6f7; }
-
-  /* 다크모드 뷰어 대응: 주변이 어두우면 카드를 한 톤 띄움 (elevated) */
+  /* 다크모드 뷰어 대응: 주변이 어두우면 카드를 한 톤 띄움 */
   @media (prefers-color-scheme: dark) {
-    body[data-theme="dark"] .wrap { background: #1b1e24; border-color: #2b2f37; }
-    body[data-theme="dark"] .bar { background: #2b2f37; }
+    .wrap {
+      background: linear-gradient(135deg, #23262c 0%, #16181d 42%, #1d2026 72%, #131519 100%);
+      border-color: #2f333b; border-top-color: #3d424b;
+    }
   }
+
+  /* 라이트 스킨 (?theme=light) — 실버 메탈 */
+  body[data-theme="light"] .wrap {
+    background: linear-gradient(135deg, #fdfdfe 0%, #eff1f3 45%, #f8f9fa 75%, #e9ebee 100%);
+    border-color: #dfe2e6; border-top-color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 3px rgba(22,24,29,.06);
+  }
+  body[data-theme="light"] .wrap::after { background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.5) 46%, transparent 58%); }
+  body[data-theme="light"] .sp-l { border-right-color: rgba(22,24,29,.08); background: rgba(255,255,255,.35); }
+  body[data-theme="light"] .cap { color: #9aa0a8; }
+  body[data-theme="light"] .pctBig { background: linear-gradient(180deg, #34383f 0%, #16181d 55%, #4a4f58 78%, #23262c 100%); -webkit-background-clip: text; background-clip: text; }
+  body[data-theme="light"] .l1 { color: #16181d; }
+  body[data-theme="light"] .l1 .detail { color: #9aa0a8; }
+  body[data-theme="light"] .l1 .detail b { color: #4a4f58; }
+  body[data-theme="light"] .l1 .sep { color: #d5d8dc; }
+  body[data-theme="light"] .bar { background: linear-gradient(180deg, #dcdfe3, #eef0f2); box-shadow: inset 0 1px 2px rgba(22,24,29,.18), 0 1px 0 rgba(255,255,255,.8); }
+  body[data-theme="light"] .fill { background: linear-gradient(180deg, #3a3e46 0%, #16181d 45%, #2b2f36 100%); box-shadow: none; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="row">
-      <div class="info">
-        <b class="t" id="title">프로젝트 진행</b><span id="detail"></span>
-      </div>
-      <span class="pct n" id="pctNum">0%</span>
+    <div class="sp-l">
+      <div class="cap" id="cap">착공까지</div>
+      <div class="pctBig n" id="pctNum">0%</div>
     </div>
-    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="sp-r">
+      <div class="l1"><span id="title">공사 진행</span><span class="detail" id="detail"></span></div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+    </div>
   </div>
 
 <script>
-  // 기본 사용법 (날짜 기반 자동 진행 — 프로젝트당 1회 입력이 전부):
-  //   ?start=2026-08-08&end=2026-11-13
-  //   → 오늘 날짜 기준으로 퍼센트·남은 일수가 매일 자동 갱신됩니다.
+  // 기본 사용법 (착공~준공 날짜 기반 자동 진행 — 프로젝트당 1회 입력):
+  //   ?start=2026-09-14&end=2026-11-13
+  //   → 착공 전: "착공까지 D-N" 카운트다운 / 착공 후: 공사 진행률 % (매일 자동)
   // 옵션:
-  //   pct=42     : 수동 오버라이드 (실제 공정과 어긋날 때만)
-  //   t=공사 진행 : 제목 변경
-  //   theme=dark : 다크 카드
+  //   pct=42      : 수동 오버라이드
+  //   t=공사 진행  : 제목 변경
+  //   theme=light : 실버 메탈 라이트 스킨 (기본은 다크 그라파이트)
   const q = new URLSearchParams(location.search);
-  if (q.get("theme") === "dark") document.body.dataset.theme = "dark";
+  if (q.get("theme") === "light") document.body.dataset.theme = "light";
   if (q.get("t")) document.getElementById("title").textContent = q.get("t");
 
   const startStr = q.get("start");
   const endStr = q.get("end");
   const today = new Date(); today.setHours(0, 0, 0, 0);
-
-  // 진행률 기준: 착공일(start) → 준공일(end). 착공 전에는 % 대신 착공 카운트다운 표시.
   const s = startStr ? new Date(startStr + "T00:00:00") : null;
   const e = endStr ? new Date(endStr + "T00:00:00") : null;
   const preStart = s && !isNaN(s) && today < s && !q.has("pct");
@@ -101,8 +141,9 @@
   const pctEl = document.getElementById("pctNum");
   if (preStart) {
     const dToStart = Math.round((s - today) / 86400000);
-    pctEl.textContent = "착공 D-" + dToStart;
-    pctEl.style.fontSize = "15px";
+    document.getElementById("cap").style.display = "block";
+    pctEl.textContent = "D-" + dToStart;
+    pctEl.style.fontSize = "22px";
   } else {
     pctEl.textContent = pct + "%";
   }
@@ -120,8 +161,7 @@
     const left = Math.round((e - today) / 86400000);
     parts.push(left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>"));
   }
-  document.getElementById("detail").innerHTML =
-    parts.length ? '<span class="sep">·</span>' + parts.join('<span class="sep">·</span>') : "";
+  document.getElementById("detail").innerHTML = parts.join('<span class="sep">·</span>');
 </script>
 </body>
 </html>
