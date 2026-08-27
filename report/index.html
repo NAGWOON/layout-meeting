@@ -417,12 +417,12 @@ function renderProcBoxes() {
   if (!state.procs.length) state.procs = [''];
   var html = '';
   state.procs.forEach(function (p, i) {
-    var sel = '<select onchange="setProc(' + i + ', this.value)"><option value="">공정 선택</option>';
+    var sel = '<select onchange="setProc(' + i + ', this.value)"><option value="">❔ 공정 선택</option>';
     opts.forEach(function (o) {
       sel += '<option value="' + esc(o) + '"' + (o === p ? ' selected' : '') + '>' + procEmoji(o) + ' ' + esc(o) + '</option>';
     });
     sel += '</select>';
-    html += '<div class="pbox"><span class="pemoji">' + (p ? procEmoji(p) : '❔') + '</span>' + sel
+    html += '<div class="pbox">' + sel
       + (state.procs.length > 1 ? '<button class="rm" onclick="rmProcBox(' + i + ')">✕</button>' : '') + '</div>';
   });
   document.getElementById('procBoxes').innerHTML = html;
