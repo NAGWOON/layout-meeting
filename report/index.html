@@ -585,9 +585,10 @@ function submitAll() {
   }).then(function (r) {
     if (!r.ok) throw new Error(r.error || '저장 실패');
     state.result = r;
-    state.result.journalPageId = (r.journalUrl.match(/([0-9a-f]{32})/) || [])[1] || '';
-    state.result.folderId = ((r.dayFolder || '').match(/folders\/([A-Za-z0-9_-]+)/) || [])[1] || '';
+    state.result.journalPageId = r.journalPageId || (r.journalUrl.match(/([0-9a-f]{32})/) || [])[1] || '';
+    state.result.folderId = r.dayFolderId || ((r.dayFolder || '').match(/folders\/([A-Za-z0-9_-]+)/) || [])[1] || '';
     state.failed = state.photos.map(function (_, i) { return i; });
+    state.fileIds = {};
     state.coverDone = false;
     return uploadQueue();
   }).then(finishSubmit).catch(function (e) {
@@ -624,6 +625,7 @@ function uploadOne(idx, tries) {
     return api('uploadPhoto', { folderId: state.result.folderId, filename: p.file.name || ('photo' + (idx+1) + '.jpg'), base64: b64 });
   }).then(function (r) {
     if (!r.ok) throw new Error(r.error);
+    state.fileIds[idx] = r.fileId;
     if (idx === 0 && !state.coverDone && state.result.journalPageId) {
       state.coverDone = true;
       return api('setCover', { journalPageId: state.result.journalPageId, fileId: r.fileId }).then(function () { return true; }, function () { return true; });
@@ -645,6 +647,16 @@ function finishSubmit() {
     document.getElementById('ovRetry').classList.remove('hide');
     return;
   }
+  // 업로드된 사진을 노션 일지의 사진 토글에 첨부
+  var ids = state.photos.map(function (_, i) { return (state.fileIds || {})[i]; }).filter(Boolean);
+  var chain = Promise.resolve();
+  if (ids.length && state.result.journalPageId) {
+    ovShow('보고서에 사진 첨부 중…', '노션 일지의 사진 토글에 넣고 있습니다 · 화면을 닫지 마세요', 100, '');
+    chain = api('attachPhotos', { journalPageId: state.result.journalPageId, fileIds: ids }).catch(function () {});
+  }
+  chain.then(showDone);
+}
+function showDone() {
   ovHide();
   state.submitting = false;
   document.getElementById('submitBtn').disabled = false;
