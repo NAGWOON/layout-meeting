@@ -156,7 +156,7 @@
     <div class="body">
       <div class="lab">오늘 보고할 현장을 선택하세요</div>
       <div id="siteList"><div class="spin"></div></div>
-      <div class="codebox">현장 목록은 노션 현장 대시보드에서 자동으로 불러옵니다<br>(준공·A/S 현장은 표시되지 않습니다)</div>
+      <div class="codebox">현장 목록은 노션 현장 대시보드에서 자동으로 불러옵니다<br>(준공·A/S 현장은 표시되지 않습니다)<br><br><span style="text-decoration:underline;cursor:pointer;" onclick="logout()">진입코드 변경</span></div>
     </div>
   </div>
 
@@ -340,7 +340,9 @@ function loadSites() {
         + '<div class="go">›</div></div>';
     });
     document.getElementById('siteList').innerHTML = html || '<div class="codebox">진행 중인 현장이 없습니다</div>';
-    document.getElementById('sitesMeta').innerHTML = '진행 중인 현장 <b>' + state.sites.length + '곳</b><span class="auto">대시보드 자동</span>';
+    var owner = localStorage.getItem(LS_OWNER);
+    document.getElementById('sitesMeta').innerHTML = '진행 중인 현장 <b>' + state.sites.length + '곳</b>'
+      + (owner ? ' · 접속: <b>' + esc(owner) + '</b>' : '') + '<span class="auto">대시보드 자동</span>';
   }).catch(function (e) {
     if (String(e.message) === 'unauthorized') return;
     document.getElementById('siteList').innerHTML = '<div class="codebox">목록을 불러오지 못했습니다<br>' + esc(e.message) + '</div>';
