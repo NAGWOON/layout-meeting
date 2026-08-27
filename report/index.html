@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<title>DASIFILL 현장 보고</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { background:#e9eaec; }
+  body {
+    font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
+    background:#e9eaec; color:#16181d; display:flex; justify-content:center; min-height:100vh;
+  }
+  .app { width:100%; max-width:480px; background:#fff; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* 헤더 */
+  .hd { background:#101114; color:#f5f6f7; padding:18px 20px 16px; padding-top:calc(18px + env(safe-area-inset-top)); }
+  .hd .brand { font-size:10px; letter-spacing:3px; color:#8a8f98; margin-bottom:8px; }
+  .hd .site { font-size:16px; font-weight:800; letter-spacing:-0.4px; display:flex; align-items:center; gap:8px; }
+  .hd .meta { margin-top:6px; font-size:11.5px; color:#8a8f98; }
+  .hd .meta b { color:#f5f6f7; }
+  .hd .back { font-size:15px; color:#8a8f98; cursor:pointer; flex:none; }
+  .auto { display:inline-block; font-size:9px; color:#5b8cff; border:1px solid #2b3b5e; border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:1px; }
+
+  .body { padding:16px 18px 28px; flex:1; }
+  .sec { margin-bottom:18px; }
+  .lab { font-size:11px; font-weight:700; color:#9aa0a8; letter-spacing:1.5px; margin-bottom:8px; }
+  .hide { display:none !important; }
+
+  /* 공용 입력 */
+  textarea, input[type=text], input[type=number], input[type=time], select {
+    width:100%; border:1px solid #e3e5e8; border-radius:12px; padding:12px 14px;
+    font-size:14px; font-family:inherit; color:#16181d; background:#fff; outline:none;
+    -webkit-appearance:none; appearance:none;
+  }
+  textarea:focus, input:focus, select:focus { border-color:#16181d; }
+  textarea { resize:vertical; min-height:74px; line-height:1.6; }
+  .btn {
+    display:block; width:100%; background:#16181d; color:#fff; border:none; border-radius:12px;
+    text-align:center; padding:15px; font-size:14px; font-weight:800; font-family:inherit;
+    letter-spacing:-0.2px; cursor:pointer;
+  }
+  .btn:disabled { background:#c9ccd2; }
+  .btn small { display:block; font-weight:400; font-size:10px; color:#8a8f98; margin-top:2px; }
+  .btn.line { background:#fff; color:#16181d; border:1px solid #e3e5e8; font-weight:700; }
+  .hint { font-size:10.5px; color:#b0b4ba; margin-top:6px; line-height:1.5; }
+
+  /* 진입코드 화면 */
+  .keywrap { padding:60px 26px; text-align:center; }
+  .keywrap .logo { font-size:12px; letter-spacing:5px; font-weight:800; margin-bottom:6px; }
+  .keywrap .sub { font-size:12px; color:#9aa0a8; margin-bottom:32px; }
+  .keywrap input { text-align:center; font-size:18px; letter-spacing:3px; font-weight:700; text-transform:uppercase; }
+  .keyerr { font-size:12px; color:#d5443c; margin-top:10px; min-height:16px; }
+
+  /* 현장 선택 */
+  .sitecard { border:1px solid #e3e5e8; border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+  .sitecard .nm { font-size:14px; font-weight:800; }
+  .sitecard .st { font-size:11px; color:#9aa0a8; margin-top:3px; }
+  .sitecard .go { color:#c9ccd2; font-size:16px; }
+  .sitecard.recent { border-color:#16181d; }
+  .rc { font-size:9px; color:#2f6fed; background:#eaf1fe; border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:1px; }
+  .codebox { margin-top:18px; border-top:1px solid #f0f1f3; padding-top:14px; text-align:center; font-size:11px; color:#b0b4ba; line-height:1.6; }
+
+  /* 공정 칩 */
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { border:1px solid #e3e5e8; border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; color:#6b7078; cursor:pointer; }
+  .chip.on { background:#16181d; border-color:#16181d; color:#fff; }
+
+  /* 사진 */
+  .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .ph { aspect-ratio:1; border-radius:10px; background:#f2f3f5; display:flex; align-items:center; justify-content:center; color:#b0b4ba; font-size:22px; position:relative; overflow:hidden; cursor:pointer; }
+  .ph img { width:100%; height:100%; object-fit:cover; }
+  .ph .cover { position:absolute; bottom:4px; left:4px; font-size:8px; background:#16181d; color:#fff; border-radius:4px; padding:1px 5px; }
+  .ph .del { position:absolute; top:2px; right:2px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center; }
+
+  /* 마이크 */
+  .relwrap { position:relative; }
+  .mic { position:absolute; right:10px; bottom:10px; width:34px; height:34px; border-radius:50%; background:#f2f3f5; border:none; display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; }
+  .mic.rec { background:#d5443c; animation:pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity:.6; } }
+
+  /* 지시 체크리스트 */
+  .chk { border:1px solid #e3e5e8; border-radius:12px; overflow:hidden; }
+  .chk .item { display:flex; align-items:flex-start; gap:10px; padding:11px 14px; font-size:13px; border-bottom:1px solid #f0f1f3; cursor:pointer; line-height:1.5; }
+  .chk .item:last-child { border-bottom:none; }
+  .box { width:18px; height:18px; border-radius:5px; border:1.5px solid #c9ccd2; flex:none; margin-top:1px; position:relative; }
+  .item.on .box { background:#16181d; border-color:#16181d; }
+  .item.on .box::after { content:"✓"; color:#fff; font-size:11px; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .item.on .t { color:#9aa0a8; text-decoration:line-through; }
+  .chk .note { display:block; font-size:11px; color:#b0b4ba; margin-top:2px; }
+  .chk .empty { padding:14px; font-size:12px; color:#b0b4ba; text-align:center; }
+
+  .opt { font-size:12.5px; color:#9aa0a8; text-align:center; padding:9px 0; border:1px dashed #d9dce1; border-radius:10px; margin-top:8px; cursor:pointer; }
+
+  /* 내부 전용 */
+  .internal { background:#f7f8f9; border:1px dashed #d9dce1; border-radius:12px; padding:12px 14px; }
+  .internal .lab { margin-bottom:10px; color:#b0b4ba; }
+  .crow { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .crow select { flex:1.5; padding:10px 10px; font-size:13px; }
+  .crow input { flex:1; padding:10px 10px; font-size:13px; }
+  .crow .rm { flex:none; width:26px; height:26px; border-radius:50%; border:none; background:#e3e5e8; color:#6b7078; font-size:12px; cursor:pointer; }
+  .authorrow { display:flex; align-items:center; justify-content:space-between; font-size:13px; margin-top:4px; color:#6b7078; }
+  .authorrow b { color:#16181d; }
+
+  /* 미리보기 */
+  .preview { background:#101114; color:#c9ccd2; border-radius:12px; padding:14px 16px; font-size:12px; line-height:1.75; white-space:pre-wrap; word-break:break-word; }
+  .preview .pt { font-size:10px; letter-spacing:2px; color:#5c626b; margin-bottom:6px; }
+  .preview b { color:#f5f6f7; }
+
+  /* 제출 진행 오버레이 */
+  .overlay { position:fixed; inset:0; background:rgba(16,17,20,.92); color:#f5f6f7; display:flex; align-items:center; justify-content:center; z-index:50; padding:30px; }
+  .ovbox { width:100%; max-width:340px; text-align:center; }
+  .ovbox .big { font-size:16px; font-weight:800; margin-bottom:8px; }
+  .ovbox .sub { font-size:12px; color:#8a8f98; margin-bottom:20px; line-height:1.6; }
+  .bar { height:6px; background:#2a2d33; border-radius:999px; overflow:hidden; margin-bottom:10px; }
+  .bar i { display:block; height:100%; width:0%; background:linear-gradient(90deg,#8a8f98,#e8eaed); border-radius:999px; transition:width .3s; }
+  .ovbox .cnt { font-size:11px; color:#8a8f98; }
+  .ovbox .btn { margin-top:20px; }
+
+  /* 완료 화면 */
+  .donewrap { padding:34px 22px; }
+  .donewrap .ok { font-size:38px; text-align:center; margin-bottom:10px; }
+  .donewrap .big { font-size:17px; font-weight:800; text-align:center; margin-bottom:6px; }
+  .donewrap .sub { font-size:12px; color:#9aa0a8; text-align:center; margin-bottom:22px; line-height:1.6; }
+  .kakao { border:1px solid #e3e5e8; border-radius:12px; padding:14px; font-size:13px; line-height:1.7; white-space:pre-wrap; background:#fafafa; max-height:280px; overflow-y:auto; margin-bottom:10px; }
+  .warn { background:#fff8e8; border:1px solid #f2dfa8; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a6d1c; line-height:1.6; margin-bottom:12px; }
+
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#16181d; color:#fff; font-size:13px; padding:10px 20px; border-radius:999px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:99; }
+  .toast.show { opacity:1; }
+  .spin { width:26px; height:26px; border:3px solid #e3e5e8; border-top-color:#16181d; border-radius:50%; margin:30px auto; animation:sp 0.8s linear infinite; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══ 화면 0: 진입코드 ═══ -->
+  <div id="scr-key" class="hide">
+    <div class="keywrap">
+      <div class="logo">DASIFILL</div>
+      <div class="sub">현장 보고 시스템 · 진입코드를 입력하세요</div>
+      <input id="keyInput" type="text" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters">
+      <div class="keyerr" id="keyErr"></div>
+      <button class="btn" id="keyBtn" onclick="enterKey()" style="margin-top:8px;">확인</button>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 1: 현장 선택 ═══ -->
+  <div id="scr-sites" class="hide">
+    <div class="hd">
+      <div class="brand">DASIFILL · 현장 보고</div>
+      <div class="site">현장 선택</div>
+      <div class="meta" id="sitesMeta">불러오는 중…</div>
+    </div>
+    <div class="body">
+      <div class="lab">오늘 보고할 현장을 선택하세요</div>
+      <div id="siteList"><div class="spin"></div></div>
+      <div class="codebox">현장 목록은 노션 현장 대시보드에서 자동으로 불러옵니다<br>(준공·A/S 현장은 표시되지 않습니다)</div>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 2: 보고 입력 ═══ -->
+  <div id="scr-form" class="hide">
+    <div class="hd">
+      <div class="brand">DASIFILL · 현장 보고</div>
+      <div class="site"><span class="back" onclick="goSites()">‹</span><span id="fSite">현장</span></div>
+      <div class="meta" id="fMeta"></div>
+    </div>
+    <div class="body">
+
+      <div class="sec">
+        <div class="lab">오늘의 공정 <span class="auto">공정표 자동</span></div>
+        <div class="chips" id="procChips"><div class="spin"></div></div>
+        <div class="hint" id="procHint"></div>
+      </div>
+
+      <div class="sec">
+        <div class="lab">현장 사진</div>
+        <div class="photos" id="photoGrid"></div>
+        <input type="file" id="photoInput" accept="image/*" multiple class="hide">
+        <div class="hint">첫 번째 사진이 보고서 대표 사진이 됩니다 · 원본 화질로 드라이브에 저장</div>
+      </div>
+
+      <div class="sec">
+        <div class="lab">오늘 작업 내용</div>
+        <div class="relwrap">
+          <textarea id="workDone" placeholder="예: 거실·주방 천장 틀 완료. 안방은 내일 오전 마무리 예정" oninput="renderPreview()"></textarea>
+          <button class="mic hide" id="micBtn" onclick="toggleMic()">🎙</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="lab">현장 지시 <span class="auto">노션 자동</span></div>
+        <div class="chk" id="instList"><div class="empty">불러오는 중…</div></div>
+        <div class="hint">완료한 지시를 체크하면 제출 시 노션에서 자동으로 완료 처리됩니다</div>
+      </div>
+
+      <div class="sec">
+        <div class="lab">특이사항 <span style="color:#c9ccd2;font-weight:400;letter-spacing:0;">(없으면 비워두세요)</span></div>
+        <textarea id="specialNote" style="min-height:52px;" placeholder="예: 우천으로 발코니 도장 보류, 내일로 이월" oninput="renderPreview()"></textarea>
+        <div class="opt" id="tomorrowToggle" onclick="showTomorrow()">＋ 내일 예정 추가 (선택)</div>
+        <div class="hide" id="tomorrowWrap" style="margin-top:8px;">
+          <textarea id="tomorrowPlan" style="min-height:52px;" placeholder="예: 안방 천장 마무리 후 벽체 시작" oninput="renderPreview()"></textarea>
+        </div>
+      </div>
+
+      <div class="sec internal">
+        <div class="lab">내부 전용 — 고객에게 표시되지 않습니다</div>
+        <div id="crewRows"></div>
+        <div class="opt" onclick="addCrewRow()">＋ 팀 추가</div>
+        <div class="authorrow"><span>작성자</span><b id="authorName">—</b></div>
+      </div>
+
+      <div class="sec" style="margin-bottom:0;">
+        <div class="preview"><div class="pt">보고 미리보기</div><div id="previewBody">—</div></div>
+        <button class="btn" id="submitBtn" onclick="submitAll()" style="margin-top:14px;">보고 제출<small>사진은 드라이브에, 보고서는 프로젝트 페이지에 자동 등록됩니다</small></button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ 화면 3: 완료 ═══ -->
+  <div id="scr-done" class="hide">
+    <div class="hd">
+      <div class="brand">DASIFILL · 현장 보고</div>
+      <div class="site">보고 완료</div>
+      <div class="meta" id="doneMeta"></div>
+    </div>
+    <div class="donewrap">
+      <div class="ok">✅</div>
+      <div class="big" id="doneTitle">보고가 등록되었습니다</div>
+      <div class="sub" id="doneSub"></div>
+      <div id="photoWarn"></div>
+      <div class="lab">고객 안내 메시지 (카톡용)</div>
+      <div class="kakao" id="kakaoMsg">—</div>
+      <button class="btn" onclick="copyKakao()">📋 메시지 복사</button>
+      <button class="btn line" style="margin-top:8px;" onclick="openJournal()">노션 일지 열기</button>
+      <button class="btn line" style="margin-top:8px;" onclick="resetAll()">처음으로</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 제출 진행 오버레이 -->
+<div class="overlay hide" id="overlay">
+  <div class="ovbox">
+    <div class="big" id="ovTitle">보고 저장 중…</div>
+    <div class="sub" id="ovSub">노션에 일지를 등록하고 있습니다</div>
+    <div class="bar"><i id="ovBar"></i></div>
+    <div class="cnt" id="ovCnt"></div>
+    <button class="btn hide" id="ovRetry" onclick="retryPhotos()">실패한 사진 다시 올리기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ═════════ 설정 ═════════
+var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
+var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
+
+var state = {
+  sites: [], site: null, detail: null,
+  procs: [],            // 선택된 공정들
+  photos: [],           // { file, url }
+  doneInst: {},         // 체크된 지시 id → true
+  crew: [],             // DOM에서 수집
+  result: null,         // 제출 결과
+  failed: []            // 업로드 실패 사진 index들
+};
+
+// ═════════ API 호출 ═════════
+function api(action, data) {
+  return fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: action, key: localStorage.getItem(LS_KEY) || '', data: data || {} })
+  }).then(function (r) { return r.json(); }).then(function (r) {
+    if (r && r.error === 'unauthorized') { logout(); throw new Error('unauthorized'); }
+    return r;
+  });
+}
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+function show(id) {
+  ['scr-key','scr-sites','scr-form','scr-done'].forEach(function (s) {
+    document.getElementById(s).classList.toggle('hide', s !== id);
+  });
+  window.scrollTo(0, 0);
+}
+
+// ═════════ 화면 0: 진입코드 ═════════
+function enterKey() {
+  var key = document.getElementById('keyInput').value.trim().toUpperCase();
+  if (!key) return;
+  var btn = document.getElementById('keyBtn');
+  btn.disabled = true; btn.textContent = '확인 중…';
+  localStorage.setItem(LS_KEY, key);
+  api('ping').then(function (r) {
+    btn.disabled = false; btn.textContent = '확인';
+    if (r.ok) {
+      localStorage.setItem(LS_OWNER, r.owner || '');
+      loadSites();
+    }
+  }).catch(function (e) {
+    btn.disabled = false; btn.textContent = '확인';
+    if (String(e.message) === 'unauthorized') {
+      document.getElementById('keyErr').textContent = '코드가 올바르지 않습니다';
+    } else {
+      document.getElementById('keyErr').textContent = '연결 실패 — 네트워크를 확인하세요';
+    }
+  });
+}
+function logout() {
+  localStorage.removeItem(LS_KEY);
+  show('scr-key');
+}
+
+// ═════════ 화면 1: 현장 선택 ═════════
+function loadSites() {
+  show('scr-sites');
+  document.getElementById('siteList').innerHTML = '<div class="spin"></div>';
+  document.getElementById('sitesMeta').textContent = '불러오는 중…';
+  api('getSites').then(function (r) {
+    if (!r.ok) throw new Error(r.error);
+    state.sites = r.sites || [];
+    var recent = localStorage.getItem(LS_RECENT);
+    var html = '';
+    state.sites.forEach(function (s) {
+      var isRecent = s.id === recent;
+      var dday = ddayText(s.startDate, s.endDate);
+      html += '<div class="sitecard' + (isRecent ? ' recent' : '') + '" onclick="pickSite(\'' + s.id + '\')">'
+        + '<div><div class="nm">' + esc(s.name) + (isRecent ? '<span class="rc">최근</span>' : '') + '</div>'
+        + '<div class="st">' + esc(s.stage || '') + (dday ? ' · ' + dday : '') + (s.customer ? ' · ' + esc(s.customer) + ' 고객님' : '') + '</div></div>'
+        + '<div class="go">›</div></div>';
+    });
+    document.getElementById('siteList').innerHTML = html || '<div class="codebox">진행 중인 현장이 없습니다</div>';
+    document.getElementById('sitesMeta').innerHTML = '진행 중인 현장 <b>' + state.sites.length + '곳</b><span class="auto">대시보드 자동</span>';
+  }).catch(function (e) {
+    if (String(e.message) === 'unauthorized') return;
+    document.getElementById('siteList').innerHTML = '<div class="codebox">목록을 불러오지 못했습니다<br>' + esc(e.message) + '</div>';
+  });
+}
+function ddayText(start) {
+  if (!start) return '';
+  var t = todayStr();
+  var n = Math.floor((new Date(t) - new Date(start)) / 86400000) + 1;
+  if (n <= 0) return '착공 D-' + (1 - n);
+  return n + '일차';
+}
+function goSites() { loadSites(); }
+
+// ═════════ 화면 2: 보고 입력 ═════════
+function pickSite(id) {
+  var s = state.sites.filter(function (x) { return x.id === id; })[0];
+  if (!s) return;
+  state.site = s;
+  localStorage.setItem(LS_RECENT, id);
+  // 초기화
+  state.procs = []; state.photos = []; state.doneInst = {}; state.detail = null;
+  document.getElementById('workDone').value = '';
+  document.getElementById('specialNote').value = '';
+  document.getElementById('tomorrowPlan').value = '';
+  document.getElementById('tomorrowWrap').classList.add('hide');
+  document.getElementById('tomorrowToggle').classList.remove('hide');
+  document.getElementById('crewRows').innerHTML = '';
+  document.getElementById('procChips').innerHTML = '<div class="spin"></div>';
+  document.getElementById('instList').innerHTML = '<div class="empty">불러오는 중…</div>';
+
+  show('scr-form');
+  document.getElementById('fSite').textContent = s.name;
+  var d = new Date();
+  var yoil = ['일','월','화','수','목','금','토'][d.getDay()];
+  var dday = ddayText(s.startDate);
+  document.getElementById('fMeta').innerHTML = d.getFullYear() + '.' + p2(d.getMonth()+1) + '.' + p2(d.getDate()) + ' (' + yoil + ') · <b>' + (dday || '—') + '</b><span class="auto">자동</span>';
+  document.getElementById('authorName').textContent = localStorage.getItem(LS_OWNER) || '—';
+  renderPhotos(); renderPreview();
+
+  api('getSiteDetail', { sitePageId: id }).then(function (r) {
+    if (!r.ok) throw new Error(r.error);
+    state.detail = r;
+    // 오늘의 공정 자동 선택
+    var todaySet = {};
+    (r.todayProcesses || []).forEach(function (t) { if (t.process) todaySet[t.process] = true; });
+    state.procs = Object.keys(todaySet);
+    renderChips();
+    // 지시
+    renderInst();
+    // 투입 현황 첫 행
+    addCrewRow(state.procs[0] || '');
+    renderPreview();
+  }).catch(function (e) {
+    if (String(e.message) === 'unauthorized') return;
+    document.getElementById('procChips').innerHTML = '<div class="hint">공정 정보를 불러오지 못했습니다 — 직접 선택하세요</div>';
+    document.getElementById('instList').innerHTML = '<div class="empty">지시를 불러오지 못했습니다</div>';
+  });
+}
+function renderChips() {
+  var opts = (state.detail && state.detail.processOptions) || [];
+  var html = '';
+  opts.forEach(function (o) {
+    var on = state.procs.indexOf(o) !== -1;
+    html += '<div class="chip' + (on ? ' on' : '') + '" onclick="toggleProc(\'' + esc(o) + '\')">' + esc(o) + '</div>';
+  });
+  document.getElementById('procChips').innerHTML = html || '<div class="hint">공정 옵션 없음</div>';
+  var auto = (state.detail && state.detail.todayProcesses || []).map(function (t) { return t.name; }).join(', ');
+  document.getElementById('procHint').textContent = auto ? '공정표 기준: ' + auto + ' · 다르면 수정하세요' : '오늘 공정표에 등록된 시공 일정이 없습니다 — 직접 선택하세요';
+}
+function toggleProc(name) {
+  var i = state.procs.indexOf(name);
+  if (i === -1) state.procs.push(name); else state.procs.splice(i, 1);
+  renderChips(); renderPreview();
+}
+function renderInst() {
+  var list = (state.detail && state.detail.instructions) || [];
+  if (!list.length) {
+    document.getElementById('instList').innerHTML = '<div class="empty">대기 중인 지시가 없습니다</div>';
+    return;
+  }
+  var html = '';
+  list.forEach(function (it) {
+    var on = !!state.doneInst[it.id];
+    html += '<div class="item' + (on ? ' on' : '') + '" onclick="toggleInst(\'' + it.id + '\')"><div class="box"></div>'
+      + '<div class="t">' + esc(it.text) + (it.note ? '<span class="note">' + esc(it.note) + '</span>' : '') + '</div></div>';
+  });
+  document.getElementById('instList').innerHTML = html;
+}
+function toggleInst(id) {
+  state.doneInst[id] = !state.doneInst[id];
+  renderInst(); renderPreview();
+}
+function showTomorrow() {
+  document.getElementById('tomorrowToggle').classList.add('hide');
+  document.getElementById('tomorrowWrap').classList.remove('hide');
+}
+
+// ── 사진 ──
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('photoInput').addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []);
+    files.forEach(function (f) {
+      state.photos.push({ file: f, url: URL.createObjectURL(f) });
+    });
+    e.target.value = '';
+    renderPhotos();
+  });
+});
+function renderPhotos() {
+  var html = '';
+  state.photos.forEach(function (p, i) {
+    html += '<div class="ph"><img src="' + p.url + '">'
+      + (i === 0 ? '<div class="cover">표지</div>' : '')
+      + '<div class="del" onclick="delPhoto(' + i + ')">✕</div></div>';
+  });
+  html += '<div class="ph" onclick="document.getElementById(\'photoInput\').click()">＋</div>';
+  document.getElementById('photoGrid').innerHTML = html;
+}
+function delPhoto(i) {
+  URL.revokeObjectURL(state.photos[i].url);
+  state.photos.splice(i, 1);
+  renderPhotos();
+}
+
+// ── 음성 입력 ──
+var recog = null, recording = false;
+(function () {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  document.getElementById('micBtn').classList.remove('hide');
+  recog = new SR();
+  recog.lang = 'ko-KR'; recog.interimResults = false; recog.continuous = true;
+  recog.onresult = function (e) {
+    var txt = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) txt += e.results[i][0].transcript;
+    var ta = document.getElementById('workDone');
+    ta.value = (ta.value ? ta.value + ' ' : '') + txt.trim();
+    renderPreview();
+  };
+  recog.onend = function () { recording = false; document.getElementById('micBtn').classList.remove('rec'); };
+})();
+function toggleMic() {
+  if (!recog) return;
+  if (recording) { recog.stop(); return; }
+  recording = true;
+  document.getElementById('micBtn').classList.add('rec');
+  recog.start();
+}
+
+// ── 투입 현황 ──
+function addCrewRow(proc) {
+  var opts = (state.detail && state.detail.processOptions) || [];
+  var sel = '<select onchange="renderPreview()"><option value="">공정 ▾</option>';
+  opts.forEach(function (o) {
+    sel += '<option' + (o === proc ? ' selected' : '') + '>' + esc(o) + '</option>';
+  });
+  sel += '</select>';
+  var row = document.createElement('div');
+  row.className = 'crow';
+  row.innerHTML = sel
+    + '<input type="number" placeholder="인원" min="1" oninput="renderPreview()">'
+    + '<input type="time" onchange="renderPreview()">'
+    + '<button class="rm" onclick="this.parentNode.remove();renderPreview()">✕</button>';
+  document.getElementById('crewRows').appendChild(row);
+}
+function collectCrew() {
+  var rows = document.querySelectorAll('#crewRows .crow');
+  var crew = [];
+  rows.forEach(function (r) {
+    var proc = r.querySelector('select').value;
+    var n = r.querySelector('input[type=number]').value;
+    var t = r.querySelector('input[type=time]').value;
+    if (proc && n) crew.push({ process: proc, people: Number(n), checkin: t || '' });
+  });
+  return crew;
+}
+
+// ── 미리보기 ──
+function renderPreview() {
+  var s = state.site; if (!s) return;
+  var dday = ddayText(s.startDate);
+  var procLabel = state.procs.join('·') || '현장';
+  var title = (dday && dday.indexOf('일차') !== -1 ? dday + ' — ' : '') + procLabel;
+  var work = document.getElementById('workDone').value.trim();
+  var spec = document.getElementById('specialNote').value.trim();
+  var tmr = document.getElementById('tomorrowPlan').value.trim();
+  var doneCnt = Object.keys(state.doneInst).filter(function (k) { return state.doneInst[k]; }).length;
+  var crew = collectCrew();
+  var html = '<b>' + esc(title) + '</b>\n금일 ' + esc(procLabel) + ' 공정이 진행되었습니다. ' + esc(work);
+  if (spec) html += '\n※ 특이사항: ' + esc(spec);
+  if (tmr) html += '\n내일 예정: ' + esc(tmr);
+  if (doneCnt) html += '\n지시사항 ' + doneCnt + '건 완료 처리';
+  if (crew.length) html += '\n<span style="color:#5c626b;">내부: ' + crew.map(function (c) { return esc(c.process) + ' ' + c.people + '명 ' + c.checkin; }).join(' · ') + '</span>';
+  if (state.photos.length) html += '\n<span style="color:#5c626b;">사진 ' + state.photos.length + '장 첨부</span>';
+  document.getElementById('previewBody').innerHTML = html;
+}
+
+// ═════════ 제출 ═════════
+function submitAll() {
+  var work = document.getElementById('workDone').value.trim();
+  if (!state.procs.length && !work) { toast('공정을 선택하거나 작업 내용을 입력하세요'); return; }
+  if (!work) { toast('오늘 작업 내용을 입력해주세요'); return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  ovShow('보고 저장 중…', '노션에 일지를 등록하고 있습니다', 0);
+
+  var doneIds = Object.keys(state.doneInst).filter(function (k) { return state.doneInst[k]; });
+  api('submitReport', {
+    sitePageId: state.site.id,
+    processTypes: state.procs,
+    workDone: work,
+    specialNote: document.getElementById('specialNote').value.trim(),
+    tomorrowPlan: document.getElementById('tomorrowPlan').value.trim(),
+    crew: collectCrew(),
+    author: localStorage.getItem(LS_OWNER) || '',
+    doneInstructionIds: doneIds,
+    photos: []
+  }).then(function (r) {
+    if (!r.ok) throw new Error(r.error || '저장 실패');
+    state.result = r;
+    state.result.journalPageId = (r.journalUrl.match(/([0-9a-f]{32})/) || [])[1] || '';
+    state.result.folderId = ((r.dayFolder || '').match(/folders\/([A-Za-z0-9_-]+)/) || [])[1] || '';
+    state.failed = state.photos.map(function (_, i) { return i; });
+    state.coverDone = false;
+    return uploadQueue();
+  }).then(finishSubmit).catch(function (e) {
+    btn.disabled = false;
+    ovHide();
+    if (String(e.message) !== 'unauthorized') toast('저장 실패: ' + e.message);
+  });
+}
+
+// 사진 순차 업로드 (실패분은 state.failed에 남김)
+function uploadQueue() {
+  var total = state.photos.length;
+  if (!total) return Promise.resolve();
+  var queue = state.failed.slice();
+  state.failed = [];
+  var done = total - queue.length;
+
+  function next() {
+    if (!queue.length) return Promise.resolve();
+    var idx = queue.shift();
+    ovShow('사진 업로드 중…', '원본 화질로 드라이브에 저장합니다', (done / total) * 100, (done + 1) + ' / ' + total + '장');
+    return uploadOne(idx, 3).then(function (ok) {
+      if (ok) done++; else state.failed.push(idx);
+      ovShow('사진 업로드 중…', '원본 화질로 드라이브에 저장합니다', (done / total) * 100, done + ' / ' + total + '장');
+      return next();
+    });
+  }
+  return next();
+}
+function uploadOne(idx, tries) {
+  var p = state.photos[idx];
+  return fileToBase64(p.file).then(function (b64) {
+    return api('uploadPhoto', { folderId: state.result.folderId, filename: p.file.name || ('photo' + (idx+1) + '.jpg'), base64: b64 });
+  }).then(function (r) {
+    if (!r.ok) throw new Error(r.error);
+    if (idx === 0 && !state.coverDone && state.result.journalPageId) {
+      state.coverDone = true;
+      return api('setCover', { journalPageId: state.result.journalPageId, fileId: r.fileId }).then(function () { return true; }, function () { return true; });
+    }
+    return true;
+  }).catch(function (e) {
+    if (String(e.message) === 'unauthorized') throw e;
+    if (tries > 1) return uploadOne(idx, tries - 1);
+    return false;
+  });
+}
+function retryPhotos() {
+  document.getElementById('ovRetry').classList.add('hide');
+  uploadQueue().then(finishSubmit);
+}
+function finishSubmit() {
+  if (state.failed.length) {
+    ovShow('일부 사진 업로드 실패', state.failed.length + '장이 올라가지 못했습니다. 네트워크 확인 후 다시 시도하세요.', 100, '');
+    document.getElementById('ovRetry').classList.remove('hide');
+    return;
+  }
+  ovHide();
+  document.getElementById('submitBtn').disabled = false;
+  var r = state.result;
+  show('scr-done');
+  document.getElementById('doneMeta').textContent = state.site.name;
+  document.getElementById('doneTitle').textContent = r.title + ' 보고 등록 완료';
+  document.getElementById('doneSub').innerHTML = '사진 ' + state.photos.length + '장 저장 · 노션 일지 생성됨<br>아래 메시지를 복사해 고객 카톡에 붙여넣으세요';
+  document.getElementById('kakaoMsg').textContent = r.kakaoMessage || '(해당 공정의 안내 문구 없음)';
+  document.getElementById('photoWarn').innerHTML = '';
+}
+function ovShow(title, sub, pct, cnt) {
+  document.getElementById('overlay').classList.remove('hide');
+  document.getElementById('ovTitle').textContent = title;
+  document.getElementById('ovSub').textContent = sub;
+  document.getElementById('ovBar').style.width = (pct || 0) + '%';
+  document.getElementById('ovCnt').textContent = cnt || '';
+}
+function ovHide() { document.getElementById('overlay').classList.add('hide'); }
+
+// ═════════ 완료 화면 ═════════
+function copyKakao() {
+  var txt = document.getElementById('kakaoMsg').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () { toast('복사됐습니다 — 카톡에 붙여넣으세요'); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('복사됐습니다 — 카톡에 붙여넣으세요');
+  }
+}
+function openJournal() {
+  if (state.result && state.result.journalUrl) window.open(state.result.journalUrl, '_blank');
+}
+function resetAll() {
+  state.photos.forEach(function (p) { URL.revokeObjectURL(p.url); });
+  state.photos = [];
+  loadSites();
+}
+
+// ═════════ 헬퍼 ═════════
+function fileToBase64(file) {
+  return new Promise(function (res, rej) {
+    var fr = new FileReader();
+    fr.onload = function () { res(String(fr.result).split(',')[1] || ''); };
+    fr.onerror = rej;
+    fr.readAsDataURL(file);
+  });
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+  });
+}
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + p2(d.getMonth()+1) + '-' + p2(d.getDate());
+}
+function p2(n) { return ('0' + n).slice(-2); }
+
+// ═════════ 시작 ═════════
+(function init() {
+  document.getElementById('keyInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') enterKey();
+  });
+  if (localStorage.getItem(LS_KEY)) loadSites();
+  else show('scr-key');
+})();
+</script>
+</body>
+</html>
