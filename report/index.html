@@ -62,10 +62,11 @@
   .rc { font-size:9px; color:#2f6fed; background:#eaf1fe; border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:1px; }
   .codebox { margin-top:18px; border-top:1px solid #f0f1f3; padding-top:14px; text-align:center; font-size:11px; color:#b0b4ba; line-height:1.6; }
 
-  /* 공정 칩 */
-  .chips { display:flex; flex-wrap:wrap; gap:8px; }
-  .chip { border:1px solid #e3e5e8; border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; color:#6b7078; cursor:pointer; }
-  .chip.on { background:#16181d; border-color:#16181d; color:#fff; }
+  /* 공정 박스 (이모지 + 드롭다운) */
+  .pbox { display:flex; align-items:center; gap:10px; border:1px solid #e3e5e8; border-radius:12px; padding:5px 8px 5px 14px; margin-bottom:8px; }
+  .pbox .pemoji { font-size:22px; flex:none; }
+  .pbox select { border:none; padding:13px 4px; font-size:15px; font-weight:800; background:transparent; flex:1; border-radius:0; }
+  .pbox .rm { flex:none; width:26px; height:26px; border-radius:50%; border:none; background:#f2f3f5; color:#6b7078; font-size:12px; cursor:pointer; }
 
   /* 사진 */
   .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
@@ -171,7 +172,8 @@
 
       <div class="sec">
         <div class="lab">오늘의 공정 <span class="auto">공정표 자동</span></div>
-        <div class="chips" id="procChips"><div class="spin"></div></div>
+        <div id="procBoxes"><div class="spin"></div></div>
+        <div class="opt" onclick="addProcBox()">＋ 공정 추가</div>
         <div class="hint" id="procHint"></div>
       </div>
 
@@ -215,6 +217,7 @@
       <div class="sec" style="margin-bottom:0;">
         <div class="preview"><div class="pt">보고 미리보기</div><div id="previewBody">—</div></div>
         <button class="btn" id="submitBtn" onclick="submitAll()" style="margin-top:14px;">보고 제출<small>사진은 드라이브에, 보고서는 프로젝트 페이지에 자동 등록됩니다</small></button>
+        <div class="hint" style="text-align:center; margin-top:10px;">⚠️ 제출 후 완료 화면이 뜰 때까지 앱을 닫거나 다른 화면으로 이동하지 마세요.<br>사진 업로드는 시간이 걸릴 수 있으니 인터넷이 안정적인 곳에서 제출해주세요.</div>
       </div>
 
     </div>
@@ -371,7 +374,7 @@ function pickSite(id) {
   document.getElementById('tomorrowWrap').classList.add('hide');
   document.getElementById('tomorrowToggle').classList.remove('hide');
   document.getElementById('crewRows').innerHTML = '';
-  document.getElementById('procChips').innerHTML = '<div class="spin"></div>';
+  document.getElementById('procBoxes').innerHTML = '<div class="spin"></div>';
   document.getElementById('instList').innerHTML = '<div class="empty">불러오는 중…</div>';
 
   show('scr-form');
@@ -390,7 +393,7 @@ function pickSite(id) {
     var todaySet = {};
     (r.todayProcesses || []).forEach(function (t) { if (t.process) todaySet[t.process] = true; });
     state.procs = Object.keys(todaySet);
-    renderChips();
+    renderProcBoxes();
     // 지시
     renderInst();
     // 투입 현황 첫 행
@@ -398,25 +401,41 @@ function pickSite(id) {
     renderPreview();
   }).catch(function (e) {
     if (String(e.message) === 'unauthorized') return;
-    document.getElementById('procChips').innerHTML = '<div class="hint">공정 정보를 불러오지 못했습니다 — 직접 선택하세요</div>';
+    document.getElementById('procBoxes').innerHTML = '<div class="hint">공정 정보를 불러오지 못했습니다 — 직접 선택하세요</div>';
     document.getElementById('instList').innerHTML = '<div class="empty">지시를 불러오지 못했습니다</div>';
   });
 }
-function renderChips() {
+var PROC_EMOJI = {
+  '철거':'🔨','설비':'🔧','전기':'⚡','샷시':'🪟','바닥미장':'🧱','목공':'🪚','도막방수':'💧',
+  '타일':'🟦','필름':'🎞️','도장':'🎨','메지':'〰️','마루':'🪵','도배':'📜','가구':'🗄️',
+  '조명':'💡','시스템AC':'❄️','금속':'⚙️','세라믹':'🏺','이노솔':'✨','폐기물':'🗑️',
+  '준공':'🏁','기타':'📌','전열교환기':'🌀','돔천장':'🏛️','도기세팅':'🚽'
+};
+function procEmoji(n) { return PROC_EMOJI[n] || '🏗️'; }
+function renderProcBoxes() {
   var opts = (state.detail && state.detail.processOptions) || [];
+  if (!state.procs.length) state.procs = [''];
   var html = '';
-  opts.forEach(function (o) {
-    var on = state.procs.indexOf(o) !== -1;
-    html += '<div class="chip' + (on ? ' on' : '') + '" onclick="toggleProc(\'' + esc(o) + '\')">' + esc(o) + '</div>';
+  state.procs.forEach(function (p, i) {
+    var sel = '<select onchange="setProc(' + i + ', this.value)"><option value="">공정 선택</option>';
+    opts.forEach(function (o) {
+      sel += '<option value="' + esc(o) + '"' + (o === p ? ' selected' : '') + '>' + procEmoji(o) + ' ' + esc(o) + '</option>';
+    });
+    sel += '</select>';
+    html += '<div class="pbox"><span class="pemoji">' + (p ? procEmoji(p) : '❔') + '</span>' + sel
+      + (state.procs.length > 1 ? '<button class="rm" onclick="rmProcBox(' + i + ')">✕</button>' : '') + '</div>';
   });
-  document.getElementById('procChips').innerHTML = html || '<div class="hint">공정 옵션 없음</div>';
+  document.getElementById('procBoxes').innerHTML = html;
   var auto = (state.detail && state.detail.todayProcesses || []).map(function (t) { return t.name; }).join(', ');
   document.getElementById('procHint').textContent = auto ? '공정표 기준: ' + auto + ' · 다르면 수정하세요' : '오늘 공정표에 등록된 시공 일정이 없습니다 — 직접 선택하세요';
 }
-function toggleProc(name) {
-  var i = state.procs.indexOf(name);
-  if (i === -1) state.procs.push(name); else state.procs.splice(i, 1);
-  renderChips(); renderPreview();
+function setProc(i, v) { state.procs[i] = v; renderProcBoxes(); renderPreview(); }
+function addProcBox() { state.procs.push(''); renderProcBoxes(); }
+function rmProcBox(i) { state.procs.splice(i, 1); renderProcBoxes(); renderPreview(); }
+function collectProcs() {
+  var seen = {}, out = [];
+  state.procs.forEach(function (p) { if (p && !seen[p]) { seen[p] = true; out.push(p); } });
+  return out;
 }
 function renderInst() {
   var list = (state.detail && state.detail.instructions) || [];
@@ -525,7 +544,7 @@ function collectCrew() {
 function renderPreview() {
   var s = state.site; if (!s) return;
   var dday = ddayText(s.startDate);
-  var procLabel = state.procs.join('·') || '현장';
+  var procLabel = collectProcs().join('·') || '현장';
   var title = (dday && dday.indexOf('일차') !== -1 ? dday + ' — ' : '') + procLabel;
   var work = document.getElementById('workDone').value.trim();
   var spec = document.getElementById('specialNote').value.trim();
@@ -544,17 +563,18 @@ function renderPreview() {
 // ═════════ 제출 ═════════
 function submitAll() {
   var work = document.getElementById('workDone').value.trim();
-  if (!state.procs.length && !work) { toast('공정을 선택하거나 작업 내용을 입력하세요'); return; }
+  if (!collectProcs().length && !work) { toast('공정을 선택하거나 작업 내용을 입력하세요'); return; }
   if (!work) { toast('오늘 작업 내용을 입력해주세요'); return; }
 
   var btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  ovShow('보고 저장 중…', '노션에 일지를 등록하고 있습니다', 0);
+  state.submitting = true;
+  ovShow('보고 저장 중…', '노션에 일지를 등록하고 있습니다 · 화면을 닫지 마세요', 0);
 
   var doneIds = Object.keys(state.doneInst).filter(function (k) { return state.doneInst[k]; });
   api('submitReport', {
     sitePageId: state.site.id,
-    processTypes: state.procs,
+    processTypes: collectProcs(),
     workDone: work,
     specialNote: document.getElementById('specialNote').value.trim(),
     tomorrowPlan: document.getElementById('tomorrowPlan').value.trim(),
@@ -572,6 +592,7 @@ function submitAll() {
     return uploadQueue();
   }).then(finishSubmit).catch(function (e) {
     btn.disabled = false;
+    state.submitting = false;
     ovHide();
     if (String(e.message) !== 'unauthorized') toast('저장 실패: ' + e.message);
   });
@@ -588,10 +609,10 @@ function uploadQueue() {
   function next() {
     if (!queue.length) return Promise.resolve();
     var idx = queue.shift();
-    ovShow('사진 업로드 중…', '원본 화질로 드라이브에 저장합니다', (done / total) * 100, (done + 1) + ' / ' + total + '장');
+    ovShow('사진 업로드 중…', '화면을 닫지 말고 잠시만 기다려주세요 · 원본 화질로 저장 중', (done / total) * 100, (done + 1) + ' / ' + total + '장');
     return uploadOne(idx, 3).then(function (ok) {
       if (ok) done++; else state.failed.push(idx);
-      ovShow('사진 업로드 중…', '원본 화질로 드라이브에 저장합니다', (done / total) * 100, done + ' / ' + total + '장');
+      ovShow('사진 업로드 중…', '화면을 닫지 말고 잠시만 기다려주세요 · 원본 화질로 저장 중', (done / total) * 100, done + ' / ' + total + '장');
       return next();
     });
   }
@@ -625,6 +646,7 @@ function finishSubmit() {
     return;
   }
   ovHide();
+  state.submitting = false;
   document.getElementById('submitBtn').disabled = false;
   var r = state.result;
   show('scr-done');
@@ -688,6 +710,10 @@ function p2(n) { return ('0' + n).slice(-2); }
 (function init() {
   document.getElementById('keyInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') enterKey();
+  });
+  // 제출 중 실수로 페이지를 닫으려 하면 브라우저 경고 표시
+  window.addEventListener('beforeunload', function (e) {
+    if (state.submitting) { e.preventDefault(); e.returnValue = ''; }
   });
   if (localStorage.getItem(LS_KEY)) loadSites();
   else show('scr-key');
