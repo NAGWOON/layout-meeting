@@ -234,6 +234,70 @@
   .spin { width:24px; height:24px; border:2.5px solid var(--dash); border-top-color:var(--txt2);
     border-radius:50%; margin:34px auto; animation:sp .8s linear infinite; }
   @keyframes sp { to { transform:rotate(360deg); } }
+
+  /* ───────── 모드 선택 ───────── */
+  .modecard { display:flex; align-items:flex-start; gap:13px; padding:16px 17px; margin-bottom:10px; cursor:pointer; }
+  .modecard .ic { font-size:22px; line-height:1; margin-top:1px; }
+  .modecard .t { font-size:15px; font-weight:700; letter-spacing:-.2px; }
+  .modecard .d { font-size:11.5px; color:var(--txt3); margin-top:5px; line-height:1.6; }
+  .modecard .go { margin-left:auto; color:var(--txt4); font-size:17px; align-self:center; }
+
+  /* ───────── 실측: 담는 곳 ───────── */
+  .target { display:flex; align-items:center; justify-content:space-between; gap:10px; color:#fff;
+    background:rgba(16,18,23,.80); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px);
+    border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:11px 14px; margin-bottom:13px;
+    box-shadow:0 2px 6px rgba(10,12,16,.16), 0 10px 22px rgba(10,12,16,.18); }
+  .target .l { font-size:9.5px; letter-spacing:1px; color:rgba(255,255,255,.50); font-weight:700; }
+  .target select { background:transparent; border:none; color:#fff; font-size:15.5px; font-weight:700;
+    padding:3px 0 0; width:auto; border-radius:0; }
+  .target select:focus { border:none; }
+  .target .mg { font-size:11px; color:rgba(255,255,255,.58); text-decoration:underline; flex:none; cursor:pointer; }
+  .remain { display:flex; align-items:center; justify-content:space-between; margin:0 5px 9px; }
+  .remain .n { font-size:12px; font-weight:700; }
+  .remain .a { font-size:11.5px; color:var(--accent); font-weight:700; cursor:pointer; }
+  .ph.sel { outline:2.5px solid var(--accent); outline-offset:-2.5px; }
+  .ph.sel::after { content:"✓"; position:absolute; top:4px; right:4px; width:18px; height:18px; border-radius:50%;
+    background:var(--accent); color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .putbar { background:var(--accent); color:#fff; border-radius:15px; text-align:center; padding:14px;
+    font-size:13.5px; font-weight:800; margin-top:13px; cursor:pointer;
+    box-shadow:0 2px 6px rgba(47,111,237,.22), 0 10px 22px rgba(47,111,237,.20); }
+  .putbar.off { background:var(--soft); color:var(--txt4); box-shadow:none; }
+  .doneline { display:flex; gap:6px; flex-wrap:wrap; margin-top:15px; }
+  .dchip { font-size:11.5px; font-weight:600; color:var(--txt2); background:var(--soft);
+    border:1px solid var(--cardbd); border-radius:999px; padding:6px 11px; cursor:pointer; }
+
+  /* ───────── 공간 목록 관리 ───────── */
+  .srow { display:flex; align-items:center; gap:10px; padding:12px 13px; margin-bottom:7px; }
+  .srow .em { font-size:16px; }
+  .srow .nm2 { font-size:13.5px; font-weight:700; flex:1; }
+  .srow .x { color:var(--txt4); font-size:12px; cursor:pointer; padding:2px 4px; }
+  .srow .bd { font-family:var(--didone); font-style:italic; font-size:11px; color:var(--accent); }
+  .divlab { font-size:10px; font-weight:700; letter-spacing:1.4px; color:var(--txt4); margin:20px 0 9px 5px; }
+
+  /* ───────── 메모 카드 ───────── */
+  .scard { padding:14px 15px; margin-bottom:10px; }
+  .scard .hdr { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .scard .nm2 { font-size:14.5px; font-weight:700; }
+  .scard .cnt { font-size:11px; color:var(--txt3); }
+  .thumbs { display:flex; gap:5px; margin-bottom:11px; }
+  .thumbs img { width:38px; height:38px; border-radius:8px; object-fit:cover; }
+  .thumbs .more { width:38px; height:38px; border-radius:8px; background:var(--soft); color:var(--txt3);
+    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .mitem { border:1px solid var(--fieldbd); border-radius:12px; padding:10px 11px; margin-bottom:7px; background:var(--field); }
+  .mitem textarea { border:none; background:transparent; padding:0; min-height:40px; font-size:13px; border-radius:0; }
+  .mitem textarea:focus { border:none; }
+  .mitem .foot { display:flex; align-items:center; justify-content:space-between; margin-top:7px; }
+  .mitem .f { font-size:10.5px; color:var(--txt4); }
+  .mitem.flag { border-color:rgba(224,169,46,.50); background:rgba(224,169,46,.09); }
+  .mitem.flag .f { color:#a67c12; font-weight:700; }
+  @media (prefers-color-scheme: dark) { .mitem.flag .f { color:#e0b45e; } }
+  .sw2 { width:36px; height:20px; border-radius:999px; background:var(--dash); position:relative; flex:none; cursor:pointer; }
+  .sw2::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); transition:.18s; }
+  .sw2.on { background:#e0a92e; }
+  .sw2.on::after { left:18px; }
+  .additem { text-align:center; font-size:11.5px; color:var(--txt4); border:1px dashed var(--dash);
+    border-radius:11px; padding:9px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -358,6 +422,111 @@
     </div>
   </div>
 
+  <!-- ═══ 화면 1.5: 모드 선택 ═══ -->
+  <div id="scr-mode" class="hide">
+    <div class="hd">
+      <div class="topline"><span class="back" onclick="goSites()">‹</span><div class="dmark">D</div><div class="stage" id="mStage">—</div></div>
+      <div class="site" id="mSite">현장</div>
+    </div>
+    <div class="body">
+      <div class="lab">무엇을 하시겠어요?</div>
+      <div class="modecard" onclick="startReport()">
+        <div class="ic">📝</div>
+        <div><div class="t">일일 보고</div><div class="d">오늘 공정 · 현장 사진 · 지시 확인<br>노션 공정 일지에 등록됩니다</div></div>
+        <div class="go">›</div>
+      </div>
+      <div class="modecard" onclick="startSurvey()">
+        <div class="ic">📐</div>
+        <div><div class="t">실측 사진</div><div class="d">찍어둔 사진을 공간별로 정리<br>드라이브 · 노션에 동시 저장됩니다</div></div>
+        <div class="go">›</div>
+      </div>
+      <div class="hint">현장에서는 평소처럼 촬영하시고, 편할 때 올리시면 됩니다.</div>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 4: 실측 사진 담기 ═══ -->
+  <div id="scr-survey" class="hide">
+    <div class="hd">
+      <div class="topline"><span class="back" onclick="backToMode()">‹</span><div class="dmark">D</div><div class="stage">실측 사진</div></div>
+      <div class="site" id="svSite">현장</div>
+      <div class="foot">
+        <div class="date">담은 사진은 목록에서 사라집니다</div>
+        <div class="day"><span class="num" id="svRemainNum">0</span><span class="u">장 남음</span></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="target">
+        <div><div class="l">담는 곳</div><select id="svTarget" onchange="setSvTarget(this.value)"></select></div>
+        <div class="mg" onclick="openSpaces()">공간 목록</div>
+      </div>
+      <div class="remain">
+        <div class="n" id="svRemainTxt">사진을 불러오세요</div>
+        <div class="a" onclick="selectAllRemain()">전체 선택</div>
+      </div>
+      <div class="photos" id="svGrid"></div>
+      <input type="file" id="svInput" accept="image/*" multiple class="hide">
+      <div class="putbar off" id="svPut" onclick="putSelected()">사진을 먼저 불러오세요</div>
+      <div class="doneline" id="svDone"></div>
+      <button class="btn line" style="margin-top:18px;" onclick="goMemo()">다음 · 메모 작성</button>
+      <div class="hint">사진 순서를 믿지 않습니다. 공간을 고르고 해당 사진만 골라 담으면 됩니다.</div>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 5: 공간 목록 관리 ═══ -->
+  <div id="scr-spaces" class="hide">
+    <div class="hd">
+      <div class="topline"><span class="back" onclick="closeSpaces()">‹</span><div class="dmark">D</div><div class="stage">공간 목록</div></div>
+      <div class="site">공간 관리</div>
+      <div class="foot"><div class="date">순서는 목록에 나오는 차례입니다</div></div>
+    </div>
+    <div class="body">
+      <div class="divlab">전 현장 공통</div>
+      <div id="spCommon"></div>
+      <div class="opt" onclick="addSpace(false)">＋ 공통 공간 추가</div>
+      <div class="divlab">이 현장에만 있는 공간</div>
+      <div id="spSite"></div>
+      <div class="opt" onclick="addSpace(true)">＋ 이 현장 공간 추가</div>
+      <button class="btn" style="margin-top:20px;" onclick="saveSpacesNow()">저장</button>
+      <div class="hint">공통 목록은 모든 현장에 적용되고, 아래 목록은 이 현장에만 남습니다.</div>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 6: 메모 & 특이사항 ═══ -->
+  <div id="scr-smemo" class="hide">
+    <div class="hd">
+      <div class="topline"><span class="back" onclick="backToSurvey()">‹</span><div class="dmark">D</div><div class="stage">메모 & 특이사항</div></div>
+      <div class="site" id="smSite">현장</div>
+      <div class="foot">
+        <div class="date" id="smMeta"></div>
+        <div class="day"><span class="num" id="smCount">0</span><span class="u">장</span></div>
+      </div>
+    </div>
+    <div class="body">
+      <div id="smList"></div>
+      <button class="btn" style="margin-top:16px;" onclick="saveSurvey()">실측 사진 저장<small>드라이브 폴더와 노션 정리가 함께 만들어집니다</small></button>
+      <div class="hint" style="text-align:center;">⚠️ 완료 화면이 뜰 때까지 앱을 닫지 마세요.<br>사진이 많으면 몇 분 걸릴 수 있으니 인터넷이 안정적인 곳에서 저장해주세요.</div>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 7: 실측 완료 ═══ -->
+  <div id="scr-sdone" class="hide">
+    <div class="hd">
+      <div class="topline"><div class="dmark">D</div><div class="stage">실측 정리 완료</div></div>
+      <div class="site" id="sdSite">—</div>
+      <div class="foot"><div class="date" id="sdDate"></div></div>
+    </div>
+    <div class="donewrap">
+      <div class="ok">✅</div>
+      <div class="big" id="sdTitle">사진 정리 완료</div>
+      <div class="sub" id="sdSub"></div>
+      <div class="lab">정리 결과</div>
+      <div class="kakao" id="sdResult">—</div>
+      <button class="btn" onclick="openSurveyPage()">노션 실측 사진 열기</button>
+      <button class="btn line" style="margin-top:9px;" onclick="openSurveyFolder()">드라이브 폴더 열기</button>
+      <button class="btn line" style="margin-top:9px;" onclick="resetAll()">처음으로</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- 제출 진행 오버레이 -->
@@ -406,7 +575,7 @@ function toast(msg) {
   setTimeout(function () { t.classList.remove('show'); }, 2200);
 }
 function show(id) {
-  ['scr-key','scr-sites','scr-form','scr-done'].forEach(function (s) {
+  ['scr-key','scr-sites','scr-mode','scr-form','scr-done','scr-survey','scr-spaces','scr-smemo','scr-sdone'].forEach(function (s) {
     document.getElementById(s).classList.toggle('hide', s !== id);
   });
   window.scrollTo(0, 0);
@@ -487,6 +656,13 @@ function pickSite(id) {
   if (!s) return;
   state.site = s;
   localStorage.setItem(LS_RECENT, id);
+  document.getElementById('mSite').textContent = s.name;
+  document.getElementById('mStage').textContent = s.stage || '';
+  show('scr-mode');
+}
+function backToMode() { show('scr-mode'); }
+function startReport() {
+  var s = state.site, id = s.id;
   // 초기화
   state.procs = []; state.photos = []; state.doneInst = {}; state.detail = null;
   document.getElementById('workDone').value = '';
@@ -856,6 +1032,306 @@ function p2(n) { return ('0' + n).slice(-2); }
   if (localStorage.getItem(LS_KEY)) loadSites();
   else show('scr-key');
 })();
+
+// ═════════════════════════════════════════
+//                실측 사진
+// ═════════════════════════════════════════
+function svState() {
+  if (!state.sv) state.sv = { spaces: [], common: [], siteSpaces: [], photos: [], target: null, items: {}, fileIds: {} };
+  return state.sv;
+}
+
+function startSurvey() {
+  state.sv = { spaces: [], common: [], siteSpaces: [], photos: [], target: null, items: {}, fileIds: {} };
+  show('scr-survey');
+  document.getElementById('svSite').textContent = state.site.name;
+  document.getElementById('svGrid').innerHTML = '<div class="spin"></div>';
+  api('getSpaces', { sitePageId: state.site.id }).then(function (r) {
+    if (!r.ok) throw new Error(r.error || '공간 목록 오류');
+    var sv = svState();
+    sv.common = r.common || [];
+    sv.siteSpaces = r.site || [];
+    sv.spaces = sv.common.concat(sv.siteSpaces);
+    sv.target = sv.spaces.length ? sv.spaces[0].name : null;
+    renderSurvey();
+  }).catch(function (e) {
+    if (String(e.message) === 'unauthorized') return;
+    document.getElementById('svGrid').innerHTML = '';
+    toast('공간 목록을 불러오지 못했습니다');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('svInput').addEventListener('change', function (e) {
+    var sv = svState();
+    Array.prototype.slice.call(e.target.files || []).forEach(function (f) {
+      sv.photos.push({ file: f, url: URL.createObjectURL(f), space: null, sel: false });
+    });
+    e.target.value = '';
+    renderSurvey();
+  });
+});
+
+function spaceOf(name) {
+  var sv = svState(), out = null;
+  sv.spaces.forEach(function (x) { if (x.name === name) out = x; });
+  return out || { emoji: '📌', name: name };
+}
+
+function renderSurvey() {
+  var sv = svState();
+
+  var sel = '';
+  sv.spaces.forEach(function (x) {
+    sel += '<option value="' + esc(x.name) + '"' + (x.name === sv.target ? ' selected' : '') + '>'
+         + (x.emoji || '📌') + ' ' + esc(x.name) + '</option>';
+  });
+  document.getElementById('svTarget').innerHTML = sel || '<option>공간 없음</option>';
+
+  var rest = [], selCnt = 0;
+  sv.photos.forEach(function (p, i) { if (!p.space) { rest.push(i); if (p.sel) selCnt++; } });
+
+  document.getElementById('svRemainNum').textContent = rest.length;
+  document.getElementById('svRemainTxt').textContent =
+    sv.photos.length ? '남은 사진 ' + rest.length + '장 · 전체 ' + sv.photos.length + '장' : '사진을 불러오세요';
+
+  var html = '';
+  rest.forEach(function (i) {
+    html += '<div class="ph' + (sv.photos[i].sel ? ' sel' : '') + '" onclick="toggleSvPhoto(' + i + ')">'
+          + '<img src="' + sv.photos[i].url + '"></div>';
+  });
+  html += '<div class="ph add" onclick="document.getElementById(\'svInput\').click()">＋</div>';
+  document.getElementById('svGrid').innerHTML = html;
+
+  var put = document.getElementById('svPut');
+  if (!sv.photos.length) { put.className = 'putbar off'; put.textContent = '사진을 먼저 불러오세요'; }
+  else if (!selCnt) { put.className = 'putbar off'; put.textContent = '담을 사진을 선택하세요'; }
+  else {
+    var t = spaceOf(sv.target);
+    put.className = 'putbar';
+    put.textContent = '선택한 ' + selCnt + '장을 ' + (t.emoji || '') + ' ' + t.name + ' 에 담기';
+  }
+
+  var counts = {};
+  sv.photos.forEach(function (p) { if (p.space) counts[p.space] = (counts[p.space] || 0) + 1; });
+  var chips = '';
+  Object.keys(counts).forEach(function (n) {
+    var x = spaceOf(n);
+    chips += '<div class="dchip" onclick="unassign(\'' + esc(n) + '\')">' + (x.emoji || '') + ' ' + esc(n) + ' ' + counts[n] + '</div>';
+  });
+  document.getElementById('svDone').innerHTML = chips;
+}
+
+function setSvTarget(v) { svState().target = v; renderSurvey(); }
+function toggleSvPhoto(i) { var p = svState().photos[i]; p.sel = !p.sel; renderSurvey(); }
+function selectAllRemain() {
+  var sv = svState(), any = false;
+  sv.photos.forEach(function (p) { if (!p.space && !p.sel) any = true; });
+  sv.photos.forEach(function (p) { if (!p.space) p.sel = any; });
+  renderSurvey();
+}
+function putSelected() {
+  var sv = svState();
+  if (!sv.target) { toast('공간을 먼저 고르세요'); return; }
+  var n = 0;
+  sv.photos.forEach(function (p) { if (!p.space && p.sel) { p.space = sv.target; p.sel = false; n++; } });
+  if (n) toast(n + '장을 ' + sv.target + '에 담았습니다');
+  renderSurvey();
+}
+function unassign(name) {
+  var sv = svState();
+  sv.photos.forEach(function (p) { if (p.space === name) { p.space = null; p.sel = false; } });
+  sv.target = name;
+  toast(name + ' 사진을 다시 꺼냈습니다');
+  renderSurvey();
+}
+
+// ── 공간 목록 관리 ──
+function openSpaces() { renderSpaces(); show('scr-spaces'); }
+function closeSpaces() { renderSurvey(); show('scr-survey'); }
+function renderSpaces() {
+  var sv = svState();
+  function rows(list, isSite) {
+    var h = '';
+    list.forEach(function (x, i) {
+      h += '<div class="srow"><span class="em">' + (x.emoji || '📌') + '</span>'
+         + '<span class="nm2">' + esc(x.name) + '</span>'
+         + (isSite ? '<span class="bd">this site</span>' : '')
+         + '<span class="x" onclick="rmSpace(' + (isSite ? 'true' : 'false') + ',' + i + ')">✕</span></div>';
+    });
+    return h || '<div class="hint">없음</div>';
+  }
+  document.getElementById('spCommon').innerHTML = rows(sv.common, false);
+  document.getElementById('spSite').innerHTML = rows(sv.siteSpaces, true);
+}
+function parseSpace(str) {
+  var t = String(str || '').trim();
+  if (!t) return null;
+  var m = t.match(/^([\u203C-\u3299\uD83C-\uDBFF\uDC00-\uDFFF\u2190-\u21FF\u2600-\u27BF]+)\s*(.+)$/);
+  if (m) return { emoji: m[1], name: m[2].trim() };
+  return { emoji: '📌', name: t };
+}
+function addSpace(isSite) {
+  var v = prompt('공간 이름을 입력하세요\n(앞에 이모지를 붙여도 됩니다 — 예: 🪜 다락)');
+  var sp = parseSpace(v);
+  if (!sp) return;
+  var sv = svState();
+  (isSite ? sv.siteSpaces : sv.common).push(sp);
+  renderSpaces();
+}
+function rmSpace(isSite, i) {
+  var sv = svState();
+  (isSite ? sv.siteSpaces : sv.common).splice(i, 1);
+  renderSpaces();
+}
+function saveSpacesNow() {
+  var sv = svState();
+  api('saveSpaces', { sitePageId: state.site.id, common: sv.common, site: sv.siteSpaces }).then(function (r) {
+    if (!r.ok) throw new Error(r.error);
+    sv.spaces = sv.common.concat(sv.siteSpaces);
+    if (!spaceOf(sv.target) || !sv.spaces.some(function (x) { return x.name === sv.target; }))
+      sv.target = sv.spaces.length ? sv.spaces[0].name : null;
+    toast('공간 목록을 저장했습니다');
+    closeSpaces();
+  }).catch(function (e) { if (String(e.message) !== 'unauthorized') toast('저장 실패'); });
+}
+
+// ── 메모 & 특이사항 ──
+function usedSpaces() {
+  var sv = svState(), order = [], map = {};
+  sv.photos.forEach(function (p, i) {
+    if (!p.space) return;
+    if (!map[p.space]) { map[p.space] = []; order.push(p.space); }
+    map[p.space].push(i);
+  });
+  return order.map(function (n) {
+    var x = spaceOf(n);
+    return { emoji: x.emoji || '📌', name: n, photos: map[n] };
+  });
+}
+function backToSurvey() { renderSurvey(); show('scr-survey'); }
+function goMemo() {
+  var sv = svState();
+  var rest = sv.photos.filter(function (p) { return !p.space; }).length;
+  if (!sv.photos.length) { toast('사진을 먼저 불러오세요'); return; }
+  if (rest) { toast('아직 ' + rest + '장이 분류되지 않았습니다'); return; }
+  document.getElementById('smSite').textContent = state.site.name;
+  var used = usedSpaces();
+  document.getElementById('smCount').textContent = sv.photos.length;
+  document.getElementById('smMeta').textContent = '공간 ' + used.length + '곳 정리됨';
+  renderMemo();
+  show('scr-smemo');
+}
+function renderMemo() {
+  var sv = svState(), html = '';
+  usedSpaces().forEach(function (u) {
+    var items = sv.items[u.name] || (sv.items[u.name] = []);
+    html += '<div class="scard"><div class="hdr"><span>' + u.emoji + '</span>'
+          + '<span class="nm2">' + esc(u.name) + '</span><span class="cnt">' + u.photos.length + '장</span></div>';
+    html += '<div class="thumbs">';
+    u.photos.slice(0, 3).forEach(function (i) { html += '<img src="' + sv.photos[i].url + '">'; });
+    if (u.photos.length > 3) html += '<div class="more">+' + (u.photos.length - 3) + '</div>';
+    html += '</div>';
+    items.forEach(function (it, k) {
+      html += '<div class="mitem' + (it.flag ? ' flag' : '') + '">'
+            + '<textarea placeholder="예: 신발장 하부 배관 간섭 — 하부장 높이 조정 필요" '
+            + 'oninput="setMemo(\'' + esc(u.name) + '\',' + k + ',this.value)">' + esc(it.text) + '</textarea>'
+            + '<div class="foot"><div class="f">' + (it.flag ? '⚠️ 특이사항 · 보고서 초안에 포함' : '일반 기록') + '</div>'
+            + '<div class="sw2' + (it.flag ? ' on' : '') + '" onclick="toggleFlag(\'' + esc(u.name) + '\',' + k + ')"></div></div></div>';
+    });
+    html += '<div class="additem" onclick="addMemo(\'' + esc(u.name) + '\')">＋ 항목 추가</div></div>';
+  });
+  document.getElementById('smList').innerHTML = html;
+}
+function addMemo(name) { var sv = svState(); (sv.items[name] = sv.items[name] || []).push({ text: '', flag: false }); renderMemo(); }
+function setMemo(name, k, v) { svState().items[name][k].text = v; }
+function toggleFlag(name, k) { var it = svState().items[name][k]; it.flag = !it.flag; renderMemo(); }
+
+// ── 저장 ──
+function saveSurvey() {
+  var sv = svState();
+  var used = usedSpaces();
+  if (!used.length) { toast('담긴 사진이 없습니다'); return; }
+  state.submitting = true;
+  ovShow('실측 저장 준비 중…', '드라이브 폴더와 노션 페이지를 만들고 있습니다 · 화면을 닫지 마세요', 0);
+
+  api('surveyStart', { sitePageId: state.site.id, spaces: used.map(function (u) { return u.name; }) })
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.error || '준비 실패');
+      sv.pageId = r.pageId; sv.folders = r.folders; sv.photoRoot = r.photoRoot;
+      sv.fileIds = {};
+      return uploadSurvey(used);
+    })
+    .then(function () {
+      ovShow('보고서 정리 중…', '노션에 공간별로 정리하고 있습니다', 100, '');
+      return api('surveyFinish', {
+        pageId: sv.pageId,
+        surveyDate: todayStr(),
+        spaces: used.map(function (u) {
+          return {
+            emoji: u.emoji, name: u.name,
+            items: (sv.items[u.name] || []).filter(function (x) { return x.text && x.text.trim(); }),
+            fileIds: u.photos.map(function (i) { return sv.fileIds[i]; }).filter(Boolean)
+          };
+        })
+      });
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.error || '정리 실패');
+      ovHide(); state.submitting = false;
+      sv.result = r;
+      show('scr-sdone');
+      var d = new Date();
+      document.getElementById('sdSite').textContent = state.site.name;
+      document.getElementById('sdDate').textContent = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 실측';
+      document.getElementById('sdTitle').textContent = '사진 ' + sv.photos.length + '장 정리 완료';
+      document.getElementById('sdSub').innerHTML = '드라이브와 노션에 동시에 반영되었습니다';
+      var lines = used.map(function (u) { return u.emoji + ' ' + u.name + '  ' + u.photos.length + '장'; });
+      if (r.flagged) lines.push('', '⚠️ 특이사항 ' + r.flagged + '건이 실측 보고서 초안에 추가되었습니다');
+      document.getElementById('sdResult').textContent = lines.join('\n');
+    })
+    .catch(function (e) {
+      state.submitting = false; ovHide();
+      if (String(e.message) !== 'unauthorized') toast('저장 실패: ' + e.message);
+    });
+}
+
+function uploadSurvey(used) {
+  var sv = svState();
+  var queue = [];
+  used.forEach(function (u) { u.photos.forEach(function (i) { queue.push({ idx: i, folder: sv.folders[u.name] }); }); });
+  var total = queue.length, done = 0;
+  function next() {
+    if (!queue.length) return Promise.resolve();
+    var job = queue.shift();
+    ovShow('사진 업로드 중…', '화면을 닫지 말고 잠시만 기다려주세요 · 원본 화질로 저장 중',
+           (done / total) * 100, (done + 1) + ' / ' + total + '장');
+    return uploadSurveyOne(job, 3).then(function () {
+      done++;
+      ovShow('사진 업로드 중…', '화면을 닫지 말고 잠시만 기다려주세요 · 원본 화질로 저장 중',
+             (done / total) * 100, done + ' / ' + total + '장');
+      return next();
+    });
+  }
+  return next();
+}
+function uploadSurveyOne(job, tries) {
+  var sv = svState(), p = sv.photos[job.idx];
+  return fileToBase64(p.file).then(function (b64) {
+    return api('uploadPhoto', { folderId: job.folder, filename: p.file.name || ('survey' + job.idx + '.jpg'), base64: b64 });
+  }).then(function (r) {
+    if (!r.ok) throw new Error(r.error);
+    sv.fileIds[job.idx] = r.fileId;
+    return true;
+  }).catch(function (e) {
+    if (String(e.message) === 'unauthorized') throw e;
+    if (tries > 1) return uploadSurveyOne(job, tries - 1);
+    return false;
+  });
+}
+
+function openSurveyPage() { var r = svState().result; if (r && r.pageUrl) window.open(r.pageUrl, '_blank'); }
+function openSurveyFolder() { var sv = svState(); if (sv.photoRoot) window.open(sv.photoRoot, '_blank'); }
 </script>
 </body>
 </html>
