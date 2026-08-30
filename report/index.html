@@ -3,133 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#101114">
+<meta name="theme-color" content="#eceef2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
 <title>DASIFILL 현장 보고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html { background:#e9eaec; }
-  body {
-    font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
-    background:#e9eaec; color:#16181d; display:flex; justify-content:center; min-height:100vh;
+
+  :root {
+    --sans:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
+    --didone:"Bodoni Moda",Didot,Georgia,"Times New Roman",serif;
+
+    --bg: radial-gradient(70% 50% at 12% 58%, rgba(228,196,148,.55) 0%, rgba(0,0,0,0) 62%),
+          radial-gradient(55% 40% at 88% 78%, rgba(212,188,158,.40) 0%, rgba(0,0,0,0) 66%),
+          radial-gradient(75% 45% at 80% 12%, rgba(176,200,228,.55) 0%, rgba(0,0,0,0) 64%),
+          linear-gradient(168deg,#f1f2f5 0%,#e7e9ee 48%,#dfe2e8 100%);
+
+    --txt:#16181d; --txt2:#5a616a; --txt3:#828a93; --txt4:#a9b0b8;
+    --card:rgba(255,255,255,.56);
+    --cardbd:rgba(255,255,255,.72);
+    --cardsh: inset 0 1px 0 rgba(255,255,255,.62), 0 2px 5px rgba(16,18,22,.05),
+              0 8px 16px rgba(16,18,22,.06), 0 20px 36px rgba(16,18,22,.07);
+    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
+    --line:rgba(120,128,140,.16);
+    --soft:rgba(255,255,255,.34);
+    --dash:rgba(90,98,110,.34);
+    --accent:#2f6fed;
+    --btn:linear-gradient(180deg,#22252b,#101216); --btntx:#fff; --btnsub:rgba(255,255,255,.48);
+    --field:rgba(255,255,255,.62); --fieldbd:rgba(120,128,140,.22);
   }
-  .app { width:100%; max-width:480px; background:#fff; min-height:100vh; display:flex; flex-direction:column; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: radial-gradient(70% 50% at 12% 58%, rgba(198,152,92,.34) 0%, rgba(0,0,0,0) 62%),
+            radial-gradient(55% 40% at 88% 78%, rgba(170,130,80,.24) 0%, rgba(0,0,0,0) 66%),
+            radial-gradient(75% 45% at 80% 12%, rgba(88,112,140,.32) 0%, rgba(0,0,0,0) 64%),
+            linear-gradient(168deg,#23262c 0%,#15171b 45%,#0d0e11 100%);
+      --txt:#eef0f3; --txt2:#b6bcc4; --txt3:#868d97; --txt4:#6a717a;
+      --card:rgba(255,255,255,.075);
+      --cardbd:rgba(255,255,255,.11);
+      --cardsh: inset 0 1px 0 rgba(255,255,255,.14), 0 3px 8px rgba(0,0,0,.28), 0 14px 28px rgba(0,0,0,.32);
+      --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.34),transparent);
+      --line:rgba(255,255,255,.08);
+      --soft:rgba(255,255,255,.05);
+      --dash:rgba(255,255,255,.16);
+      --accent:#7aa5ff;
+      --btn:linear-gradient(180deg,#f4f6f8,#dfe3e8); --btntx:#111318; --btnsub:rgba(17,19,24,.46);
+      --field:rgba(255,255,255,.06); --fieldbd:rgba(255,255,255,.12);
+    }
+  }
 
-  /* 헤더 */
-  .hd { background:#101114; color:#f5f6f7; padding:18px 20px 16px; padding-top:calc(18px + env(safe-area-inset-top)); }
-  .hd .brand { font-size:10px; letter-spacing:3px; color:#8a8f98; margin-bottom:8px; }
-  .hd .site { font-size:16px; font-weight:800; letter-spacing:-0.4px; display:flex; align-items:center; gap:8px; }
-  .hd .meta { margin-top:6px; font-size:11.5px; color:#8a8f98; }
-  .hd .meta b { color:#f5f6f7; }
-  .hd .back { font-size:15px; color:#8a8f98; cursor:pointer; flex:none; }
-  .auto { display:inline-block; font-size:9px; color:#5b8cff; border:1px solid #2b3b5e; border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:1px; }
-
-  .body { padding:16px 18px 28px; flex:1; }
-  .sec { margin-bottom:18px; }
-  .lab { font-size:11px; font-weight:700; color:#9aa0a8; letter-spacing:1.5px; margin-bottom:8px; }
+  html { background:#e7e9ee; }
+  @media (prefers-color-scheme: dark) { html { background:#0f1114; } }
+  body {
+    font-family:var(--sans); color:var(--txt);
+    min-height:100vh; display:flex; justify-content:center;
+    background:var(--bg); background-attachment:fixed;
+  }
+  .app { width:100%; max-width:480px; min-height:100vh; display:flex; flex-direction:column;
+    padding:14px 14px calc(24px + env(safe-area-inset-bottom)); }
   .hide { display:none !important; }
 
-  /* 공용 입력 */
-  textarea, input[type=text], input[type=number], input[type=time], select {
-    width:100%; border:1px solid #e3e5e8; border-radius:12px; padding:12px 14px;
-    font-size:14px; font-family:inherit; color:#16181d; background:#fff; outline:none;
-    -webkit-appearance:none; appearance:none;
-  }
-  textarea:focus, input:focus, select:focus { border-color:#16181d; }
-  textarea { resize:vertical; min-height:74px; line-height:1.6; }
-  .btn {
-    display:block; width:100%; background:#16181d; color:#fff; border:none; border-radius:12px;
-    text-align:center; padding:15px; font-size:14px; font-weight:800; font-family:inherit;
-    letter-spacing:-0.2px; cursor:pointer;
-  }
-  .btn:disabled { background:#c9ccd2; }
-  .btn small { display:block; font-weight:400; font-size:10px; color:#8a8f98; margin-top:2px; }
-  .btn.line { background:#fff; color:#16181d; border:1px solid #e3e5e8; font-weight:700; }
-  .hint { font-size:10.5px; color:#b0b4ba; margin-top:6px; line-height:1.5; }
+  /* ───────── 헤더 (떠 있는 다크 글래스) ───────── */
+  .hd { border-radius:22px; padding:15px 17px 14px; color:#fff; position:relative; overflow:hidden; flex:none;
+    margin-top:calc(env(safe-area-inset-top) * 0.5);
+    background:rgba(16,18,23,.72);
+    -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 1px 2px rgba(10,12,16,.14), 0 6px 14px rgba(10,12,16,.18), 0 18px 34px rgba(10,12,16,.20); }
+  .hd::after { content:""; position:absolute; left:0; right:0; top:0; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent); }
+  .topline { display:flex; align-items:center; gap:9px; margin-bottom:11px; }
+  .dmark { width:26px; height:26px; border-radius:8px; background:#fff; color:#101114; flex:none;
+    display:flex; align-items:center; justify-content:center; font-family:var(--didone); font-size:16px; font-weight:600; }
+  .stage { font-size:9.5px; font-weight:700; letter-spacing:.6px; color:rgba(255,255,255,.58); }
+  .hd .back { font-size:19px; line-height:1; color:rgba(255,255,255,.55); cursor:pointer; margin-right:-2px; padding:2px 4px 4px 0; }
+  .hd .site { font-size:16px; font-weight:700; letter-spacing:-.4px; }
+  .hd .foot { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:13px; }
+  .hd .date { font-size:11.5px; color:rgba(255,255,255,.54); padding-bottom:5px; line-height:1.5; }
+  .hd .day { display:flex; align-items:baseline; gap:5px; flex:none; }
+  .hd .day .num { font-family:var(--didone); font-size:38px; font-weight:500; line-height:.86; letter-spacing:-.5px; }
+  .hd .day .u { font-size:11px; color:rgba(255,255,255,.54); font-weight:500; }
 
-  /* 진입코드 화면 */
-  .keywrap { padding:60px 26px; text-align:center; }
-  .keywrap .logo { font-size:12px; letter-spacing:5px; font-weight:800; margin-bottom:6px; }
-  .keywrap .sub { font-size:12px; color:#9aa0a8; margin-bottom:32px; }
-  .keywrap input { text-align:center; font-size:18px; letter-spacing:3px; font-weight:700; text-transform:uppercase; }
-  .keyerr { font-size:12px; color:#d5443c; margin-top:10px; min-height:16px; }
+  /* ───────── 본문 ───────── */
+  .body { padding:0 2px; flex:1; }
+  .sec { margin-bottom:6px; }
+  .lab { font-size:10px; font-weight:700; letter-spacing:1.6px; color:var(--txt3); margin:21px 0 9px 5px; }
+  .lab .auto, .auto { font-family:var(--didone); font-style:italic; font-size:10.5px; font-weight:500;
+    letter-spacing:.2px; color:var(--accent); margin-left:7px; text-transform:none; }
+  .hint { font-size:10.5px; color:var(--txt4); margin-top:8px; line-height:1.6; padding-left:5px; }
+
+  /* 글래스 카드 */
+  .gc, .chk, .preview, .internal, .kakao, .sitecard, .pbox, .ta-wrap {
+    border-radius:16px; position:relative;
+    background:var(--card); border:1px solid var(--cardbd); box-shadow:var(--cardsh);
+    -webkit-backdrop-filter:blur(28px) saturate(190%); backdrop-filter:blur(28px) saturate(190%); }
+  .gc::before, .chk::before, .preview::before, .internal::before, .sitecard::before, .pbox::before, .ta-wrap::before {
+    content:""; position:absolute; left:14px; right:14px; top:0; height:1px; background:var(--gloss); }
+
+  /* 입력 */
+  textarea, input[type=text], input[type=number], input[type=time], select {
+    width:100%; border:1px solid var(--fieldbd); border-radius:13px; padding:13px 14px;
+    font-size:14px; font-family:inherit; color:var(--txt); background:var(--field); outline:none;
+    -webkit-appearance:none; appearance:none; }
+  textarea:focus, input:focus, select:focus { border-color:var(--accent); }
+  textarea { resize:vertical; min-height:78px; line-height:1.6; }
+  textarea::placeholder, input::placeholder { color:var(--txt4); }
+
+  .btn { display:block; width:100%; background:var(--btn); color:var(--btntx); border:none; border-radius:16px;
+    text-align:center; padding:16px; font-size:14.5px; font-weight:800; font-family:inherit; letter-spacing:-.2px; cursor:pointer;
+    box-shadow:0 1px 2px rgba(10,12,16,.16), 0 6px 14px rgba(10,12,16,.18), 0 16px 30px rgba(10,12,16,.18); }
+  .btn:disabled { opacity:.45; }
+  .btn small { display:block; font-weight:400; font-size:10px; color:var(--btnsub); margin-top:3px; }
+  .btn.line { background:var(--card); color:var(--txt); border:1px solid var(--cardbd); font-weight:700;
+    box-shadow:var(--cardsh); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); }
+
+  .opt { text-align:center; font-size:12.5px; font-weight:600; color:var(--txt3); background:var(--soft);
+    border:1px dashed var(--dash); border-radius:14px; padding:11px; cursor:pointer; }
+
+  /* 진입코드 */
+  .keywrap { padding:74px 24px; text-align:center; }
+  .keywrap .dmark { width:46px; height:46px; border-radius:14px; font-size:27px; margin:0 auto 18px;
+    box-shadow:0 2px 6px rgba(16,18,22,.10), 0 10px 22px rgba(16,18,22,.12); }
+  .keywrap .sub { font-size:12.5px; color:var(--txt3); margin-bottom:30px; line-height:1.6; }
+  .keywrap input { text-align:center; font-size:19px; letter-spacing:3px; font-weight:700; text-transform:uppercase; padding:16px; }
+  .keyerr { font-size:12px; color:#d5443c; margin:11px 0 4px; min-height:16px; }
 
   /* 현장 선택 */
-  .sitecard { border:1px solid #e3e5e8; border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
-  .sitecard .nm { font-size:14px; font-weight:800; }
-  .sitecard .st { font-size:11px; color:#9aa0a8; margin-top:3px; }
-  .sitecard .go { color:#c9ccd2; font-size:16px; }
-  .sitecard.recent { border-color:#16181d; }
-  .rc { font-size:9px; color:#2f6fed; background:#eaf1fe; border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:1px; }
-  .codebox { margin-top:18px; border-top:1px solid #f0f1f3; padding-top:14px; text-align:center; font-size:11px; color:#b0b4ba; line-height:1.6; }
+  .sitecard { padding:15px 17px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; }
+  .sitecard .nm { font-size:14.5px; font-weight:700; letter-spacing:-.2px; }
+  .sitecard .st { font-size:11.5px; color:var(--txt3); margin-top:4px; }
+  .sitecard .go { color:var(--txt4); font-size:17px; flex:none; }
+  .sitecard.recent { border-color:var(--accent); }
+  .rc { font-family:var(--didone); font-style:italic; font-size:11px; color:var(--accent); margin-left:7px; }
+  .codebox { margin-top:20px; text-align:center; font-size:11px; color:var(--txt4); line-height:1.7; }
 
-  /* 공정 박스 (이모지 + 드롭다운) */
-  .pbox { display:flex; align-items:center; gap:10px; border:1px solid #e3e5e8; border-radius:12px; padding:5px 8px 5px 14px; margin-bottom:8px; }
-  .pbox .pemoji { font-size:22px; flex:none; }
-  .pbox select { border:none; padding:13px 4px; font-size:15px; font-weight:800; background:transparent; flex:1; border-radius:0; }
-  .pbox .rm { flex:none; width:26px; height:26px; border-radius:50%; border:none; background:#f2f3f5; color:#6b7078; font-size:12px; cursor:pointer; }
+  /* 공정 박스 */
+  .pbox { display:flex; align-items:center; gap:8px; padding:4px 8px 4px 14px; margin-bottom:8px; }
+  .pbox select { border:none; background:transparent; padding:13px 2px; font-size:15px; font-weight:700;
+    letter-spacing:-.2px; border-radius:0; flex:1; }
+  .pbox select:focus { border:none; }
+  .pbox .rm { flex:none; width:27px; height:27px; border-radius:50%; border:none; background:var(--soft);
+    color:var(--txt3); font-size:11px; cursor:pointer; }
 
   /* 사진 */
-  .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-  .ph { aspect-ratio:1; border-radius:10px; background:#f2f3f5; display:flex; align-items:center; justify-content:center; color:#b0b4ba; font-size:22px; position:relative; overflow:hidden; cursor:pointer; }
-  .ph img { width:100%; height:100%; object-fit:cover; }
-  .ph .cover { position:absolute; bottom:4px; left:4px; font-size:8px; background:#16181d; color:#fff; border-radius:4px; padding:1px 5px; }
-  .ph .del { position:absolute; top:2px; right:2px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center; }
+  .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
+  .ph { aspect-ratio:1; border-radius:13px; position:relative; overflow:hidden; cursor:pointer;
+    box-shadow:0 1px 2px rgba(16,18,22,.08), 0 5px 12px rgba(16,18,22,.10), 0 12px 24px rgba(16,18,22,.10); }
+  .ph img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ph.add { display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:300;
+    color:var(--txt4); background:var(--soft); border:1px dashed var(--dash); box-shadow:none; }
+  .ph .cover { position:absolute; left:5px; bottom:5px; font-size:8px; font-weight:700; color:#fff;
+    background:rgba(12,14,18,.70); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+    border-radius:5px; padding:2px 6px; }
+  .ph .del { position:absolute; top:3px; right:3px; width:21px; height:21px; border-radius:50%;
+    background:rgba(10,12,16,.62); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+    color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center; }
 
   /* 마이크 */
   .relwrap { position:relative; }
-  .mic { position:absolute; right:10px; bottom:10px; width:34px; height:34px; border-radius:50%; background:#f2f3f5; border:none; display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; }
-  .mic.rec { background:#d5443c; animation:pulse 1.2s infinite; }
+  .mic { position:absolute; right:10px; bottom:10px; width:34px; height:34px; border-radius:50%;
+    background:var(--soft); border:1px solid var(--fieldbd); display:flex; align-items:center;
+    justify-content:center; font-size:15px; cursor:pointer; }
+  .mic.rec { background:#d5443c; border-color:#d5443c; animation:pulse 1.2s infinite; }
   @keyframes pulse { 50% { opacity:.6; } }
 
   /* 지시 체크리스트 */
-  .chk { border:1px solid #e3e5e8; border-radius:12px; overflow:hidden; }
-  .chk .item { display:flex; align-items:flex-start; gap:10px; padding:11px 14px; font-size:13px; border-bottom:1px solid #f0f1f3; cursor:pointer; line-height:1.5; }
+  .chk { overflow:hidden; }
+  .chk .item { display:flex; align-items:flex-start; gap:11px; padding:13px 15px; font-size:13.5px;
+    border-bottom:1px solid var(--line); cursor:pointer; line-height:1.55; }
   .chk .item:last-child { border-bottom:none; }
-  .box { width:18px; height:18px; border-radius:5px; border:1.5px solid #c9ccd2; flex:none; margin-top:1px; position:relative; }
-  .item.on .box { background:#16181d; border-color:#16181d; }
-  .item.on .box::after { content:"✓"; color:#fff; font-size:11px; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
-  .item.on .t { color:#9aa0a8; text-decoration:line-through; }
-  .chk .note { display:block; font-size:11px; color:#b0b4ba; margin-top:2px; }
-  .chk .empty { padding:14px; font-size:12px; color:#b0b4ba; text-align:center; }
-
-  .opt { font-size:12.5px; color:#9aa0a8; text-align:center; padding:9px 0; border:1px dashed #d9dce1; border-radius:10px; margin-top:8px; cursor:pointer; }
+  .box { width:19px; height:19px; border-radius:6px; border:1.5px solid var(--dash); background:var(--soft);
+    flex:none; margin-top:1px; position:relative; }
+  .item.on .box { background:var(--accent); border-color:var(--accent); }
+  .item.on .box::after { content:"✓"; color:#fff; font-size:11px; position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .item.on .t { color:var(--txt3); text-decoration:line-through; }
+  .chk .note { display:block; font-size:11px; color:var(--txt4); margin-top:3px; }
+  .chk .empty { padding:16px; font-size:12px; color:var(--txt4); text-align:center; }
 
   /* 내부 전용 */
-  .internal { background:#f7f8f9; border:1px dashed #d9dce1; border-radius:12px; padding:12px 14px; }
-  .internal .lab { margin-bottom:10px; color:#b0b4ba; }
+  .internal { padding:14px 15px; margin-top:21px; }
+  .internal .lab { margin:0 0 11px 0; color:var(--txt4); }
   .crow { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
-  .crow select { flex:1.5; padding:10px 10px; font-size:13px; }
-  .crow input { flex:1; padding:10px 10px; font-size:13px; }
-  .crow .rm { flex:none; width:26px; height:26px; border-radius:50%; border:none; background:#e3e5e8; color:#6b7078; font-size:12px; cursor:pointer; }
-  .authorrow { display:flex; align-items:center; justify-content:space-between; font-size:13px; margin-top:4px; color:#6b7078; }
-  .authorrow b { color:#16181d; }
+  .crow select { flex:1.5; padding:11px 10px; font-size:13px; }
+  .crow input { flex:1; padding:11px 10px; font-size:13px; }
+  .crow .rm { flex:none; width:27px; height:27px; border-radius:50%; border:none; background:var(--soft);
+    color:var(--txt3); font-size:11px; cursor:pointer; }
+  .authorrow { display:flex; align-items:center; justify-content:space-between; font-size:13px;
+    margin-top:12px; color:var(--txt3); }
+  .authorrow b { color:var(--txt); }
 
   /* 미리보기 */
-  .preview { background:#101114; color:#c9ccd2; border-radius:12px; padding:14px 16px; font-size:12px; line-height:1.75; white-space:pre-wrap; word-break:break-word; }
-  .preview .pt { font-size:10px; letter-spacing:2px; color:#5c626b; margin-bottom:6px; }
-  .preview b { color:#f5f6f7; }
+  .preview { padding:15px 16px; font-size:12.5px; line-height:1.8; white-space:pre-wrap; word-break:break-word;
+    color:var(--txt2); }
+  .preview .pt { font-family:var(--didone); font-style:italic; font-size:11px; color:var(--txt4); margin-bottom:7px; }
+  .preview b { color:var(--txt); font-weight:700; }
 
-  /* 제출 진행 오버레이 */
-  .overlay { position:fixed; inset:0; background:rgba(16,17,20,.92); color:#f5f6f7; display:flex; align-items:center; justify-content:center; z-index:50; padding:30px; }
-  .ovbox { width:100%; max-width:340px; text-align:center; }
+  /* 제출 오버레이 */
+  .overlay { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:30px;
+    background:rgba(12,14,18,.62); -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px); color:#f5f6f7; }
+  .ovbox { width:100%; max-width:330px; text-align:center; }
   .ovbox .big { font-size:16px; font-weight:800; margin-bottom:8px; }
-  .ovbox .sub { font-size:12px; color:#8a8f98; margin-bottom:20px; line-height:1.6; }
-  .bar { height:6px; background:#2a2d33; border-radius:999px; overflow:hidden; margin-bottom:10px; }
-  .bar i { display:block; height:100%; width:0%; background:linear-gradient(90deg,#8a8f98,#e8eaed); border-radius:999px; transition:width .3s; }
-  .ovbox .cnt { font-size:11px; color:#8a8f98; }
-  .ovbox .btn { margin-top:20px; }
+  .ovbox .sub { font-size:12px; color:rgba(255,255,255,.62); margin-bottom:22px; line-height:1.7; }
+  .bar { height:5px; background:rgba(255,255,255,.14); border-radius:999px; overflow:hidden; margin-bottom:11px; }
+  .bar i { display:block; height:100%; width:0%; border-radius:999px; transition:width .3s;
+    background:linear-gradient(90deg,rgba(255,255,255,.55),#fff); }
+  .ovbox .cnt { font-family:var(--didone); font-size:13px; color:rgba(255,255,255,.72); }
+  .ovbox .btn { margin-top:22px; background:linear-gradient(180deg,#f4f6f8,#dfe3e8); color:#111318; }
+  .ovbox .btn small { color:rgba(17,19,24,.46); }
 
-  /* 완료 화면 */
-  .donewrap { padding:34px 22px; }
-  .donewrap .ok { font-size:38px; text-align:center; margin-bottom:10px; }
-  .donewrap .big { font-size:17px; font-weight:800; text-align:center; margin-bottom:6px; }
-  .donewrap .sub { font-size:12px; color:#9aa0a8; text-align:center; margin-bottom:22px; line-height:1.6; }
-  .kakao { border:1px solid #e3e5e8; border-radius:12px; padding:14px; font-size:13px; line-height:1.7; white-space:pre-wrap; background:#fafafa; max-height:280px; overflow-y:auto; margin-bottom:10px; }
-  .warn { background:#fff8e8; border:1px solid #f2dfa8; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a6d1c; line-height:1.6; margin-bottom:12px; }
+  /* 완료 */
+  .donewrap { padding:26px 4px 10px; }
+  .donewrap .ok { font-size:38px; text-align:center; margin-bottom:12px; }
+  .donewrap .big { font-size:17px; font-weight:800; text-align:center; letter-spacing:-.3px; }
+  .donewrap .sub { font-size:12px; color:var(--txt3); text-align:center; margin:8px 0 22px; line-height:1.7; }
+  .kakao { padding:15px 16px; font-size:13px; line-height:1.75; white-space:pre-wrap; color:var(--txt2);
+    max-height:290px; overflow-y:auto; margin-bottom:12px; }
+  .warn { background:rgba(224,169,46,.12); border:1px solid rgba(224,169,46,.34); border-radius:12px;
+    padding:11px 13px; font-size:12px; color:#a67c12; line-height:1.65; margin-bottom:12px; }
+  @media (prefers-color-scheme: dark) { .warn { color:#e0b45e; } }
 
-  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#16181d; color:#fff; font-size:13px; padding:10px 20px; border-radius:999px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:99; }
+  .toast { position:fixed; bottom:32px; left:50%; transform:translateX(-50%); z-index:99;
+    background:rgba(16,18,23,.88); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px);
+    color:#fff; font-size:13px; padding:11px 20px; border-radius:999px; opacity:0;
+    transition:opacity .25s; pointer-events:none; box-shadow:0 8px 22px rgba(10,12,16,.28); }
   .toast.show { opacity:1; }
-  .spin { width:26px; height:26px; border:3px solid #e3e5e8; border-top-color:#16181d; border-radius:50%; margin:30px auto; animation:sp 0.8s linear infinite; }
+  .spin { width:24px; height:24px; border:2.5px solid var(--dash); border-top-color:var(--txt2);
+    border-radius:50%; margin:34px auto; animation:sp .8s linear infinite; }
   @keyframes sp { to { transform:rotate(360deg); } }
 </style>
 </head>
@@ -139,39 +242,50 @@
   <!-- ═══ 화면 0: 진입코드 ═══ -->
   <div id="scr-key" class="hide">
     <div class="keywrap">
-      <div class="logo">DASIFILL</div>
-      <div class="sub">현장 보고 시스템 · 진입코드를 입력하세요</div>
+      <div class="dmark">D</div>
+      <div class="sub">현장 보고 시스템<br>진입코드를 입력하세요</div>
       <input id="keyInput" type="text" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters">
       <div class="keyerr" id="keyErr"></div>
-      <button class="btn" id="keyBtn" onclick="enterKey()" style="margin-top:8px;">확인</button>
+      <button class="btn" id="keyBtn" onclick="enterKey()">확인</button>
     </div>
   </div>
 
   <!-- ═══ 화면 1: 현장 선택 ═══ -->
   <div id="scr-sites" class="hide">
     <div class="hd">
-      <div class="brand">DASIFILL · 현장 보고</div>
+      <div class="topline"><div class="dmark">D</div><div class="stage">현장 보고</div></div>
       <div class="site">현장 선택</div>
-      <div class="meta" id="sitesMeta">불러오는 중…</div>
+      <div class="foot">
+        <div class="date" id="sitesMeta">불러오는 중…</div>
+        <div class="day"><span class="num" id="sitesCount">—</span><span class="u">곳</span></div>
+      </div>
     </div>
     <div class="body">
-      <div class="lab">오늘 보고할 현장을 선택하세요</div>
+      <div class="lab">오늘 보고할 현장 <i class="auto">auto</i></div>
       <div id="siteList"><div class="spin"></div></div>
-      <div class="codebox">현장 목록은 노션 현장 대시보드에서 자동으로 불러옵니다<br>(준공·A/S 현장은 표시되지 않습니다)<br><br><span style="text-decoration:underline;cursor:pointer;" onclick="logout()">진입코드 변경</span></div>
+      <div class="codebox">진행 중인 현장만 표시됩니다<br>
+        <span style="text-decoration:underline;cursor:pointer;" onclick="logout()">진입코드 변경</span></div>
     </div>
   </div>
 
   <!-- ═══ 화면 2: 보고 입력 ═══ -->
   <div id="scr-form" class="hide">
     <div class="hd">
-      <div class="brand">DASIFILL · 현장 보고</div>
-      <div class="site"><span class="back" onclick="goSites()">‹</span><span id="fSite">현장</span></div>
-      <div class="meta" id="fMeta"></div>
+      <div class="topline">
+        <span class="back" onclick="goSites()">‹</span>
+        <div class="dmark">D</div>
+        <div class="stage" id="fStage">—</div>
+      </div>
+      <div class="site" id="fSite">현장</div>
+      <div class="foot">
+        <div class="date" id="fDate"></div>
+        <div class="day"><span class="num" id="fDayNum">—</span><span class="u" id="fDayUnit">일차</span></div>
+      </div>
     </div>
     <div class="body">
 
       <div class="sec">
-        <div class="lab">오늘의 공정 <span class="auto">공정표 자동</span></div>
+        <div class="lab">오늘의 공정 <i class="auto">auto</i></div>
         <div id="procBoxes"><div class="spin"></div></div>
         <div class="opt" onclick="addProcBox()">＋ 공정 추가</div>
         <div class="hint" id="procHint"></div>
@@ -181,7 +295,7 @@
         <div class="lab">현장 사진</div>
         <div class="photos" id="photoGrid"></div>
         <input type="file" id="photoInput" accept="image/*" multiple class="hide">
-        <div class="hint">첫 번째 사진이 보고서 대표 사진이 됩니다 · 원본 화질로 드라이브에 저장</div>
+        <div class="hint">첫 번째 사진이 보고서 대표 사진이 됩니다 · 원본 화질로 저장</div>
       </div>
 
       <div class="sec">
@@ -193,31 +307,32 @@
       </div>
 
       <div class="sec">
-        <div class="lab">현장 지시 <span class="auto">노션 자동</span></div>
+        <div class="lab">현장 지시 <i class="auto">auto</i></div>
         <div class="chk" id="instList"><div class="empty">불러오는 중…</div></div>
         <div class="hint">완료한 지시를 체크하면 제출 시 노션에서 자동으로 완료 처리됩니다</div>
       </div>
 
       <div class="sec">
-        <div class="lab">특이사항 <span style="color:#c9ccd2;font-weight:400;letter-spacing:0;">(없으면 비워두세요)</span></div>
-        <textarea id="specialNote" style="min-height:52px;" placeholder="예: 우천으로 발코니 도장 보류, 내일로 이월" oninput="renderPreview()"></textarea>
-        <div class="opt" id="tomorrowToggle" onclick="showTomorrow()">＋ 내일 예정 추가 (선택)</div>
-        <div class="hide" id="tomorrowWrap" style="margin-top:8px;">
-          <textarea id="tomorrowPlan" style="min-height:52px;" placeholder="예: 안방 천장 마무리 후 벽체 시작" oninput="renderPreview()"></textarea>
+        <div class="lab">특이사항</div>
+        <textarea id="specialNote" style="min-height:56px;" placeholder="없으면 비워두세요" oninput="renderPreview()"></textarea>
+        <div class="opt" id="tomorrowToggle" onclick="showTomorrow()" style="margin-top:9px;">＋ 내일 예정 추가</div>
+        <div class="hide" id="tomorrowWrap" style="margin-top:9px;">
+          <textarea id="tomorrowPlan" style="min-height:56px;" placeholder="예: 안방 천장 마무리 후 벽체 시작" oninput="renderPreview()"></textarea>
         </div>
       </div>
 
       <div class="sec internal">
-        <div class="lab">내부 전용 — 고객에게 표시되지 않습니다</div>
+        <div class="lab">내부 전용 · 고객에게 보이지 않습니다</div>
         <div id="crewRows"></div>
         <div class="opt" onclick="addCrewRow()">＋ 팀 추가</div>
         <div class="authorrow"><span>작성자</span><b id="authorName">—</b></div>
       </div>
 
       <div class="sec" style="margin-bottom:0;">
-        <div class="preview"><div class="pt">보고 미리보기</div><div id="previewBody">—</div></div>
-        <button class="btn" id="submitBtn" onclick="submitAll()" style="margin-top:14px;">보고 제출<small>사진은 드라이브에, 보고서는 프로젝트 페이지에 자동 등록됩니다</small></button>
-        <div class="hint" style="text-align:center; margin-top:10px;">⚠️ 제출 후 완료 화면이 뜰 때까지 앱을 닫거나 다른 화면으로 이동하지 마세요.<br>사진 업로드는 시간이 걸릴 수 있으니 인터넷이 안정적인 곳에서 제출해주세요.</div>
+        <div class="lab">보고 미리보기</div>
+        <div class="preview"><div class="pt">preview</div><div id="previewBody">—</div></div>
+        <button class="btn" id="submitBtn" onclick="submitAll()" style="margin-top:16px;">보고 제출<small>사진은 드라이브에, 보고서는 노션에 자동 등록됩니다</small></button>
+        <div class="hint" style="text-align:center;">⚠️ 완료 화면이 뜰 때까지 앱을 닫지 마세요.<br>사진 업로드는 시간이 걸릴 수 있으니 인터넷이 안정적인 곳에서 제출해주세요.</div>
       </div>
 
     </div>
@@ -226,20 +341,20 @@
   <!-- ═══ 화면 3: 완료 ═══ -->
   <div id="scr-done" class="hide">
     <div class="hd">
-      <div class="brand">DASIFILL · 현장 보고</div>
-      <div class="site">보고 완료</div>
-      <div class="meta" id="doneMeta"></div>
+      <div class="topline"><div class="dmark">D</div><div class="stage">보고 완료</div></div>
+      <div class="site" id="doneMeta">—</div>
+      <div class="foot"><div class="date" id="doneDate"></div></div>
     </div>
     <div class="donewrap">
       <div class="ok">✅</div>
       <div class="big" id="doneTitle">보고가 등록되었습니다</div>
       <div class="sub" id="doneSub"></div>
       <div id="photoWarn"></div>
-      <div class="lab">고객 안내 메시지 (카톡용)</div>
+      <div class="lab">고객 안내 메시지</div>
       <div class="kakao" id="kakaoMsg">—</div>
       <button class="btn" onclick="copyKakao()">📋 메시지 복사</button>
-      <button class="btn line" style="margin-top:8px;" onclick="openJournal()">노션 일지 열기</button>
-      <button class="btn line" style="margin-top:8px;" onclick="resetAll()">처음으로</button>
+      <button class="btn line" style="margin-top:9px;" onclick="openJournal()">노션 일지 열기</button>
+      <button class="btn line" style="margin-top:9px;" onclick="resetAll()">처음으로</button>
     </div>
   </div>
 
@@ -344,12 +459,18 @@ function loadSites() {
     });
     document.getElementById('siteList').innerHTML = html || '<div class="codebox">진행 중인 현장이 없습니다</div>';
     var owner = localStorage.getItem(LS_OWNER);
-    document.getElementById('sitesMeta').innerHTML = '진행 중인 현장 <b>' + state.sites.length + '곳</b>'
-      + (owner ? ' · 접속: <b>' + esc(owner) + '</b>' : '') + '<span class="auto">대시보드 자동</span>';
+    document.getElementById('sitesMeta').textContent = '진행 중인 현장' + (owner ? ' · 접속 ' + owner : '');
+    document.getElementById('sitesCount').textContent = state.sites.length;
   }).catch(function (e) {
     if (String(e.message) === 'unauthorized') return;
     document.getElementById('siteList').innerHTML = '<div class="codebox">목록을 불러오지 못했습니다<br>' + esc(e.message) + '</div>';
   });
+}
+function ddayParts(start) {
+  if (!start) return { num: '—', unit: '' };
+  var n = Math.floor((new Date(todayStr()) - new Date(start)) / 86400000) + 1;
+  if (n <= 0) return { num: String(1 - n), unit: '일 후 착공' };
+  return { num: String(n), unit: '일차' };
 }
 function ddayText(start) {
   if (!start) return '';
@@ -379,10 +500,13 @@ function pickSite(id) {
 
   show('scr-form');
   document.getElementById('fSite').textContent = s.name;
+  document.getElementById('fStage').textContent = s.stage || '';
   var d = new Date();
   var yoil = ['일','월','화','수','목','금','토'][d.getDay()];
-  var dday = ddayText(s.startDate);
-  document.getElementById('fMeta').innerHTML = d.getFullYear() + '.' + p2(d.getMonth()+1) + '.' + p2(d.getDate()) + ' (' + yoil + ') · <b>' + (dday || '—') + '</b><span class="auto">자동</span>';
+  document.getElementById('fDate').textContent = (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' + yoil + '요일';
+  var dp = ddayParts(s.startDate);
+  document.getElementById('fDayNum').textContent = dp.num;
+  document.getElementById('fDayUnit').textContent = dp.unit;
   document.getElementById('authorName').textContent = localStorage.getItem(LS_OWNER) || '—';
   renderPhotos(); renderPreview();
 
@@ -478,7 +602,7 @@ function renderPhotos() {
       + (i === 0 ? '<div class="cover">표지</div>' : '')
       + '<div class="del" onclick="delPhoto(' + i + ')">✕</div></div>';
   });
-  html += '<div class="ph" onclick="document.getElementById(\'photoInput\').click()">＋</div>';
+  html += '<div class="ph add" onclick="document.getElementById(\'photoInput\').click()">＋</div>';
   document.getElementById('photoGrid').innerHTML = html;
 }
 function delPhoto(i) {
@@ -663,6 +787,8 @@ function showDone() {
   var r = state.result;
   show('scr-done');
   document.getElementById('doneMeta').textContent = state.site.name;
+  var dd = new Date();
+  document.getElementById('doneDate').textContent = (dd.getMonth()+1) + '월 ' + dd.getDate() + '일 · ' + (r.title || '');
   document.getElementById('doneTitle').textContent = r.title + ' 보고 등록 완료';
   document.getElementById('doneSub').innerHTML = '사진 ' + state.photos.length + '장 저장 · 노션 일지 생성됨<br>아래 메시지를 복사해 고객 카톡에 붙여넣으세요';
   document.getElementById('kakaoMsg').textContent = r.kakaoMessage || '(해당 공정의 안내 문구 없음)';
