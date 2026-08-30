@@ -235,6 +235,22 @@
     border-radius:50%; margin:34px auto; animation:sp .8s linear infinite; }
   @keyframes sp { to { transform:rotate(360deg); } }
 
+  /* ───────── PC / 태블릿 ───────── */
+  @media (min-width: 760px) {
+    .app { max-width: 760px; padding: 26px 26px 44px; }
+    .hd { padding:18px 22px 17px; border-radius:24px; }
+    .hd .site { font-size:19px; }
+    .hd .day .num { font-size:44px; }
+    .photos { grid-template-columns: repeat(6,1fr); gap:11px; }
+    .body { padding:0 4px; }
+    .lab { font-size:10.5px; }
+    .thumbs img, .thumbs .more { width:46px; height:46px; }
+  }
+  @media (min-width: 1100px) {
+    .app { max-width: 940px; }
+    .photos { grid-template-columns: repeat(7,1fr); }
+  }
+
   /* ───────── 모드 선택 ───────── */
   .modecard { display:flex; align-items:flex-start; gap:13px; padding:16px 17px; margin-bottom:10px; cursor:pointer; }
   .modecard .ic { font-size:22px; line-height:1; margin-top:1px; }
