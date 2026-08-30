@@ -1288,6 +1288,7 @@ function saveSurvey() {
       ovShow('보고서 정리 중…', '노션에 공간별로 정리하고 있습니다', 100, '');
       return api('surveyFinish', {
         pageId: sv.pageId,
+        sitePageId: state.site.id,
         surveyDate: todayStr(),
         spaces: used.map(function (u) {
           return {
@@ -1309,7 +1310,10 @@ function saveSurvey() {
       document.getElementById('sdTitle').textContent = '사진 ' + sv.photos.length + '장 정리 완료';
       document.getElementById('sdSub').innerHTML = '드라이브와 노션에 동시에 반영되었습니다';
       var lines = used.map(function (u) { return u.emoji + ' ' + u.name + '  ' + u.photos.length + '장'; });
-      if (r.flagged) lines.push('', '⚠️ 특이사항 ' + r.flagged + '건이 실측 보고서 초안에 추가되었습니다');
+      if (r.flagged) {
+        lines.push('', '⚠️ 특이사항 ' + r.flagged + '건');
+        if (r.review) lines.push('검토·확정사항에 안건 ' + r.review + '건이 등록되었습니다');
+      }
       document.getElementById('sdResult').textContent = lines.join('\n');
     })
     .catch(function (e) {
