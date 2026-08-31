@@ -257,6 +257,22 @@
     .photos { grid-template-columns: repeat(7,1fr); }
   }
 
+  /* ───────── PC 편의 (드래그 · 확대) ───────── */
+  body.dragover::after { content:"사진을 여기에 놓으세요"; position:fixed; inset:14px; z-index:60;
+    border:2px dashed var(--accent); border-radius:20px; color:var(--accent);
+    background:rgba(47,111,237,.06); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800;
+    pointer-events:none; }
+  .lightbox { position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center;
+    padding:28px; background:rgba(10,12,16,.88); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); }
+  .lightbox img { max-width:100%; max-height:100%; border-radius:14px;
+    box-shadow:0 12px 40px rgba(0,0,0,.5); }
+  .lightbox .x { position:absolute; top:18px; right:20px; width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,.14); color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:16px; cursor:pointer; }
+  .lightbox .cap { position:absolute; bottom:20px; left:0; right:0; text-align:center;
+    color:rgba(255,255,255,.62); font-size:12px; }
+
   /* ───────── 모드 선택 ───────── */
   .modecard { display:flex; align-items:flex-start; gap:13px; padding:16px 17px; margin-bottom:10px; cursor:pointer; }
   .modecard .ic { font-size:22px; line-height:1; margin-top:1px; }
@@ -490,7 +506,8 @@
       <div class="putbar off" id="svPut" onclick="putSelected()">사진을 먼저 불러오세요</div>
       <div class="doneline" id="svDone"></div>
       <button class="btn line" style="margin-top:18px;" onclick="goMemo()">다음 · 메모 작성</button>
-      <div class="hint">사진 순서를 믿지 않습니다. 공간을 고르고 해당 사진만 골라 담으면 됩니다.</div>
+      <div class="hint">공간을 고르고 해당 사진만 골라 담으면 됩니다.<br>
+          <b>PC</b> — 사진을 창에 끌어다 놓으면 불러오고, <b>Shift+클릭</b>으로 여러 장을 한 번에 고를 수 있습니다. 사진을 두 번 누르면 크게 보입니다.</div>
     </div>
   </div>
 
@@ -560,6 +577,12 @@
     <div class="cnt" id="ovCnt"></div>
     <button class="btn hide" id="ovRetry" onclick="retryPhotos()">실패한 사진 다시 올리기</button>
   </div>
+</div>
+
+<div class="lightbox hide" id="lightbox" onclick="closeLightbox()">
+  <div class="x">✕</div>
+  <img id="lbImg" src="" alt="">
+  <div class="cap">아무 곳이나 누르면 닫힙니다</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -796,9 +819,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function renderPhotos() {
   var html = '';
   state.photos.forEach(function (p, i) {
-    html += '<div class="ph"><img src="' + p.url + '">'
+    html += '<div class="ph" ondblclick="openLightboxReport(' + i + ')"><img src="' + p.url + '">'
       + (i === 0 ? '<div class="cover">표지</div>' : '')
-      + '<div class="del" onclick="delPhoto(' + i + ')">✕</div></div>';
+      + '<div class="del" onclick="event.stopPropagation();delPhoto(' + i + ')">✕</div></div>';
   });
   html += '<div class="ph add" onclick="document.getElementById(\'photoInput\').click()">＋</div>';
   document.getElementById('photoGrid').innerHTML = html;
@@ -1051,6 +1074,50 @@ function p2(n) { return ('0' + n).slice(-2); }
   window.addEventListener('beforeunload', function (e) {
     if (state.submitting) { e.preventDefault(); e.returnValue = ''; }
   });
+
+  // ── PC: 사진을 창에 끌어다 놓기 / 붙여넣기 ──
+  function activeScreen() {
+    if (!document.getElementById('scr-survey').classList.contains('hide')) return 'survey';
+    if (!document.getElementById('scr-form').classList.contains('hide')) return 'report';
+    return null;
+  }
+  function addFiles(files) {
+    var imgs = files.filter(function (f) { return /^image\//.test(f.type); });
+    if (!imgs.length) return;
+    var scr = activeScreen();
+    if (scr === 'survey') {
+      var sv = svState();
+      imgs.forEach(function (f) { sv.photos.push({ file: f, url: URL.createObjectURL(f), space: null, sel: false }); });
+      renderSurvey();
+      toast(imgs.length + '장을 불러왔습니다');
+    } else if (scr === 'report') {
+      imgs.forEach(function (f) { state.photos.push({ file: f, url: URL.createObjectURL(f) }); });
+      renderPhotos(); renderPreview();
+      toast(imgs.length + '장을 불러왔습니다');
+    }
+  }
+  var dragDepth = 0;
+  window.addEventListener('dragenter', function (e) {
+    if (!activeScreen()) return;
+    e.preventDefault(); dragDepth++; document.body.classList.add('dragover');
+  });
+  window.addEventListener('dragover', function (e) { if (activeScreen()) e.preventDefault(); });
+  window.addEventListener('dragleave', function () {
+    dragDepth--; if (dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dragover'); }
+  });
+  window.addEventListener('drop', function (e) {
+    if (!activeScreen()) return;
+    e.preventDefault(); dragDepth = 0; document.body.classList.remove('dragover');
+    addFiles(Array.prototype.slice.call(e.dataTransfer.files || []));
+  });
+  window.addEventListener('paste', function (e) {
+    if (!activeScreen()) return;
+    var items = (e.clipboardData && e.clipboardData.files) || [];
+    if (items.length) addFiles(Array.prototype.slice.call(items));
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
   if (localStorage.getItem(LS_KEY)) loadSites();
   else show('scr-key');
 })();
@@ -1119,8 +1186,8 @@ function renderSurvey() {
 
   var html = '';
   rest.forEach(function (i) {
-    html += '<div class="ph' + (sv.photos[i].sel ? ' sel' : '') + '" onclick="toggleSvPhoto(' + i + ')">'
-          + '<img src="' + sv.photos[i].url + '"></div>';
+    html += '<div class="ph' + (sv.photos[i].sel ? ' sel' : '') + '" onclick="toggleSvPhoto(' + i + ', event)"'
+          + ' ondblclick="openLightbox(' + i + ')"><img src="' + sv.photos[i].url + '"></div>';
   });
   html += '<div class="ph add" onclick="document.getElementById(\'svInput\').click()">＋</div>';
   document.getElementById('svGrid').innerHTML = html;
@@ -1145,7 +1212,38 @@ function renderSurvey() {
 }
 
 function setSvTarget(v) { svState().target = v; renderSurvey(); }
-function toggleSvPhoto(i) { var p = svState().photos[i]; p.sel = !p.sel; renderSurvey(); }
+function toggleSvPhoto(i, ev) {
+  var sv = svState();
+  // Shift+클릭 = 직전에 누른 사진부터 여기까지 한 번에 선택 (PC)
+  if (ev && ev.shiftKey && sv.anchor != null) {
+    var rest = [];
+    sv.photos.forEach(function (p, k) { if (!p.space) rest.push(k); });
+    var a = rest.indexOf(sv.anchor), b = rest.indexOf(i);
+    if (a !== -1 && b !== -1) {
+      var lo = Math.min(a, b), hi = Math.max(a, b);
+      for (var k = lo; k <= hi; k++) sv.photos[rest[k]].sel = true;
+      sv.anchor = i;
+      renderSurvey();
+      return;
+    }
+  }
+  sv.photos[i].sel = !sv.photos[i].sel;
+  sv.anchor = i;
+  renderSurvey();
+}
+// ── 사진 크게 보기 ──
+function openLightbox(i) {
+  var sv = svState();
+  if (!sv.photos[i]) return;
+  document.getElementById('lbImg').src = sv.photos[i].url;
+  document.getElementById('lightbox').classList.remove('hide');
+}
+function openLightboxReport(i) {
+  if (!state.photos[i]) return;
+  document.getElementById('lbImg').src = state.photos[i].url;
+  document.getElementById('lightbox').classList.remove('hide');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.add('hide'); }
 function selectAllRemain() {
   var sv = svState(), any = false;
   sv.photos.forEach(function (p) { if (!p.space && !p.sel) any = true; });
