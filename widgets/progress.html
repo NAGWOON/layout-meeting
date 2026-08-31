@@ -4,126 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DASIFILL Progress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { background: #ffffff; }
-  body {
-    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
-    color: #f5f6f7;
-    padding: 4px;
-  }
-  .wrap {
-    max-width: 860px; margin: 0 auto;
-    display: flex; align-items: stretch;
-    border-radius: 12px; overflow: hidden;
-    position: relative;
-    background: linear-gradient(135deg, #1b1d22 0%, #0f1013 42%, #16181d 72%, #0c0d10 100%);
-    border: 1px solid #26292f; border-top-color: #343841;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
-  }
-  /* 사선 광택 */
-  .wrap::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.05) 46%, transparent 58%);
-  }
-  .n { font-variant-numeric: tabular-nums; }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-  /* 좌측 % 블록 */
-  .sp-l {
-    padding: 9px 18px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    border-right: 1px solid rgba(255,255,255,.08);
-    background: rgba(255,255,255,.02);
-    min-width: 88px;
+  :root {
+    --sans:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
+    --didone:"Bodoni Moda",Didot,Georgia,"Times New Roman",serif;
+
+    --card:rgba(255,255,255,.55);
+    --bd:rgba(255,255,255,.72);
+    --sh: inset 0 1px 0 rgba(255,255,255,.60),
+          0 1px 2px rgba(16,18,22,.05),
+          0 4px 9px rgba(16,18,22,.055),
+          0 12px 22px rgba(16,18,22,.06);
+    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
+    --txt:#16181d; --txt2:#5a616a; --txt3:#8b9199;
+    --div:rgba(120,128,140,.16);
+    --track:rgba(120,128,140,.20);
+    --fill: linear-gradient(90deg,#454b54,#16181d);
   }
-  .cap { font-size: 9px; color: #6b7078; letter-spacing: 2px; margin-bottom: 2px; display: none; }
-  .pctBig {
-    font-size: 22px; font-weight: 800; letter-spacing: -0.8px; line-height: 1;
-    background: linear-gradient(180deg, #ffffff 0%, #d5d8de 48%, #949aa4 66%, #e7eaee 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-    white-space: nowrap;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --card:rgba(255,255,255,.065);
+      --bd:rgba(255,255,255,.11);
+      --sh: inset 0 1px 0 rgba(255,255,255,.13),
+            0 2px 6px rgba(0,0,0,.20),
+            0 10px 20px rgba(0,0,0,.22);
+      --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.30),transparent);
+      --txt:#eef0f3; --txt2:#b6bcc4; --txt3:#868d97;
+      --div:rgba(255,255,255,.09);
+      --track:rgba(255,255,255,.10);
+      --fill: linear-gradient(90deg,#b9c0c9,#f2f4f7);
+    }
+  }
+  /* ?theme= 로 강제 지정 (노션 테마와 OS 설정이 다를 때) */
+  body[data-theme="light"] {
+    --card:rgba(255,255,255,.55); --bd:rgba(255,255,255,.72);
+    --sh: inset 0 1px 0 rgba(255,255,255,.60), 0 1px 2px rgba(16,18,22,.05), 0 4px 9px rgba(16,18,22,.055), 0 12px 22px rgba(16,18,22,.06);
+    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
+    --txt:#16181d; --txt2:#5a616a; --txt3:#8b9199;
+    --div:rgba(120,128,140,.16); --track:rgba(120,128,140,.20);
+    --fill: linear-gradient(90deg,#454b54,#16181d);
+  }
+  body[data-theme="dark"] {
+    --card:rgba(255,255,255,.065); --bd:rgba(255,255,255,.11);
+    --sh: inset 0 1px 0 rgba(255,255,255,.13), 0 2px 6px rgba(0,0,0,.20), 0 10px 20px rgba(0,0,0,.22);
+    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.30),transparent);
+    --txt:#eef0f3; --txt2:#b6bcc4; --txt3:#868d97;
+    --div:rgba(255,255,255,.09); --track:rgba(255,255,255,.10);
+    --fill: linear-gradient(90deg,#b9c0c9,#f2f4f7);
+  }
+
+  /* 배경 없음 — 노션 페이지 배경이 그대로 비칩니다 */
+  html, body { background:transparent; }
+  body { font-family:var(--sans); color:var(--txt); padding:3px; }
+
+  .wrap {
+    max-width:860px; margin:0 auto;
+    display:flex; align-items:stretch;
+    border-radius:14px; position:relative; overflow:hidden;
+    background:var(--card);
+    border:1px solid var(--bd);
+    box-shadow:var(--sh);
+    -webkit-backdrop-filter:blur(10px) saturate(150%); backdrop-filter:blur(10px) saturate(150%);
+  }
+  /* 상단 광택선 */
+  .wrap::before {
+    content:""; position:absolute; left:16px; right:16px; top:0; height:1px;
+    background:var(--gloss); pointer-events:none;
+  }
+
+  /* 좌측 숫자 블록 */
+  .left {
+    padding:10px 17px 11px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+    border-right:1px solid var(--div);
+    min-width:92px;
+  }
+  .cap { font-size:8.5px; font-weight:700; letter-spacing:1.6px; color:var(--txt3); }
+  .num {
+    font-family:var(--didone); font-size:29px; font-weight:500; line-height:.9;
+    letter-spacing:-.5px; color:var(--txt); white-space:nowrap;
+    font-variant-numeric:tabular-nums;
   }
 
   /* 우측 정보 + 바 */
-  .sp-r { flex: 1; padding: 8px 14px 9px; display: flex; flex-direction: column; justify-content: center; gap: 6px; min-width: 0; }
-  .l1 { font-size: 11.5px; font-weight: 700; color: #f5f6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .l1 .detail { font-weight: 400; font-size: 11px; color: #5c626b; margin-left: 8px; }
-  .l1 .detail b { color: #b9bec6; font-weight: 700; }
-  .l1 .sep { color: #2e323a; margin: 0 5px; }
+  .right { flex:1; padding:9px 15px 10px; display:flex; flex-direction:column; justify-content:center; gap:7px; min-width:0; }
+  .l1 { font-size:11.5px; font-weight:700; color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.2px; }
+  .l1 .detail { font-weight:400; font-size:11px; color:var(--txt3); margin-left:8px; }
+  .l1 .detail b { color:var(--txt2); font-weight:700; }
+  .l1 .sep { color:var(--div); margin:0 5px; }
 
-  .bar {
-    height: 4px; border-radius: 2px; position: relative; overflow: hidden;
-    background: linear-gradient(180deg, #08090b, #191c21);
-    box-shadow: inset 0 1px 2px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.05);
-  }
+  .bar { height:4px; border-radius:999px; background:var(--track); position:relative; overflow:hidden; }
   .fill {
-    position: absolute; left: 0; top: 0; height: 100%; width: 0%;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #ffffff 0%, #d9dce1 38%, #a8aeb8 62%, #e2e5e9 100%);
-    box-shadow: 0 0 7px rgba(255,255,255,.22);
-    transition: width 1s cubic-bezier(.4,0,.2,1);
+    position:absolute; left:0; top:0; height:100%; width:0%;
+    border-radius:999px; background:var(--fill);
+    transition:width 1s cubic-bezier(.4,0,.2,1);
   }
 
   @media (max-width: 560px) {
-    /* 우측 여백: 노션 편집자 화면의 블록 메뉴(⋯)가 카드와 겹치지 않도록 */
-    body { padding: 2px 30px 2px 2px; }
-    .sp-l { padding: 8px 11px; min-width: 68px; }
-    .pctBig { font-size: 18px; }
-    .sp-r { padding: 7px 10px 8px; gap: 5px; }
-    .l1 { font-size: 10.5px; }
-    .l1 .detail { font-size: 9.5px; margin-left: 5px; }
-    .pctBig[data-pre] { font-size: 15px; }
+    /* 우측 여백: 노션 편집자 화면의 블록 메뉴(⋯)와 겹치지 않도록 */
+    body { padding:2px 30px 2px 2px; }
+    .left { padding:9px 12px 10px; min-width:74px; }
+    .num { font-size:24px; }
+    .right { padding:8px 11px 9px; gap:6px; }
+    .l1 { font-size:10.5px; }
+    .l1 .detail { font-size:9.5px; margin-left:5px; }
   }
-
-  /* 다크모드 뷰어 대응: 주변이 어두우면 카드를 한 톤 띄움 */
-  @media (prefers-color-scheme: dark) {
-    .wrap {
-      background: linear-gradient(135deg, #23262c 0%, #16181d 42%, #1d2026 72%, #131519 100%);
-      border-color: #2f333b; border-top-color: #3d424b;
-    }
-  }
-
-  /* 라이트 스킨 (?theme=light) — 실버 메탈 */
-  body[data-theme="light"] .wrap {
-    background: linear-gradient(135deg, #fdfdfe 0%, #eff1f3 45%, #f8f9fa 75%, #e9ebee 100%);
-    border-color: #dfe2e6; border-top-color: #ffffff;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 3px rgba(22,24,29,.06);
-  }
-  body[data-theme="light"] .wrap::after { background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.5) 46%, transparent 58%); }
-  body[data-theme="light"] .sp-l { border-right-color: rgba(22,24,29,.08); background: rgba(255,255,255,.35); }
-  body[data-theme="light"] .cap { color: #9aa0a8; }
-  body[data-theme="light"] .pctBig { background: linear-gradient(180deg, #34383f 0%, #16181d 55%, #4a4f58 78%, #23262c 100%); -webkit-background-clip: text; background-clip: text; }
-  body[data-theme="light"] .l1 { color: #16181d; }
-  body[data-theme="light"] .l1 .detail { color: #9aa0a8; }
-  body[data-theme="light"] .l1 .detail b { color: #4a4f58; }
-  body[data-theme="light"] .l1 .sep { color: #d5d8dc; }
-  body[data-theme="light"] .bar { background: linear-gradient(180deg, #dcdfe3, #eef0f2); box-shadow: inset 0 1px 2px rgba(22,24,29,.18), 0 1px 0 rgba(255,255,255,.8); }
-  body[data-theme="light"] .fill { background: linear-gradient(180deg, #3a3e46 0%, #16181d 45%, #2b2f36 100%); box-shadow: none; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="sp-l">
-      <div class="cap" id="cap">착공까지</div>
-      <div class="pctBig n" id="pctNum">0%</div>
+    <div class="left">
+      <div class="cap" id="cap">진행률</div>
+      <div class="num" id="pctNum">0%</div>
     </div>
-    <div class="sp-r">
+    <div class="right">
       <div class="l1"><span id="title">공사 진행</span><span class="detail" id="detail"></span></div>
       <div class="bar"><div class="fill" id="fill"></div></div>
     </div>
   </div>
 
 <script>
-  // 기본 사용법 (착공~준공 날짜 기반 자동 진행 — 프로젝트당 1회 입력):
+  // 사용법 (착공~준공 날짜만 넣으면 매일 자동 갱신):
   //   ?start=2026-09-14&end=2026-11-13
-  //   → 착공 전: "착공까지 D-N" 카운트다운 / 착공 후: 공사 진행률 % (매일 자동)
+  //   → 착공 전: "착공까지 D-N" / 착공 후: 진행률 %
   // 옵션:
-  //   pct=42      : 수동 오버라이드
-  //   t=공사 진행  : 제목 변경
-  //   theme=light : 실버 메탈 라이트 스킨 (기본은 다크 그라파이트)
+  //   pct=42          수동 오버라이드
+  //   t=공사 진행      제목 변경
+  //   theme=light|dark 밝기 강제 (기본은 보는 사람 설정을 따라감)
   const q = new URLSearchParams(location.search);
-  if (q.get("theme") === "light") document.body.dataset.theme = "light";
+  const th = q.get("theme");
+  if (th === "light" || th === "dark") document.body.dataset.theme = th;
   if (q.get("t")) document.getElementById("title").textContent = q.get("t");
 
   const startStr = q.get("start");
@@ -141,13 +156,13 @@
   }
 
   const pctEl = document.getElementById("pctNum");
+  const capEl = document.getElementById("cap");
   if (preStart) {
     const dToStart = Math.round((s - today) / 86400000);
-    document.getElementById("cap").style.display = "block";
+    capEl.textContent = "착공까지";
     pctEl.textContent = "D-" + dToStart;
-    pctEl.style.fontSize = "18px";
-    pctEl.setAttribute("data-pre", "1");
   } else {
+    capEl.textContent = "진행률";
     pctEl.textContent = pct + "%";
   }
   requestAnimationFrame(() => {
