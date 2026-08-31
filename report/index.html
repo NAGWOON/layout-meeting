@@ -250,7 +250,7 @@
     .photos { grid-template-columns: repeat(6,1fr); gap:11px; }
     .body { padding:0 4px; }
     .lab { font-size:10.5px; }
-    .thumbs img, .thumbs .more { width:46px; height:46px; }
+    .thumbs img { width:88px; height:88px; }
   }
   @media (min-width: 1100px) {
     .app { max-width: 940px; }
@@ -289,6 +289,9 @@
   .target select { background:transparent; border:none; color:#fff; font-size:15.5px; font-weight:700;
     padding:3px 0 0; width:auto; border-radius:0; }
   .target select:focus { border:none; }
+  /* 펼쳤을 때 목록은 브라우저가 자기 배경으로 그립니다.
+     흰 글씨를 그대로 두면 흰 바탕에 흰 글씨가 되어 안 보입니다. */
+  .target select option { color:#16181d; background:#ffffff; font-weight:600; }
   .target .mg { font-size:11px; color:rgba(255,255,255,.58); text-decoration:underline; flex:none; cursor:pointer; }
   .remain { display:flex; align-items:center; justify-content:space-between; margin:0 5px 9px; }
   .remain .n { font-size:12px; font-weight:700; }
@@ -317,10 +320,12 @@
   .scard .hdr { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
   .scard .nm2 { font-size:14.5px; font-weight:700; }
   .scard .cnt { font-size:11px; color:var(--txt3); }
-  .thumbs { display:flex; gap:5px; margin-bottom:11px; }
-  .thumbs img { width:38px; height:38px; border-radius:8px; object-fit:cover; }
-  .thumbs .more { width:38px; height:38px; border-radius:8px; background:var(--soft); color:var(--txt3);
-    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  /* 메모를 쓰면서 보는 사진입니다. 작으면 볼 이유가 없어지므로 넉넉하게,
+     그리고 3장만 보여주지 않고 전부 펼칩니다. 누르면 크게 뜹니다. */
+  .thumbs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:11px; }
+  .thumbs img { width:66px; height:66px; border-radius:9px; object-fit:cover; cursor:zoom-in;
+    border:1px solid var(--fieldbd); }
+  .thumbs img:active { opacity:.7; }
   .mitem { border:1px solid var(--fieldbd); border-radius:12px; padding:10px 11px; margin-bottom:7px; background:var(--field); }
   .mitem textarea { border:none; background:transparent; padding:0; min-height:40px; font-size:13px; border-radius:0; }
   .mitem textarea:focus { border:none; }
@@ -1349,8 +1354,9 @@ function renderMemo() {
     html += '<div class="scard"><div class="hdr"><span>' + u.emoji + '</span>'
           + '<span class="nm2">' + esc(u.name) + '</span><span class="cnt">' + u.photos.length + '장</span></div>';
     html += '<div class="thumbs">';
-    u.photos.slice(0, 3).forEach(function (i) { html += '<img src="' + sv.photos[i].url + '">'; });
-    if (u.photos.length > 3) html += '<div class="more">+' + (u.photos.length - 3) + '</div>';
+    u.photos.forEach(function (i) {
+      html += '<img src="' + sv.photos[i].url + '" onclick="openLightbox(' + i + ')">';
+    });
     html += '</div>';
     items.forEach(function (it, k) {
       html += '<div class="mitem' + (it.flag ? ' flag' : '') + '">'
@@ -1410,7 +1416,10 @@ function saveSurvey() {
       var lines = used.map(function (u) { return u.emoji + ' ' + u.name + '  ' + u.photos.length + '장'; });
       if (r.flagged) {
         lines.push('', '⚠️ 특이사항 ' + r.flagged + '건');
-        if (r.review) lines.push('검토·확정사항에 안건 ' + r.review + '건이 등록되었습니다');
+        // review = -1 이면 검토·확정사항 DB를 못 찾은 것입니다.
+        // 모르고 지나가면 특이사항이 사라지므로 반드시 화면에 띄웁니다.
+        if (r.review === -1) lines.push('❗ 검토·확정사항 DB를 찾지 못해 안건이 등록되지 않았습니다');
+        else if (r.review) lines.push('검토·확정사항에 안건 ' + r.review + '건이 등록되었습니다');
       }
       document.getElementById('sdResult').textContent = lines.join('\n');
     })
