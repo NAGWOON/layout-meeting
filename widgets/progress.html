@@ -37,7 +37,11 @@
     --fill: linear-gradient(90deg,#454b54,#16181d);
   }
 
-  /* 배경 없음 — 노션 페이지 배경이 그대로 비칩니다 */
+  /* 배경 없음 — 노션 페이지 배경이 그대로 비칩니다.
+     color-scheme 을 반드시 선언해야 합니다. 선언이 없으면 브라우저가 iframe 캔버스를
+     흰색으로 강제로 칠해서, 다크 페이지에 흰 사각형이 생깁니다.
+     'light dark' = 감싸는 페이지의 밝기를 따라가므로 양쪽 모두에서 투명하게 유지됩니다. */
+  html { color-scheme: light dark; }
   html, body { background:transparent; }
   body { font-family:var(--sans); color:var(--txt); padding:3px; }
 
