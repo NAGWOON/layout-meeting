@@ -327,9 +327,20 @@
   /* 메모를 쓰면서 보는 사진입니다. 작으면 볼 이유가 없어지므로 넉넉하게,
      그리고 3장만 보여주지 않고 전부 펼칩니다. 누르면 크게 뜹니다. */
   .thumbs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:11px; }
-  .thumbs img { width:66px; height:66px; border-radius:9px; object-fit:cover; cursor:zoom-in;
-    border:1px solid var(--fieldbd); }
-  .thumbs img:active { opacity:.7; }
+  .thumbs .th { position:relative; width:66px; height:66px; border-radius:9px; overflow:hidden;
+    border:1px solid var(--fieldbd); cursor:zoom-in; flex:none; }
+  .thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumbs .th:active { opacity:.7; }
+  /* 사진 지정 모드 — 누르면 해당 메모 항목에 붙습니다 */
+  .thumbs.picking .th { cursor:pointer; }
+  .thumbs.picking .th.on { outline:3px solid #e0a92e; outline-offset:-3px; }
+  .thumbs .pin { position:absolute; top:3px; left:3px; min-width:17px; height:17px; padding:0 4px;
+    border-radius:9px; background:#e0a92e; color:#fff; font-size:9.5px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .mitem .pick { font-size:10.5px; font-weight:700; color:var(--accent); cursor:pointer;
+    border:1px solid var(--fieldbd); border-radius:8px; padding:4px 9px; background:var(--card); }
+  .mitem .pick.on { background:#e0a92e; border-color:#e0a92e; color:#fff; }
+  .mitem .foot .left { display:flex; align-items:center; gap:8px; min-width:0; }
   .mitem { border:1px solid var(--fieldbd); border-radius:12px; padding:10px 11px; margin-bottom:7px; background:var(--field); }
   .mitem textarea { border:none; background:transparent; padding:0; min-height:40px; font-size:13px; border-radius:0; }
   .mitem textarea:focus { border:none; }
@@ -1383,27 +1394,68 @@ function renderMemo() {
   var sv = svState(), html = '';
   usedSpaces().forEach(function (u) {
     var items = sv.items[u.name] || (sv.items[u.name] = []);
+    var pk = (sv.pick && sv.pick.space === u.name) ? sv.pick.k : null;
+
     html += '<div class="scard"><div class="hdr"><span>' + u.emoji + '</span>'
           + '<span class="nm2">' + esc(u.name) + '</span><span class="cnt">' + u.photos.length + '장</span></div>';
-    html += '<div class="thumbs">';
+
+    // 사진 — 평소엔 눌러서 확대, 「사진 지정」 중에는 눌러서 해당 메모에 연결
+    html += '<div class="thumbs' + (pk !== null ? ' picking' : '') + '">';
     u.photos.forEach(function (i) {
-      html += '<img src="' + sv.photos[i].url + '" onclick="openLightbox(' + i + ')">';
+      var on = pk !== null && (items[pk].photos || []).indexOf(i) !== -1;
+      var no = 0;
+      items.forEach(function (x, j) { if (!no && (x.photos || []).indexOf(i) !== -1) no = j + 1; });
+      html += '<div class="th' + (on ? ' on' : '') + '" onclick="'
+            + (pk !== null ? 'pickPhoto(\'' + esc(u.name) + '\',' + i + ')' : 'openLightbox(' + i + ')')
+            + '"><img src="' + sv.photos[i].url + '">'
+            + (no ? '<span class="pin">' + no + '</span>' : '') + '</div>';
     });
     html += '</div>';
+    if (pk !== null) {
+      html += '<div class="hint" style="margin:-4px 0 10px;">위 사진을 눌러 <b>' + (pk + 1)
+            + '번 항목</b>에 연결하세요. 다시 누르면 해제됩니다.</div>';
+    }
+
     items.forEach(function (it, k) {
+      var n = (it.photos || []).length;
+      var picking = pk === k;
       html += '<div class="mitem' + (it.flag ? ' flag' : '') + '">'
             + '<textarea placeholder="예: 신발장 하부 배관 간섭 — 하부장 높이 조정 필요" '
             + 'oninput="setMemo(\'' + esc(u.name) + '\',' + k + ',this.value)">' + esc(it.text) + '</textarea>'
-            + '<div class="foot"><div class="f">' + (it.flag ? '⚠️ 특이사항 · 보고서 초안에 포함' : '일반 기록') + '</div>'
-            + '<div class="sw2' + (it.flag ? ' on' : '') + '" onclick="toggleFlag(\'' + esc(u.name) + '\',' + k + ')"></div></div></div>';
+            + '<div class="foot"><div class="left">'
+            + '<div class="pick' + (picking ? ' on' : '') + '" onclick="startPick(\'' + esc(u.name) + '\',' + k + ')">'
+            + (picking ? '✓ 지정 완료' : '📷 사진 지정' + (n ? ' · ' + n : '')) + '</div>'
+            + '<div class="f">' + (it.flag ? '⚠️ 특이사항' : '일반 기록') + '</div></div>'
+            + '<div class="sw2' + (it.flag ? ' on' : '') + '" onclick="toggleFlag(\'' + esc(u.name) + '\',' + k + ')"></div>'
+            + '</div></div>';
     });
     html += '<div class="additem" onclick="addMemo(\'' + esc(u.name) + '\')">＋ 항목 추가</div></div>';
   });
   document.getElementById('smList').innerHTML = html;
 }
-function addMemo(name) { var sv = svState(); (sv.items[name] = sv.items[name] || []).push({ text: '', flag: false }); renderMemo(); }
+function addMemo(name) {
+  var sv = svState();
+  (sv.items[name] = sv.items[name] || []).push({ text: '', flag: false, photos: [] });
+  renderMemo();
+}
 function setMemo(name, k, v) { svState().items[name][k].text = v; }
 function toggleFlag(name, k) { var it = svState().items[name][k]; it.flag = !it.flag; renderMemo(); }
+
+// ── 메모 항목에 사진 연결 ──
+function startPick(name, k) {
+  var sv = svState();
+  sv.pick = (sv.pick && sv.pick.space === name && sv.pick.k === k) ? null : { space: name, k: k };
+  renderMemo();
+}
+function pickPhoto(name, i) {
+  var sv = svState();
+  if (!sv.pick || sv.pick.space !== name) return;
+  var it = sv.items[name][sv.pick.k];
+  it.photos = it.photos || [];
+  var at = it.photos.indexOf(i);
+  if (at === -1) it.photos.push(i); else it.photos.splice(at, 1);
+  renderMemo();
+}
 
 // ── 저장 ──
 function saveSurvey() {
@@ -1429,7 +1481,14 @@ function saveSurvey() {
         spaces: used.map(function (u) {
           return {
             emoji: u.emoji, name: u.name,
-            items: (sv.items[u.name] || []).filter(function (x) { return x.text && x.text.trim(); }),
+            items: (sv.items[u.name] || []).filter(function (x) { return x.text && x.text.trim(); })
+              .map(function (x) {
+                return {
+                  text: x.text, flag: x.flag,
+                  // 사진 번호를 드라이브 파일 id 로 바꿔서 보냅니다
+                  fileIds: (x.photos || []).map(function (i) { return sv.fileIds[i]; }).filter(Boolean)
+                };
+              }),
             fileIds: u.photos.map(function (i) { return sv.fileIds[i]; }).filter(Boolean)
           };
         })
