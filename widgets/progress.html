@@ -14,48 +14,27 @@
     --sans:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
     --didone:"Bodoni Moda",Didot,Georgia,"Times New Roman",serif;
 
-    --card:rgba(255,255,255,.55);
-    --bd:rgba(255,255,255,.72);
-    --sh: inset 0 1px 0 rgba(255,255,255,.60),
-          0 1px 2px rgba(16,18,22,.05),
-          0 4px 9px rgba(16,18,22,.055),
-          0 12px 22px rgba(16,18,22,.06);
-    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
-    --txt:#16181d; --txt2:#5a616a; --txt3:#8b9199;
-    --div:rgba(120,128,140,.16);
-    --track:rgba(120,128,140,.20);
-    --fill: linear-gradient(90deg,#454b54,#16181d);
+    /* 앱 헤더와 같은 다크 글래스 — 노션이 밝든 어둡든 동일하게 읽힙니다 */
+    --card:rgba(18,20,25,.86);
+    --bd:rgba(255,255,255,.13);
+    --sh: inset 0 1px 0 rgba(255,255,255,.10),
+          0 1px 2px rgba(10,12,16,.16),
+          0 4px 10px rgba(10,12,16,.18),
+          0 12px 24px rgba(10,12,16,.20);
+    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);
+    --txt:#f2f4f7; --txt2:rgba(255,255,255,.74); --txt3:rgba(255,255,255,.50);
+    --div:rgba(255,255,255,.10);
+    --track:rgba(255,255,255,.12);
+    --fill: linear-gradient(90deg,#aeb6c0,#f4f6f8);
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --card:rgba(255,255,255,.065);
-      --bd:rgba(255,255,255,.11);
-      --sh: inset 0 1px 0 rgba(255,255,255,.13),
-            0 2px 6px rgba(0,0,0,.20),
-            0 10px 20px rgba(0,0,0,.22);
-      --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.30),transparent);
-      --txt:#eef0f3; --txt2:#b6bcc4; --txt3:#868d97;
-      --div:rgba(255,255,255,.09);
-      --track:rgba(255,255,255,.10);
-      --fill: linear-gradient(90deg,#b9c0c9,#f2f4f7);
-    }
-  }
-  /* ?theme= 로 강제 지정 (노션 테마와 OS 설정이 다를 때) */
+  /* ?theme=light — 밝은 카드가 필요할 때만 */
   body[data-theme="light"] {
-    --card:rgba(255,255,255,.55); --bd:rgba(255,255,255,.72);
-    --sh: inset 0 1px 0 rgba(255,255,255,.60), 0 1px 2px rgba(16,18,22,.05), 0 4px 9px rgba(16,18,22,.055), 0 12px 22px rgba(16,18,22,.06);
+    --card:rgba(255,255,255,.62); --bd:rgba(255,255,255,.85);
+    --sh: inset 0 1px 0 rgba(255,255,255,.7), 0 1px 2px rgba(16,18,22,.06), 0 4px 10px rgba(16,18,22,.07), 0 12px 22px rgba(16,18,22,.07);
     --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
     --txt:#16181d; --txt2:#5a616a; --txt3:#8b9199;
     --div:rgba(120,128,140,.16); --track:rgba(120,128,140,.20);
     --fill: linear-gradient(90deg,#454b54,#16181d);
-  }
-  body[data-theme="dark"] {
-    --card:rgba(255,255,255,.065); --bd:rgba(255,255,255,.11);
-    --sh: inset 0 1px 0 rgba(255,255,255,.13), 0 2px 6px rgba(0,0,0,.20), 0 10px 20px rgba(0,0,0,.22);
-    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.30),transparent);
-    --txt:#eef0f3; --txt2:#b6bcc4; --txt3:#868d97;
-    --div:rgba(255,255,255,.09); --track:rgba(255,255,255,.10);
-    --fill: linear-gradient(90deg,#b9c0c9,#f2f4f7);
   }
 
   /* 배경 없음 — 노션 페이지 배경이 그대로 비칩니다 */
@@ -135,10 +114,10 @@
   // 옵션:
   //   pct=42          수동 오버라이드
   //   t=공사 진행      제목 변경
-  //   theme=light|dark 밝기 강제 (기본은 보는 사람 설정을 따라감)
+  //   theme=light     밝은 카드로 전환 (기본은 다크 글래스 — 노션 테마와 무관하게 동일)
   const q = new URLSearchParams(location.search);
   const th = q.get("theme");
-  if (th === "light" || th === "dark") document.body.dataset.theme = th;
+  if (th === "light") document.body.dataset.theme = "light";
   if (q.get("t")) document.getElementById("title").textContent = q.get("t");
 
   const startStr = q.get("start");
