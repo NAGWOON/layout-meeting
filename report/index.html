@@ -293,9 +293,13 @@
      흰 글씨를 그대로 두면 흰 바탕에 흰 글씨가 되어 안 보입니다. */
   .target select option { color:#16181d; background:#ffffff; font-weight:600; }
   .target .mg { font-size:11px; color:rgba(255,255,255,.58); text-decoration:underline; flex:none; cursor:pointer; }
-  .remain { display:flex; align-items:center; justify-content:space-between; margin:0 5px 9px; }
-  .remain .n { font-size:12px; font-weight:700; }
-  .remain .a { font-size:11.5px; color:var(--accent); font-weight:700; cursor:pointer; }
+  .remain { display:flex; align-items:center; gap:13px; margin:0 5px 9px; }
+  .remain .n { font-size:12px; font-weight:700; flex:1; }
+  .remain .a { font-size:11.5px; color:var(--accent); font-weight:700; cursor:pointer; flex:none; }
+  .remain .a.warn { color:#c0392b; }
+  @media (prefers-color-scheme: dark) { .remain .a.warn { color:#ef8272; } }
+  /* 담기 체크(✓)는 오른쪽 위에 있으므로 제외 버튼은 왼쪽 위로 둡니다 */
+  .ph .del.l { left:3px; right:auto; }
   .ph.sel { outline:2.5px solid var(--accent); outline-offset:-2.5px; }
   .ph.sel::after { content:"✓"; position:absolute; top:4px; right:4px; width:18px; height:18px; border-radius:50%;
     background:var(--accent); color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:700; }
@@ -505,6 +509,7 @@
       <div class="remain">
         <div class="n" id="svRemainTxt">사진을 불러오세요</div>
         <div class="a" onclick="selectAllRemain()">전체 선택</div>
+        <div class="a warn" id="svDropSel" onclick="dropSelected()">선택 제외</div>
       </div>
       <div class="photos" id="svGrid"></div>
       <input type="file" id="svInput" accept="image/*" multiple class="hide">
@@ -1188,11 +1193,14 @@ function renderSurvey() {
   document.getElementById('svRemainNum').textContent = rest.length;
   document.getElementById('svRemainTxt').textContent =
     sv.photos.length ? '남은 사진 ' + rest.length + '장 · 전체 ' + sv.photos.length + '장' : '사진을 불러오세요';
+  // 「선택 제외」는 고른 사진이 있을 때만 보여줍니다
+  document.getElementById('svDropSel').style.display = selCnt ? '' : 'none';
 
   var html = '';
   rest.forEach(function (i) {
     html += '<div class="ph' + (sv.photos[i].sel ? ' sel' : '') + '" onclick="toggleSvPhoto(' + i + ', event)"'
-          + ' ondblclick="openLightbox(' + i + ')"><img src="' + sv.photos[i].url + '"></div>';
+          + ' ondblclick="openLightbox(' + i + ')"><img src="' + sv.photos[i].url + '">'
+          + '<div class="del l" onclick="event.stopPropagation();dropSvPhoto(' + i + ')">✕</div></div>';
   });
   html += '<div class="ph add" onclick="document.getElementById(\'svInput\').click()">＋</div>';
   document.getElementById('svGrid').innerHTML = html;
@@ -1254,6 +1262,30 @@ function selectAllRemain() {
   sv.photos.forEach(function (p) { if (!p.space && !p.sel) any = true; });
   sv.photos.forEach(function (p) { if (!p.space) p.sel = any; });
   renderSurvey();
+}
+
+// ── 필요 없는 사진 제외 ──
+// 목록에서만 빼는 것이고, 원본 파일은 손대지 않습니다.
+function dropPhotos(idxs) {
+  var sv = svState();
+  idxs.slice().sort(function (a, b) { return b - a; }).forEach(function (i) {
+    var p = sv.photos[i];
+    if (!p) return;
+    try { URL.revokeObjectURL(p.url); } catch (e) {}
+    sv.photos.splice(i, 1);
+  });
+  // 담긴 사진의 인덱스가 밀리므로 앵커는 초기화합니다
+  sv.anchor = null;
+  renderSurvey();
+}
+function dropSvPhoto(i) { dropPhotos([i]); }
+function dropSelected() {
+  var sv = svState(), idxs = [];
+  sv.photos.forEach(function (p, i) { if (!p.space && p.sel) idxs.push(i); });
+  if (!idxs.length) { toast('제외할 사진을 먼저 선택하세요'); return; }
+  if (!confirm(idxs.length + '장을 목록에서 제외할까요?\n원본 파일은 그대로 남습니다.')) return;
+  dropPhotos(idxs);
+  toast(idxs.length + '장 제외했습니다');
 }
 function putSelected() {
   var sv = svState();
