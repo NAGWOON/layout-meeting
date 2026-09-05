@@ -1205,7 +1205,9 @@ function row2(k, v) { return '<div class="r"><dt>' + k + '</dt><dd>' + v + '</dd
 // ═════ 출력 ═════
 function textVersion() {
   var d = S.detail, lines = picked(), due = el('dueIn').value;
-  var t = '[발주서] 다시필디자인\n수신 : ' + (vendorName() || '—') + '\n';
+  var t = '[발주서] ' + CO.name + (S.orderNo ? '  ' + S.orderNo : '') + '\n';
+  t += CO.en + ' · 사업자 ' + CO.biz + '\n──────────────\n';
+  t += '수신 : ' + (vendorName() || '—') + '\n';
   t += '현장 : ' + (d ? d.name.replace(/\s*PROJECT\s*$/, '') : '—') + '\n';
   if (d && d.address) t += '주소 : ' + d.address + '\n';
   t += '납품요청 : ' + (due || '미정') + dow(due) + '\n배송 : ' + S.ship + '\n──────────────\n';
@@ -1217,7 +1219,10 @@ function textVersion() {
   });
   t += '──────────────\n';
   if (d && d.unload) t += '· ' + d.unload + '\n';
+  var cn = S.cutNote ? cutNote() : ''; if (cn) t += '· ' + cn + '\n';
   var note = el('noteIn').value.trim(); if (note) t += '· ' + note + '\n';
+  t += '──────────────\n';
+  t += '담당 ' + (localStorage.getItem(LS_OWNER) || '') + ' · ' + CO.tel + '\n' + CO.mail + '\n';
   return t;
 }
 function copyText() {
