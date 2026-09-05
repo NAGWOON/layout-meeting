@@ -224,6 +224,19 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .tips{ font-size:11.5px; color:var(--txt2); line-height:1.85; }
 .tips b{ color:var(--txt); }
 
+.elev{ display:flex; gap:5px; align-items:center; margin-top:4px; }
+.elev span{ font-size:10.5px; color:var(--txt4); width:26px; flex:none; }
+.elev input{ flex:1; min-width:0; font-size:12px; padding:6px 7px; text-align:center;
+  font-family:var(--didone); }
+.lrow{ display:flex; justify-content:space-between; gap:8px; font-size:12px;
+  padding:5px 0; border-bottom:1px solid var(--soft); }
+.lrow:last-child{ border-bottom:0; }
+.lrow.bad{ color:var(--warn); }
+.lrow.bad b{ font-weight:700; }
+.lrow .len{ font-family:var(--didone); font-size:13px; }
+.lfix{ font-size:11px; color:var(--accent); font-weight:700; cursor:pointer;
+  padding:3px 0 6px; }
+
 /* 재단 */
 .it .cut{ width:76px; font-size:11.5px; padding:5px 7px; flex:none; text-align:center; }
 .it .cut::placeholder{ color:var(--txt4); font-size:11px; }
@@ -360,11 +373,27 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div class="sedit hide" id="siteEdit">
         <dt style="font-size:10.5px;color:var(--txt4);font-weight:700;margin-top:10px">하차·양중 조건</dt>
         <input id="unloadIn" placeholder="예) 지하 1층 주차장 · 엘리베이터 09~17시">
-        <dt style="font-size:10.5px;color:var(--txt4);font-weight:700;margin-top:9px">엘리베이터 규격</dt>
-        <input id="elevIn" placeholder="예) 내부 1600×1400×2300 · 문 900×2100">
+        <dt style="font-size:10.5px;color:var(--txt4);font-weight:700;margin-top:9px">엘리베이터 <span style="font-weight:400">mm</span></dt>
+        <div class="elev">
+          <span>내부</span>
+          <input id="eW" type="number" placeholder="폭" oninput="elevCalc()">
+          <input id="eD" type="number" placeholder="깊이" oninput="elevCalc()">
+          <input id="eH" type="number" placeholder="높이" oninput="elevCalc()">
+        </div>
+        <div class="elev">
+          <span>문</span>
+          <input id="eDW" type="number" placeholder="폭" oninput="elevCalc()">
+          <input id="eDH" type="number" placeholder="높이" oninput="elevCalc()">
+          <span style="flex:1"></span>
+        </div>
         <div class="btn2" onclick="saveSite()" style="margin-top:9px;text-align:center;padding:8px">현장에 저장</div>
         <div class="note" style="font-size:10.5px">한 번 적어두면 이 현장 발주서마다 자동으로 붙습니다.</div>
       </div>
+    </div>
+
+    <div class="card hide" id="liftCard">
+      <div class="ch">🚧 양중 점검 <em id="liftMax"></em></div>
+      <div id="liftBox"></div>
     </div>
 
     <div class="card">
@@ -716,9 +745,9 @@ function setQty(id, v) {
   var n = Number(v);
   if (!n || n <= 0) { delete S.qty[id]; delete S.cut[id]; renderItems(); }
   else { var had = !!S.qty[id]; S.qty[id] = n; if (!had) renderItems(); }
-  draw(); bar(); side();
+  draw(); bar(); side(); elevCalc();
 }
-function setCut(id, v) { if (v) S.cut[id] = v; else delete S.cut[id]; draw(); }
+function setCut(id, v) { if (v) S.cut[id] = v; else delete S.cut[id]; draw(); elevCalc(); }
 function setExtra(i, v) {
   var n = Number(v);
   if (!n || n <= 0) S.extra.splice(i, 1); else S.extra[i].qty = n;
@@ -861,6 +890,100 @@ function draw() {
     + '<tbody>' + rows + '</tbody></table>'
     + '<div class="sfoot"><b>특기사항</b>' + foot.join('<br>') + '</div>';
 }
+
+// ═════ 엘리베이터 양중 점검 ═════
+// AI가 아니라 기하학입니다. 판재는 얇아서(9~18mm) 두께를 무시하고 두 가지만 봅니다.
+//   ① 진입 — 문 높이로 세워서 카 깊이를 씁니다        L1 = √(문높이² + 깊이²)
+//   ② 수용 — 들어간 뒤 카 안에서 대각선으로 눕습니다   L2 = √(폭² + 깊이² + 높이²)
+// 실제로는 사람도 타고 각도도 완벽하지 않아 5%를 뺍니다.
+var SAFE = 0.95;
+var JA = { 3:900, 4:1220, 6:1800, 8:2440, 10:3050, 12:3600 };
+
+function elevNums() {
+  var g = function (id) { return Number(el(id).value) || 0; };
+  return { w:g('eW'), d:g('eD'), h:g('eH'), dw:g('eDW'), dh:g('eDH') };
+}
+function elevText() {
+  var n = elevNums();
+  if (!n.w && !n.d && !n.h && !n.dw && !n.dh) return '';
+  var a = (n.w && n.d && n.h) ? '내부 ' + n.w + '×' + n.d + '×' + n.h : '';
+  var b = (n.dw && n.dh) ? '문 ' + n.dw + '×' + n.dh : '';
+  return [a, b].filter(Boolean).join(' · ');
+}
+function elevParse(t) {
+  var z = { w:'', d:'', h:'', dw:'', dh:'' };
+  if (!t) return z;
+  var a = t.match(/내부\s*(\d+)\s*[×x*]\s*(\d+)\s*[×x*]\s*(\d+)/);
+  if (a) { z.w = a[1]; z.d = a[2]; z.h = a[3]; }
+  var b = t.match(/문\s*(\d+)\s*[×x*]\s*(\d+)/);
+  if (b) { z.dw = b[1]; z.dh = b[2]; }
+  return z;
+}
+function liftMax() {
+  var n = elevNums();
+  if (!n.d) return null;                       // 깊이가 없으면 계산이 안 됩니다
+  var L = [];
+  if (n.dh) L.push(Math.sqrt(n.dh * n.dh + n.d * n.d));            // 진입
+  if (n.w && n.h) L.push(Math.sqrt(n.w*n.w + n.d*n.d + n.h*n.h));  // 수용
+  if (!L.length) return null;
+  return Math.floor(Math.min.apply(null, L) * SAFE);
+}
+
+// 규격에서 가장 긴 변을 뽑습니다. 확신이 안 서면 null 을 돌려 경고하지 않습니다.
+function specLen(spec) {
+  if (!spec) return null;
+  var s = String(spec).replace(/\s/g, '');
+  var mm = s.match(/\d{3,4}/g);                       // 2440×9×30 처럼 mm 로 적힌 것
+  if (mm) { var big = Math.max.apply(null, mm.map(Number)); if (big >= 300) return big; }
+  var ja = s.match(/^(\d+)[×x*](\d+)/);               // 3×6, 4×8 처럼 자로 적힌 것
+  if (ja) {
+    var m = Math.max(+ja[1], +ja[2]);
+    return JA[m] || m * 305;
+  }
+  var j2 = s.match(/(\d+)자/);                        // 「8자」
+  if (j2) return JA[+j2[1]] || (+j2[1]) * 305;
+  return null;
+}
+function cutTo(len, max) {                            // 몇 등분해야 들어가는지
+  for (var n = 2; n <= 8; n++) if (len / n <= max) return n;
+  return null;
+}
+var CUTNAME = { 2:'반반', 3:'3등분', 4:'4등분', 5:'5등분', 6:'6등분', 7:'7등분', 8:'8등분' };
+
+function elevCalc() {
+  var max = liftMax();
+  el('liftCard').classList.toggle('hide', !max);
+  if (!max) return;
+  el('liftMax').textContent = '최대 ' + max.toLocaleString('ko-KR') + 'mm';
+
+  var lines = picked(), rows = [], bad = 0;
+  lines.forEach(function (x) {
+    var L = specLen(x.spec);
+    if (!L) return;
+    var over = L > max;
+    if (over) bad++;
+    var n = over ? cutTo(L, max) : null;
+    rows.push('<div class="lrow' + (over ? ' bad' : '') + '">'
+      + '<span>' + (over ? '⚠ ' : '') + esc(x.name) + '</span>'
+      + '<span class="len">' + L.toLocaleString('ko-KR') + '</span></div>'
+      + (over && n && !x.cut
+          ? '<div class="lfix" onclick="applyCut(\'' + x.id + '\',\'' + CUTNAME[n] + '\')">'
+            + '→ ' + CUTNAME[n] + ' 재단하면 ' + Math.round(L / n).toLocaleString('ko-KR') + 'mm · 눌러서 적용</div>'
+          : ''));
+  });
+  el('liftBox').innerHTML = rows.length
+    ? (bad ? '<div class="note" style="margin:0 0 7px;color:var(--warn)">' + bad
+             + '건이 원장으로는 안 들어갑니다</div>' : '')
+      + rows.join('')
+    : '<div class="note" style="margin:0">담은 품목 중 길이를 아는 게 없습니다</div>';
+}
+function applyCut(id, name) {
+  if (!id) return;
+  S.cut[id] = name;
+  renderItems(); draw(); elevCalc();
+  toast(name + ' 재단으로 적었습니다');
+}
+
 // ═════ 우측 사이드바 ═════
 function side() {
   var lines = picked(), byG = {}, sum = 0;
@@ -890,7 +1013,11 @@ function side() {
     + (d.delivery ? '<dt>양중 예정</dt><dd>' + d.delivery + dow(d.delivery) + '</dd>' : '');
   el('siteEdit').classList.remove('hide');
   if (document.activeElement !== el('unloadIn')) el('unloadIn').value = d.unload || '';
-  if (document.activeElement !== el('elevIn'))   el('elevIn').value   = d.elevator || '';
+  var z = elevParse(d.elevator || '');
+  [['eW',z.w],['eD',z.d],['eH',z.h],['eDW',z.dw],['eDH',z.dh]].forEach(function (a) {
+    if (document.activeElement !== el(a[0])) el(a[0]).value = a[1];
+  });
+  elevCalc();
 
   var os = d.orders || [];
   el('pastCnt').textContent = os.length ? os.length + '건' : '';
@@ -904,11 +1031,11 @@ function side() {
 function saveSite() {
   if (!S.site) return toast('현장을 먼저 고르세요');
   el('siteSaveState').textContent = '저장 중…';
-  api('saveSiteInfo', { sitePageId: S.site.id, unload: el('unloadIn').value.trim(), elevator: el('elevIn').value.trim() })
+  api('saveSiteInfo', { sitePageId: S.site.id, unload: el('unloadIn').value.trim(), elevator: elevText() })
     .then(function (r) {
       if (!r || !r.ok) { el('siteSaveState').textContent = '실패'; return; }
       S.detail.unload = el('unloadIn').value.trim();
-      S.detail.elevator = el('elevIn').value.trim();
+      S.detail.elevator = elevText();
       el('siteSaveState').textContent = '저장됨';
       setTimeout(function () { el('siteSaveState').textContent = ''; }, 2200);
       draw(); toast('현장에 저장했습니다');
