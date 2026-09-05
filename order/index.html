@@ -170,6 +170,9 @@ textarea{ width:100%; resize:vertical; min-height:56px; line-height:1.6; }
 /* 키 화면 */
 .gate{ max-width:340px; margin:16vh auto 0; }
 .gate .card{ text-align:center; }
+/* 게이트의 D 마크 — 배경과 글자가 같은 쪽으로 몰리면 안 보입니다 */
+.gate .dmark{ background:var(--txt); color:#fff; }
+@media (prefers-color-scheme: dark){ .gate .dmark{ color:#16181d; } }
 .gate input{ width:100%; text-align:center; font-size:16px; letter-spacing:2px; margin:14px 0 10px; }
 #toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(14px);
   background:rgba(16,18,23,.92); color:#fff; padding:11px 18px; border-radius:12px; font-size:13px;
