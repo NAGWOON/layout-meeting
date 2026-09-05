@@ -383,18 +383,18 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       </dl>
       <div class="sedit hide" id="siteEdit">
         <dt style="font-size:10.5px;color:var(--txt4);font-weight:700;margin-top:10px">하차·양중 조건</dt>
-        <input id="unloadIn" placeholder="예) 지하 1층 주차장 · 엘리베이터 09~17시">
+        <input id="unloadIn" oninput="unloadTyped()" placeholder="예) 지하 1층 주차장 · 엘리베이터 09~17시">
         <dt style="font-size:10.5px;color:var(--txt4);font-weight:700;margin-top:9px">엘리베이터 <span style="font-weight:400">mm</span></dt>
         <div class="elev">
           <span>내부</span>
-          <input id="eW" type="number" placeholder="폭" oninput="elevCalc()">
-          <input id="eD" type="number" placeholder="깊이" oninput="elevCalc()">
-          <input id="eH" type="number" placeholder="높이" oninput="elevCalc()">
+          <input id="eW" type="number" placeholder="폭" oninput="elevIn()">
+          <input id="eD" type="number" placeholder="깊이" oninput="elevIn()">
+          <input id="eH" type="number" placeholder="높이" oninput="elevIn()">
         </div>
         <div class="elev">
           <span>문</span>
-          <input id="eDW" type="number" placeholder="폭" oninput="elevCalc()">
-          <input id="eDH" type="number" placeholder="높이" oninput="elevCalc()">
+          <input id="eDW" type="number" placeholder="폭" oninput="elevIn()">
+          <input id="eDH" type="number" placeholder="높이" oninput="elevIn()">
           <span style="flex:1"></span>
         </div>
         <div class="btn2" onclick="saveSite()" style="margin-top:9px;text-align:center;padding:8px">현장에 저장</div>
@@ -497,7 +497,7 @@ var CO = {
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
   type: '목자재', qty: {}, cut: {}, extra: [], orderNo: '', ship: '양중 포함', busy: false, safe: 5, cutNote: true,
-  only: false, calcOpen: false, loss: 10,
+  only: false, calcOpen: false, loss: 10, elev: null, unload: null,
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }]
 };
@@ -593,7 +593,7 @@ function boot() {
 // ═════ 현장 ═════
 function pickSite() {
   var id = el('siteSel').value;
-  S.site = null; S.detail = null;
+  S.site = null; S.detail = null; S.elev = null; S.unload = null;
   el('pastSel').innerHTML = '<option value="">지난 발주 불러오기</option>';
   if (!id) { draw(); bar(); side(); return; }
   S.site = S.sites.filter(function (x) { return x.id === id; })[0];
@@ -950,6 +950,14 @@ function draw() {
 // 실제로는 사람도 타고 각도도 완벽하지 않아 5%를 뺍니다.
 var JA = { 3:900, 4:1220, 6:1800, 8:2440, 10:3050, 12:3600 };
 
+// side() 는 수량을 바꿀 때마다 다시 그려집니다.
+// 입력값을 DOM 에만 두면 그때마다 지워지므로, 친 값은 S 에 담아 둡니다.
+function elevRaw() {
+  return { w:el('eW').value, d:el('eD').value, h:el('eH').value, dw:el('eDW').value, dh:el('eDH').value };
+}
+function elevIn() { S.elev = elevRaw(); elevCalc(); }
+function unloadTyped() { S.unload = el('unloadIn').value; }
+
 function elevNums() {
   var g = function (id) { return Number(el(id).value) || 0; };
   return { w:g('eW'), d:g('eD'), h:g('eH'), dw:g('eDW'), dh:g('eDH') };
@@ -1158,8 +1166,10 @@ function side() {
     + (d.woodStart ? '<dt>목공 착수</dt><dd>' + d.woodStart + dow(d.woodStart) + '</dd>' : '')
     + (d.delivery ? '<dt>양중 예정</dt><dd>' + d.delivery + dow(d.delivery) + '</dd>' : '');
   el('siteEdit').classList.remove('hide');
-  if (document.activeElement !== el('unloadIn')) el('unloadIn').value = d.unload || '';
-  var z = elevParse(d.elevator || '');
+  if (document.activeElement !== el('unloadIn'))
+    el('unloadIn').value = (S.unload !== null ? S.unload : (d.unload || ''));
+  // 노션에 저장하기 전이라도 방금 친 치수가 남아 있어야 합니다
+  var z = S.elev || elevParse(d.elevator || '');
   [['eW',z.w],['eD',z.d],['eH',z.h],['eDW',z.dw],['eDH',z.dh]].forEach(function (a) {
     if (document.activeElement !== el(a[0])) el(a[0]).value = a[1];
   });
@@ -1182,6 +1192,7 @@ function saveSite() {
       if (!r || !r.ok) { el('siteSaveState').textContent = '실패'; return; }
       S.detail.unload = el('unloadIn').value.trim();
       S.detail.elevator = elevText();
+      S.elev = elevRaw(); S.unload = S.detail.unload;
       el('siteSaveState').textContent = '저장됨';
       setTimeout(function () { el('siteSaveState').textContent = ''; }, 2200);
       draw(); toast('현장에 저장했습니다');
