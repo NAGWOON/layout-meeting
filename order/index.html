@@ -402,6 +402,14 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       </div>
     </div>
 
+    <div class="card" id="histCard">
+      <div class="ch">📊 지난 현장 참고 <em>실제 발주량</em></div>
+      <select id="histSel" onchange="renderHistory()" style="width:100%;font-size:12px;padding:7px 9px">
+        <option value="">비슷한 현장 고르기</option>
+      </select>
+      <div id="histBox"></div>
+    </div>
+
     <div class="card hide" id="liftCard">
       <div class="ch">🚧 양중 점검 <em id="liftMax"></em></div>
       <div id="liftBox"></div>
@@ -481,12 +489,13 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner';
 var CO = {
   name: '다시필디자인',
   en:   'DASIFILL DESIGN',
-  biz:  '',      // 사업자등록번호 (예: 000-00-00000)
-  tel:  ''       // 대표 연락처 (예: 010-0000-0000)
+  biz:  '519-86-03470',
+  tel:  '010-3445-0548',
+  mail: 'official@dasifilldesign.co.kr'
 };
 
 var S = {
-  sites: [], items: [], ranges: {}, site: null, detail: null,
+  sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
   type: '목자재', qty: {}, cut: {}, extra: [], orderNo: '', ship: '양중 포함', busy: false, safe: 5, cutNote: true,
   only: false, calcOpen: false, loss: 10,
   walls: [{ m: '', kind: '석고 1ply · @300' }],
@@ -557,7 +566,17 @@ function boot() {
   toast('불러오는 중…');
   api('getOrderInit').then(function (r) {
     if (!r || !r.ok) return toast('불러오지 못했습니다');
-    S.sites = r.sites || []; S.items = r.items || []; S.ranges = r.ranges || {};
+    S.sites = r.sites || []; S.items = r.items || [];
+    S.history = r.history || [];
+    S.ranges = {};
+    S.history.forEach(function (h) {
+      Object.keys(h.items).forEach(function (n) {
+        var v = h.items[n], g = S.ranges[n];
+        if (!g) S.ranges[n] = { min: v, max: v };
+        else { if (v < g.min) g.min = v; if (v > g.max) g.max = v; }
+      });
+    });
+    renderHistory();
     var s = el('siteSel');
     S.sites.forEach(function (x) {
       var o = document.createElement('option');
@@ -907,6 +926,7 @@ function draw() {
     + (CO.en ? '<span class="en">' + CO.en + '</span>' : '')
     + (CO.biz ? '<span>사업자 ' + CO.biz + '</span>' : '')
     + '<span>담당 ' + esc(localStorage.getItem(LS_OWNER) || '') + (CO.tel ? ' · ' + CO.tel : '') + '</span>'
+    + (CO.mail ? '<span>' + CO.mail + '</span>' : '')
     + '</div></div></div>'
     + '<div class="meta">'
     + row2('수　신', (vendorName() || '—') + ' 귀중') + row2('발주일', ymd(new Date()))
@@ -1066,6 +1086,51 @@ function applyCut(id, name) {
   S.cut[id] = name;
   renderItems(); draw(); elevCalc();
   toast(name + ' 재단으로 적었습니다');
+}
+
+// ═════ 지난 현장 참고 ═════
+// 평형이 아니라 시공범위가 물량을 정합니다. 자동으로 고르지 않고 대표님이 보고 고릅니다.
+function renderHistory() {
+  var sel = el('histSel');
+  if (sel.options.length <= 1 && S.history.length) {
+    S.history.forEach(function (h, i) {
+      var o = document.createElement('option');
+      o.value = i;
+      o.textContent = h.name + (h.py ? '  ' + h.py + '평' : '') + (h.ins ? ' · ' + h.ins : '');
+      sel.appendChild(o);
+    });
+  }
+  var v = sel.value;
+  if (v === '') {
+    el('histBox').innerHTML = '<div class="note" style="margin:7px 0 0">명세서 '
+      + S.history.length + '건이 들어 있습니다. 비슷한 현장을 고르면 그 물량이 나옵니다.<br>'
+      + '<span style="opacity:.8">평형보다 <b>단열 범위</b>와 시공 범위를 먼저 보세요.</span></div>';
+    return;
+  }
+  var h = S.history[Number(v)];
+  if (!h) return;
+  var rows = Object.keys(h.items).map(function (n) {
+    var it = S.items.filter(function (i) { return i.name === n; })[0];
+    return '<div class="sr"><span>' + esc(n.replace(/\s*\(.*?\)\s*/g, ' ').trim()) + '</span>'
+      + '<b>' + h.items[n].toLocaleString('ko-KR')
+      + '<span style="font-size:10px;font-weight:400"> ' + esc(it ? it.unit : '') + '</span></b></div>';
+  }).join('');
+  el('histBox').innerHTML = '<div style="margin-top:9px">' + rows + '</div>'
+    + (h.note ? '<div class="note" style="font-size:10.5px">' + esc(h.note) + '</div>' : '')
+    + '<div class="btn2" onclick="applyHistory(' + Number(v) + ')" style="margin-top:9px;text-align:center;padding:8px">이 물량으로 채우기</div>'
+    + '<div class="note" style="font-size:10.5px;margin-top:5px">덮어씁니다. 채운 뒤 수량을 고치세요.</div>';
+}
+function applyHistory(i) {
+  var h = S.history[i];
+  if (!h) return;
+  var n = 0, miss = 0;
+  S.qty = {}; S.cut = {};
+  Object.keys(h.items).forEach(function (name) {
+    var it = S.items.filter(function (x) { return x.name === name && x.type === S.type; })[0];
+    if (it) { S.qty[it.id] = h.items[name]; n++; } else miss++;
+  });
+  renderItems(); draw(); bar(); side(); elevCalc();
+  toast(h.name + ' 물량 ' + n + '품목을 채웠습니다' + (miss ? ' · ' + miss + '건 제외' : ''));
 }
 
 // ═════ 우측 사이드바 ═════
