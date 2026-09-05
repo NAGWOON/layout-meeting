@@ -567,8 +567,9 @@ function boot() {
   api('getOrderInit').then(function (r) {
     if (!r || !r.ok) return toast('불러오지 못했습니다');
     S.sites = r.sites || []; S.items = r.items || [];
+    // 백엔드가 아직 옛 버전이면 ranges 만 옵니다. 둘 다 받아들입니다.
     S.history = r.history || [];
-    S.ranges = {};
+    S.ranges = r.ranges || {};
     S.history.forEach(function (h) {
       Object.keys(h.items).forEach(function (n) {
         var v = h.items[n], g = S.ranges[n];
@@ -1091,6 +1092,8 @@ function applyCut(id, name) {
 // ═════ 지난 현장 참고 ═════
 // 평형이 아니라 시공범위가 물량을 정합니다. 자동으로 고르지 않고 대표님이 보고 고릅니다.
 function renderHistory() {
+  el('histCard').classList.toggle('hide', !S.history.length);   // 백엔드가 옛 버전이면 숨깁니다
+  if (!S.history.length) return;
   var sel = el('histSel');
   if (sel.options.length <= 1 && S.history.length) {
     S.history.forEach(function (h, i) {
