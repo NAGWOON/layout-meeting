@@ -918,18 +918,30 @@ function elevParse(t) {
   if (b) { z.dw = b[1]; z.dh = b[2]; }
   return z;
 }
-// 기하 최댓값과 여유를 뺀 값을 함께 돌려줍니다 — 화면에서 계산 과정을 보여주기 위해서입니다
+// 판재와 장척은 조건이 다릅니다.
+//   판재(석고·합판·MDF·단열재) — 면이 커서 문을 비스듬히 통과해야 합니다.
+//                                문 높이로 세워 카 깊이를 쓰는 게 한계입니다.
+//   장척(몰딩·각재·철물)       — 사실상 선분이라 문은 거의 제약이 아니고,
+//                                카 안 대각선에만 걸립니다.
+var LONG_GROUPS = { '각재':1, '몰딩':1, '철물·레일':1 };
+
 function liftMax() {
   var n = elevNums();
   if (!n.d) return null;                       // 깊이가 없으면 계산이 안 됩니다
-  var L = [], why = [];
-  if (n.dh) { L.push(Math.sqrt(n.dh * n.dh + n.d * n.d)); why.push('진입'); }              // 문 높이로 세워 깊이 활용
-  if (n.w && n.h) { L.push(Math.sqrt(n.w*n.w + n.d*n.d + n.h*n.h)); why.push('수용'); }    // 카 안 대각선
-  if (!L.length) return null;
-  var raw = Math.min.apply(null, L);
-  var bind = why[L.indexOf(raw)] || '';
-  return { raw: Math.floor(raw), use: Math.floor(raw * (1 - S.safe / 100)), bind: bind };
+  var box = (n.w && n.h) ? Math.sqrt(n.w*n.w + n.d*n.d + n.h*n.h) : null;   // 카 대각선
+  var thru = n.dh ? Math.sqrt(n.dh*n.dh + n.d*n.d) : null;                  // 세워서 진입
+  if (!box && !thru) return null;
+
+  var panelRaw = Math.min.apply(null, [box, thru].filter(Boolean));
+  var longRaw  = box || thru;                  // 장척은 카 대각선이 기준입니다
+  var f = 1 - S.safe / 100;
+  return {
+    panelRaw: Math.floor(panelRaw), panel: Math.floor(panelRaw * f),
+    longRaw:  Math.floor(longRaw),  long:  Math.floor(longRaw * f),
+    bind: (thru && thru <= (box || Infinity)) ? '문으로 진입' : '카 대각선'
+  };
 }
+function isLong(x) { return !!LONG_GROUPS[x.group]; }
 
 // 규격에서 가장 긴 변을 뽑습니다. 확신이 안 서면 null 을 돌려 경고하지 않습니다.
 function specLen(spec) {
@@ -958,25 +970,32 @@ function elevCalc() {
   var m = liftMax();
   el('liftCard').classList.toggle('hide', !m);
   if (!m) return;
-  var max = m.use;
-  el('liftMax').textContent = '반입 ' + max.toLocaleString('ko-KR') + 'mm';
+  el('liftMax').textContent = '판재 ' + m.panel.toLocaleString('ko-KR')
+    + ' · 장척 ' + m.long.toLocaleString('ko-KR');
 
   var chips = '<div class="f" style="margin-bottom:7px"><label style="width:34px">여유</label><div class="chips">'
     + [[0,'없음'],[5,'5%'],[10,'10%'],[15,'15%']].map(function (a) {
         return '<div class="chip' + (a[0] === S.safe ? ' on' : '') + '" onclick="setSafe(' + a[0] + ')">' + a[1] + '</div>';
       }).join('') + '</div></div>'
-    + '<div class="note" style="margin:0 0 8px;font-size:10.5px">기하 최대 <b>' + m.raw.toLocaleString('ko-KR')
-    + '</b>mm (' + m.bind + ' 기준) − ' + S.safe + '% → <b>' + max.toLocaleString('ko-KR') + '</b>mm</div>';
+    + '<div class="note" style="margin:0 0 8px;font-size:10.5px;line-height:1.75">'
+    + '판재 <b>' + m.panelRaw.toLocaleString('ko-KR') + '</b> (' + m.bind + ') − ' + S.safe
+    + '% → <b>' + m.panel.toLocaleString('ko-KR') + '</b>mm<br>'
+    + '장척 <b>' + m.longRaw.toLocaleString('ko-KR') + '</b> (카 대각선) − ' + S.safe
+    + '% → <b>' + m.long.toLocaleString('ko-KR') + '</b>mm'
+    + '<br><span style="opacity:.75">몰딩·각재는 가늘어서 문이 거의 제약이 아닙니다</span></div>';
 
   var lines = picked(), rows = [], bad = 0;
   lines.forEach(function (x) {
     var L = specLen(x.spec);
     if (!L) return;
+    var lng = isLong(x);
+    var max = lng ? m.long : m.panel;
     var over = L > max;
     if (over) bad++;
     var n = over ? cutTo(L, max) : null;
     rows.push('<div class="lrow' + (over ? ' bad' : '') + '">'
-      + '<span>' + (over ? '⚠ ' : '') + esc(x.name) + '</span>'
+      + '<span>' + (over ? '⚠ ' : '') + esc(x.name)
+      + '<span style="font-size:10px;color:var(--txt4)"> ' + (lng ? '장척' : '판재') + '</span></span>'
       + '<span class="len">' + L.toLocaleString('ko-KR') + '</span></div>'
       + (over && n && !x.cut
           ? '<div class="lfix" onclick="applyCut(\'' + x.id + '\',\'' + CUTNAME[n] + '\')">'
