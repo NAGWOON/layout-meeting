@@ -167,6 +167,28 @@ textarea{ width:100%; resize:vertical; min-height:56px; line-height:1.6; }
 .sum small{ font-size:11px; color:var(--txt3); }
 .sum b{ font-family:var(--didone); font-size:19px; font-weight:600; }
 
+/* 산출 */
+.sect{ font-size:11px; font-weight:800; color:var(--txt2); margin:14px 0 7px;
+  padding-top:11px; border-top:1px solid var(--line); display:flex; align-items:baseline; gap:7px; }
+.sect:first-of-type{ border-top:0; padding-top:0; margin-top:4px; }
+.sect span{ font-weight:600; font-size:10.5px; color:var(--txt4); }
+.crow{ display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.crow input{ width:74px; text-align:right; font-family:var(--didone); font-size:15px; flex:none; }
+.crow select{ flex:1; min-width:0; font-size:12.5px; }
+.crow .cu{ width:22px; font-size:11px; color:var(--txt4); flex:none; }
+.crow .cl{ font-size:12.5px; color:var(--txt2); flex:1; }
+.crow .del{ color:var(--txt4); cursor:pointer; font-size:15px; padding:0 4px; flex:none; }
+.crow .del:hover{ color:var(--warn); }
+.addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:4px 0 2px; }
+.calcout{ margin-top:12px; padding:11px 12px; border-radius:12px; background:var(--soft);
+  font-size:12.5px; line-height:1.85; }
+.calcout .r{ display:flex; justify-content:space-between; gap:10px; }
+.calcout .r b{ font-family:var(--didone); font-size:15px; font-weight:600; }
+.calcout .r span{ color:var(--txt3); }
+.calcout .rng{ font-size:10.5px; color:var(--txt4); }
+.calcout .over b, .calcout .over .rng{ color:var(--warn); }
+.hint{ font-size:10px; color:var(--txt4); margin-top:2px; }
+
 /* 키 화면 */
 .gate{ max-width:340px; margin:16vh auto 0; }
 .gate .card{ text-align:center; }
@@ -232,6 +254,39 @@ textarea{ width:100%; resize:vertical; min-height:56px; line-height:1.6; }
         <div id="shipInfo" class="note"></div>
       </div>
 
+      <div class="card" id="calcCard">
+        <div class="ch">🧮 물량으로 산출 <em>넣으면 자재가 나옵니다</em></div>
+
+        <div class="f"><label>로스율</label>
+          <div class="chips" id="lossChips"></div>
+        </div>
+
+        <div class="sect">🧱 벽체 <span>높이 2.4 · 양면 마감</span></div>
+        <div id="wallRows"></div>
+        <div class="addrow" onclick="addWall()">＋ 벽 추가</div>
+
+        <div class="sect">🔲 천장 <span>상 간격 800</span></div>
+        <div class="crow"><input type="number" min="0" id="ceil1" placeholder="0" oninput="calcPreview()">
+          <span class="cu">㎡</span><span class="cl">평천장 1ply</span></div>
+        <div class="crow"><input type="number" min="0" id="ceil2" placeholder="0" oninput="calcPreview()">
+          <span class="cu">㎡</span><span class="cl">평천장 2ply</span></div>
+
+        <div class="sect">🧊 단열 <span>벽은 m · 바닥·천장은 ㎡</span></div>
+        <div id="insRows"></div>
+        <div class="addrow" onclick="addIns()">＋ 단열 추가</div>
+
+        <div class="sect">📏 몰딩</div>
+        <div class="crow"><input type="number" min="0" id="mold" placeholder="0" oninput="calcPreview()">
+          <span class="cu">m</span><span class="cl">평몰딩 30MM · 실측 총길이</span></div>
+
+        <div id="calcOut" class="calcout"></div>
+        <div class="tools" style="margin:11px 0 0">
+          <div class="btn2" onclick="applyCalc()" style="flex:1;text-align:center">산출값으로 채우기</div>
+        </div>
+        <div class="note">계산은 <b>제안</b>입니다. 채운 뒤 수량을 고치시면 그게 최종입니다.
+          우물천장·아트월·붙박이 하지는 면적으로 안 잡히니, 그런 현장은 다루끼를 올려 잡으세요.</div>
+      </div>
+
       <div class="card">
         <div class="ch">품목 <em id="cntTxt">0건</em></div>
         <div class="tools">
@@ -283,8 +338,11 @@ var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AI
 var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner';
 
 var S = {
-  sites: [], items: [], site: null, detail: null,
-  type: '목자재', qty: {}, ship: '양중 포함', busy: false
+  sites: [], items: [], ranges: {}, site: null, detail: null,
+  type: '목자재', qty: {}, ship: '양중 포함', busy: false,
+  loss: 10,
+  walls: [{ m: '', kind: '석고 1ply · @300' }],
+  ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }]
 };
 var TYPES = ['목자재', '도어', '타일', '도기', '조명·스위치', '설비·방수'];
 
@@ -340,14 +398,16 @@ function boot() {
   toast('불러오는 중…');
   api('getOrderInit').then(function (r) {
     if (!r || !r.ok) return toast('불러오지 못했습니다');
-    S.sites = r.sites || []; S.items = r.items || [];
+    S.sites = r.sites || []; S.items = r.items || []; S.ranges = r.ranges || {};
     var s = el('siteSel');
     S.sites.forEach(function (x) {
       var o = document.createElement('option');
       o.value = x.id; o.textContent = x.name.replace(/\s*PROJECT\s*$/, '');
       s.appendChild(o);
     });
-    renderTypes(); renderShip(); renderItems(); draw();
+    renderTypes(); renderVendors(); renderShip();
+    renderLoss(); renderWalls(); renderIns();
+    renderItems(); calcPreview(); draw();
     toast('준비됐습니다');
   }).catch(function () { toast('연결에 실패했습니다'); });
 }
@@ -384,6 +444,8 @@ function renderTypes() {
 }
 function setType(t) {
   S.type = t; S.qty = {};
+  // 산출 계수는 목자재 기준입니다. 다른 유형에서는 감춥니다
+  el('calcCard').classList.toggle('hide', t !== '목자재');
   renderTypes(); renderVendors(); renderItems(); draw();
 }
 function renderVendors() {
@@ -419,6 +481,134 @@ function renderShip() {
 }
 function setShip(k) { S.ship = k; renderShip(); draw(); }
 
+// ═════ 물량 산출 ═════
+// 원단위는 로스를 뺀 값입니다. 화면의 로스율을 곱해서 씁니다.
+var WALL = {                                   // 벽 1m (H 2.4 · 양면)
+  '석고 1ply · @300': { d:0.472, g:2.963 },
+  '석고 2ply · @450': { d:0.389, g:5.926 },
+  '석고+MDF · @450':  { d:0.389, g:2.963, m:1.667 }
+};
+var CEIL = { d:0.0757, g:0.617 };              // 천장 1㎡ (상 @800 · 1ply)
+var INS = {                                    // 벽 1m / 면적 1㎡
+  '아이소핑크 30T (특호)':  { w:1.481, a:0.617 },
+  '아이소핑크 50T (특호)':  { w:1.481, a:0.617 },
+  '아이소핑크 100T (특호)': { w:1.481, a:0.617 },
+  'LX PF보드 30T':          { w:1.333, a:0.556 },
+  '벽산 E-board 33T':       { w:1.111, a:0.463 }
+};
+var MOLD = 0.410;                              // 몰딩 1m (2440 기준)
+var T = {
+  d: '합판 다루끼 (LVL) 8자',
+  g: '일반 석고보드',
+  m: '고밀도 MDF 9T (U-30) 수입',
+  o: '중백색 평몰딩 30MM'
+};
+
+function renderLoss() {
+  el('lossChips').innerHTML = [10, 15, 20].map(function (v) {
+    return '<div class="chip' + (v === S.loss ? ' on' : '') + '" onclick="setLoss(' + v + ')">' + v + '%</div>';
+  }).join('');
+}
+function setLoss(v) { S.loss = v; renderLoss(); calcPreview(); }
+
+function renderWalls() {
+  el('wallRows').innerHTML = S.walls.map(function (w, i) {
+    return '<div class="crow">'
+      + '<input type="number" min="0" value="' + (w.m || '') + '" placeholder="0" oninput="setWall(' + i + ',\'m\',this.value)">'
+      + '<span class="cu">m</span>'
+      + '<select onchange="setWall(' + i + ',\'kind\',this.value)">'
+      + Object.keys(WALL).map(function (k) {
+          return '<option' + (k === w.kind ? ' selected' : '') + '>' + k + '</option>';
+        }).join('')
+      + '</select>'
+      + (S.walls.length > 1 ? '<span class="del" onclick="delWall(' + i + ')">×</span>' : '')
+      + '</div>';
+  }).join('');
+}
+function setWall(i, k, v) { S.walls[i][k] = v; calcPreview(); }
+function addWall() { S.walls.push({ m: '', kind: '석고 1ply · @300' }); renderWalls(); }
+function delWall(i) { S.walls.splice(i, 1); renderWalls(); calcPreview(); }
+
+function renderIns() {
+  el('insRows').innerHTML = S.ins.map(function (x, i) {
+    return '<div class="crow">'
+      + '<input type="number" min="0" value="' + (x.v || '') + '" placeholder="0" oninput="setIns(' + i + ',\'v\',this.value)">'
+      + '<select style="flex:0 0 62px" onchange="setIns(' + i + ',\'mode\',this.value)">'
+      + ['벽','면적'].map(function (m) {
+          return '<option value="' + m + '"' + (m === x.mode ? ' selected' : '') + '>' + (m === '벽' ? 'm' : '㎡') + '</option>';
+        }).join('')
+      + '</select>'
+      + '<select onchange="setIns(' + i + ',\'mat\',this.value)">'
+      + Object.keys(INS).map(function (k) {
+          return '<option' + (k === x.mat ? ' selected' : '') + '>' + k + '</option>';
+        }).join('')
+      + '</select>'
+      + (S.ins.length > 1 ? '<span class="del" onclick="delIns(' + i + ')">×</span>' : '')
+      + '</div>';
+  }).join('');
+}
+function setIns(i, k, v) { S.ins[i][k] = v; calcPreview(); }
+function addIns() { S.ins.push({ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }); renderIns(); }
+function delIns(i) { S.ins.splice(i, 1); renderIns(); calcPreview(); }
+
+function calc() {
+  var f = 1 + S.loss / 100, acc = {};
+  function add(name, q) { if (!name || !q) return; acc[name] = (acc[name] || 0) + q; }
+
+  S.walls.forEach(function (w) {
+    var m = Number(w.m) || 0, c = WALL[w.kind];
+    if (!m || !c) return;
+    add(T.d, m * c.d); add(T.g, m * c.g);
+    if (c.m) add(T.m, m * c.m);
+  });
+
+  var c1 = Number(el('ceil1').value) || 0, c2 = Number(el('ceil2').value) || 0;
+  if (c1 + c2) add(T.d, (c1 + c2) * CEIL.d);
+  if (c1) add(T.g, c1 * CEIL.g);
+  if (c2) add(T.g, c2 * CEIL.g * 2);
+
+  S.ins.forEach(function (x) {
+    var v = Number(x.v) || 0, c = INS[x.mat];
+    if (!v || !c) return;
+    add(x.mat, v * (x.mode === '벽' ? c.w : c.a));
+  });
+
+  var md = Number(el('mold').value) || 0;
+  if (md) add(T.o, md * MOLD);
+
+  var out = {};
+  Object.keys(acc).forEach(function (k) { out[k] = Math.ceil(acc[k] * f); });
+  return out;
+}
+
+function calcPreview() {
+  var r = calc(), names = Object.keys(r);
+  if (!names.length) {
+    el('calcOut').innerHTML = '<span style="color:var(--txt4)">벽 길이나 천장 면적을 넣으면 여기에 나옵니다</span>';
+    return;
+  }
+  el('calcOut').innerHTML = names.map(function (n) {
+    var item = S.items.filter(function (i) { return i.name === n; })[0];
+    var rg = S.ranges[n];
+    var over = rg && (r[n] < rg.min * 0.5 || r[n] > rg.max * 1.5);
+    return '<div class="r' + (over ? ' over' : '') + '"><span>' + esc(n) + '</span>'
+      + '<b>' + r[n] + ' <span style="font-size:11px;font-weight:400">' + esc(item ? item.unit : '') + '</span></b></div>'
+      + (rg ? '<div class="rng' + (over ? ' over' : '') + '">지난 현장 ' + rg.min + ' – ' + rg.max
+              + (over ? '  ⚠ 범위를 벗어납니다' : '') + '</div>' : '');
+  }).join('');
+}
+
+function applyCalc() {
+  var r = calc(), n = 0, miss = [];
+  Object.keys(r).forEach(function (name) {
+    var item = S.items.filter(function (i) { return i.name === name && i.type === S.type; })[0];
+    if (item) { S.qty[item.id] = r[name]; n++; } else miss.push(name);
+  });
+  if (!n) return toast('산출된 게 없습니다 — 물량을 먼저 넣으세요');
+  renderItems(); draw();
+  toast(n + '품목을 채웠습니다' + (miss.length ? ' · ' + miss.length + '건은 품목 목록에 없습니다' : ''));
+}
+
 // ═════ 품목 ═════
 function pool() {
   return S.items.filter(function (i) { return i.type === S.type; });
@@ -431,9 +621,12 @@ function renderItems() {
     if (q && !hit) return;
     if (i.group !== group) { group = i.group; html += '<div class="gh">' + esc(group || '기타') + '</div>'; }
     var v = S.qty[i.id] || '';
+    var rg = S.ranges[i.name];
+    var sub = i.spec || '';
+    if (rg) sub += (sub ? '  ·  ' : '') + '지난 현장 ' + rg.min + '–' + rg.max;
     html += '<div class="it' + (v ? '' : ' dim') + '">'
       + '<div class="nm"><b>' + esc(i.name) + '</b>'
-      + (i.spec ? '<i>' + esc(i.spec) + '</i>' : '') + '</div>'
+      + (sub ? '<i>' + esc(sub) + '</i>' : '') + '</div>'
       + '<input class="q' + (v ? ' has' : '') + '" type="number" min="0" inputmode="numeric" value="' + v
       + '" oninput="setQty(\'' + i.id + '\',this.value)">'
       + '<div class="u">' + esc(i.unit || '') + '</div></div>';
