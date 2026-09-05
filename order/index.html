@@ -234,6 +234,8 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .lrow.bad{ color:var(--warn); }
 .lrow.bad b{ font-weight:700; }
 .lrow .len{ font-family:var(--didone); font-size:13px; }
+.cutbox{ background:var(--soft); border-left:2px solid var(--accent); border-radius:0 8px 8px 0;
+  padding:9px 11px; font-size:12px; line-height:1.6; color:var(--txt); font-weight:600; }
 .lfix{ font-size:11px; color:var(--accent); font-weight:700; cursor:pointer;
   padding:3px 0 6px; }
 
@@ -468,7 +470,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner';
 
 var S = {
   sites: [], items: [], ranges: {}, site: null, detail: null,
-  type: '목자재', qty: {}, cut: {}, extra: [], ship: '양중 포함', busy: false, safe: 5,
+  type: '목자재', qty: {}, cut: {}, extra: [], ship: '양중 포함', busy: false, safe: 5, cutNote: true,
   only: false, calcOpen: false, loss: 10,
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }]
@@ -870,6 +872,8 @@ function draw() {
   var foot = [];
   if (d && d.unload) foot.push('· ' + esc(d.unload));
   if (d && d.elevator) foot.push('· 엘리베이터 ' + esc(d.elevator));
+  var cn = S.cutNote ? cutNote() : '';
+  if (cn) foot.push('· ' + esc(cn));
   foot.push('· ' + S.ship + (d ? ' — 이번 현장 ' + (d.shipUsed + (S.ship !== '직접 수령' ? 1 : 0)) + '회차' : ''));
   if (d && d.woodStart) foot.push('· 목공 착수 ' + d.woodStart + ' 기준, 전일 도착 부탁드립니다');
   var note = el('noteIn').value.trim();
@@ -943,6 +947,25 @@ function liftMax() {
 }
 function isLong(x) { return !!LONG_GROUPS[x.group]; }
 
+// 거래처는 어차피 엘리베이터에 맞춰 잘라 보냅니다.
+// 품목마다 따지는 것보다 「몇 mm 이하로」 한 줄이 실무에 맞습니다.
+function cutNote() {
+  var m = liftMax();
+  if (!m) return '';
+  var needP = false, needL = false;
+  picked().forEach(function (x) {
+    var L = specLen(x.spec); if (!L) return;
+    if (isLong(x)) { if (L > m.long) needL = true; }
+    else if (L > m.panel) needP = true;
+  });
+  if (!needP && !needL) return '';
+  var parts = [];
+  if (needP) parts.push('판재 ' + m.panel.toLocaleString('ko-KR') + 'mm');
+  if (needL) parts.push('장척 ' + m.long.toLocaleString('ko-KR') + 'mm');
+  return '엘리베이터 반입 한계 — ' + parts.join(' · ') + ' 이하로 재단 부탁드립니다';
+}
+function toggleCutNote() { S.cutNote = el('cutNoteChk').checked; draw(); }
+
 // 규격에서 가장 긴 변을 뽑습니다. 확신이 안 서면 null 을 돌려 경고하지 않습니다.
 function specLen(spec) {
   if (!spec) return null;
@@ -1002,11 +1025,14 @@ function elevCalc() {
             + '→ ' + CUTNAME[n] + ' 재단하면 ' + Math.round(L / n).toLocaleString('ko-KR') + 'mm · 눌러서 적용</div>'
           : ''));
   });
-  el('liftBox').innerHTML = chips + (rows.length
-    ? (bad ? '<div class="note" style="margin:0 0 7px;color:var(--warn)">' + bad
-             + '건이 원장으로는 안 들어갑니다</div>' : '')
-      + rows.join('')
-    : '<div class="note" style="margin:0">담은 품목 중 길이를 아는 게 없습니다</div>');
+  el('liftBox').innerHTML = chips
+    + (note
+        ? '<div class="cutbox">' + esc(note) + '</div>'
+          + '<label class="mchk" style="margin:8px 0 4px"><input type="checkbox" id="cutNoteChk"'
+          + (S.cutNote ? ' checked' : '') + ' onchange="toggleCutNote()"> 발주서 특기사항에 넣기</label>'
+          + '<div class="note" style="margin:6px 0 4px">원장으로 안 들어가는 것 ' + bad + '건</div>'
+          + rows.join('')
+        : '<div class="note" style="margin:0">담은 품목은 모두 원장으로 들어갑니다</div>');
 }
 function applyCut(id, name) {
   if (!id) return;
