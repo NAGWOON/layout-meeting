@@ -910,7 +910,7 @@ function draw() {
   if (!rows) rows = '<tr><td colspan="6" style="padding:26px;text-align:center;color:#aaa">품목이 없습니다</td></tr>';
 
   var foot = [];
-  if (d && d.unload) foot.push('· ' + esc(d.unload));
+  var un = unloadNow(); if (un) foot.push('· ' + esc(un));
   if (d && d.elevator) foot.push('· 엘리베이터 ' + esc(d.elevator));
   var cn = S.cutNote ? cutNote() : '';
   if (cn) foot.push('· ' + esc(cn));
@@ -957,6 +957,10 @@ function elevRaw() {
 }
 function elevIn() { S.elev = elevRaw(); elevCalc(); }
 function unloadTyped() { S.unload = el('unloadIn').value; }
+function unloadNow() {
+  var t = (S.unload !== null ? S.unload : (S.detail ? S.detail.unload : '')) || '';
+  return t.trim();
+}
 
 function elevNums() {
   var g = function (id) { return Number(el(id).value) || 0; };
@@ -1218,7 +1222,7 @@ function textVersion() {
     t += ' ' + n + '. ' + x.name + (x.spec ? ' (' + x.spec + ')' : '') + '  ' + x.qty + (x.unit || '') + '\n';
   });
   t += '──────────────\n';
-  if (d && d.unload) t += '· ' + d.unload + '\n';
+  var un = unloadNow(); if (un) t += '· ' + un + '\n';
   var cn = S.cutNote ? cutNote() : ''; if (cn) t += '· ' + cn + '\n';
   var note = el('noteIn').value.trim(); if (note) t += '· ' + note + '\n';
   t += '──────────────\n';
