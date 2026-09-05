@@ -1029,12 +1029,6 @@ function specLen(spec) {
   if (j2) return JA[+j2[1]] || (+j2[1]) * 305;
   return null;
 }
-function cutTo(len, max) {                            // 몇 등분해야 들어가는지
-  for (var n = 2; n <= 8; n++) if (len / n <= max) return n;
-  return null;
-}
-var CUTNAME = { 2:'반반', 3:'3등분', 4:'4등분', 5:'5등분', 6:'6등분', 7:'7등분', 8:'8등분' };
-
 function setSafe(v) { S.safe = v; elevCalc(); }
 
 function elevCalc() {
@@ -1055,24 +1049,19 @@ function elevCalc() {
     + '% → <b>' + m.long.toLocaleString('ko-KR') + '</b>mm'
     + '<br><span style="opacity:.75">몰딩·각재는 가늘어서 문이 거의 제약이 아닙니다</span></div>';
 
-  var lines = picked(), rows = [], bad = 0;
-  lines.forEach(function (x) {
+  // 거래처가 알아서 잘라 보내므로 품목마다 경고하지 않고, 초과분만 참고로 보여줍니다
+  var rows = [], bad = 0;
+  picked().forEach(function (x) {
     var L = specLen(x.spec);
     if (!L) return;
     var lng = isLong(x);
-    var max = lng ? m.long : m.panel;
-    var over = L > max;
-    if (over) bad++;
-    var n = over ? cutTo(L, max) : null;
-    rows.push('<div class="lrow' + (over ? ' bad' : '') + '">'
-      + '<span>' + (over ? '⚠ ' : '') + esc(x.name)
-      + '<span style="font-size:10px;color:var(--txt4)"> ' + (lng ? '장척' : '판재') + '</span></span>'
-      + '<span class="len">' + L.toLocaleString('ko-KR') + '</span></div>'
-      + (over && n && !x.cut
-          ? '<div class="lfix" onclick="applyCut(\'' + x.id + '\',\'' + CUTNAME[n] + '\')">'
-            + '→ ' + CUTNAME[n] + ' 재단하면 ' + Math.round(L / n).toLocaleString('ko-KR') + 'mm · 눌러서 적용</div>'
-          : ''));
+    if (L <= (lng ? m.long : m.panel)) return;
+    bad++;
+    rows.push('<div class="lrow bad"><span>' + esc(x.name)
+      + '<span style="font-size:10px;opacity:.7"> ' + (lng ? '장척' : '판재') + '</span></span>'
+      + '<span class="len">' + L.toLocaleString('ko-KR') + '</span></div>');
   });
+  var note = cutNote();
   el('liftBox').innerHTML = chips
     + (note
         ? '<div class="cutbox">' + esc(note) + '</div>'
@@ -1081,12 +1070,6 @@ function elevCalc() {
           + '<div class="note" style="margin:6px 0 4px">원장으로 안 들어가는 것 ' + bad + '건</div>'
           + rows.join('')
         : '<div class="note" style="margin:0">담은 품목은 모두 원장으로 들어갑니다</div>');
-}
-function applyCut(id, name) {
-  if (!id) return;
-  S.cut[id] = name;
-  renderItems(); draw(); elevCalc();
-  toast(name + ' 재단으로 적었습니다');
 }
 
 // ═════ 지난 현장 참고 ═════
