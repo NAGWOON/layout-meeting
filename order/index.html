@@ -468,7 +468,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner';
 
 var S = {
   sites: [], items: [], ranges: {}, site: null, detail: null,
-  type: '목자재', qty: {}, cut: {}, extra: [], ship: '양중 포함', busy: false,
+  type: '목자재', qty: {}, cut: {}, extra: [], ship: '양중 포함', busy: false, safe: 5,
   only: false, calcOpen: false, loss: 10,
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }]
@@ -896,7 +896,6 @@ function draw() {
 //   ① 진입 — 문 높이로 세워서 카 깊이를 씁니다        L1 = √(문높이² + 깊이²)
 //   ② 수용 — 들어간 뒤 카 안에서 대각선으로 눕습니다   L2 = √(폭² + 깊이² + 높이²)
 // 실제로는 사람도 타고 각도도 완벽하지 않아 5%를 뺍니다.
-var SAFE = 0.95;
 var JA = { 3:900, 4:1220, 6:1800, 8:2440, 10:3050, 12:3600 };
 
 function elevNums() {
@@ -919,14 +918,17 @@ function elevParse(t) {
   if (b) { z.dw = b[1]; z.dh = b[2]; }
   return z;
 }
+// 기하 최댓값과 여유를 뺀 값을 함께 돌려줍니다 — 화면에서 계산 과정을 보여주기 위해서입니다
 function liftMax() {
   var n = elevNums();
   if (!n.d) return null;                       // 깊이가 없으면 계산이 안 됩니다
-  var L = [];
-  if (n.dh) L.push(Math.sqrt(n.dh * n.dh + n.d * n.d));            // 진입
-  if (n.w && n.h) L.push(Math.sqrt(n.w*n.w + n.d*n.d + n.h*n.h));  // 수용
+  var L = [], why = [];
+  if (n.dh) { L.push(Math.sqrt(n.dh * n.dh + n.d * n.d)); why.push('진입'); }              // 문 높이로 세워 깊이 활용
+  if (n.w && n.h) { L.push(Math.sqrt(n.w*n.w + n.d*n.d + n.h*n.h)); why.push('수용'); }    // 카 안 대각선
   if (!L.length) return null;
-  return Math.floor(Math.min.apply(null, L) * SAFE);
+  var raw = Math.min.apply(null, L);
+  var bind = why[L.indexOf(raw)] || '';
+  return { raw: Math.floor(raw), use: Math.floor(raw * (1 - S.safe / 100)), bind: bind };
 }
 
 // 규격에서 가장 긴 변을 뽑습니다. 확신이 안 서면 null 을 돌려 경고하지 않습니다.
@@ -950,11 +952,21 @@ function cutTo(len, max) {                            // 몇 등분해야 들어
 }
 var CUTNAME = { 2:'반반', 3:'3등분', 4:'4등분', 5:'5등분', 6:'6등분', 7:'7등분', 8:'8등분' };
 
+function setSafe(v) { S.safe = v; elevCalc(); }
+
 function elevCalc() {
-  var max = liftMax();
-  el('liftCard').classList.toggle('hide', !max);
-  if (!max) return;
-  el('liftMax').textContent = '최대 ' + max.toLocaleString('ko-KR') + 'mm';
+  var m = liftMax();
+  el('liftCard').classList.toggle('hide', !m);
+  if (!m) return;
+  var max = m.use;
+  el('liftMax').textContent = '반입 ' + max.toLocaleString('ko-KR') + 'mm';
+
+  var chips = '<div class="f" style="margin-bottom:7px"><label style="width:34px">여유</label><div class="chips">'
+    + [[0,'없음'],[5,'5%'],[10,'10%'],[15,'15%']].map(function (a) {
+        return '<div class="chip' + (a[0] === S.safe ? ' on' : '') + '" onclick="setSafe(' + a[0] + ')">' + a[1] + '</div>';
+      }).join('') + '</div></div>'
+    + '<div class="note" style="margin:0 0 8px;font-size:10.5px">기하 최대 <b>' + m.raw.toLocaleString('ko-KR')
+    + '</b>mm (' + m.bind + ' 기준) − ' + S.safe + '% → <b>' + max.toLocaleString('ko-KR') + '</b>mm</div>';
 
   var lines = picked(), rows = [], bad = 0;
   lines.forEach(function (x) {
@@ -971,11 +983,11 @@ function elevCalc() {
             + '→ ' + CUTNAME[n] + ' 재단하면 ' + Math.round(L / n).toLocaleString('ko-KR') + 'mm · 눌러서 적용</div>'
           : ''));
   });
-  el('liftBox').innerHTML = rows.length
+  el('liftBox').innerHTML = chips + (rows.length
     ? (bad ? '<div class="note" style="margin:0 0 7px;color:var(--warn)">' + bad
              + '건이 원장으로는 안 들어갑니다</div>' : '')
       + rows.join('')
-    : '<div class="note" style="margin:0">담은 품목 중 길이를 아는 게 없습니다</div>';
+    : '<div class="note" style="margin:0">담은 품목 중 길이를 아는 게 없습니다</div>');
 }
 function applyCut(id, name) {
   if (!id) return;
