@@ -909,15 +909,7 @@ function draw() {
   });
   if (!rows) rows = '<tr><td colspan="6" style="padding:26px;text-align:center;color:#aaa">품목이 없습니다</td></tr>';
 
-  var foot = [];
-  var un = unloadNow(); if (un) foot.push('· ' + esc(un));
-  if (d && d.elevator) foot.push('· 엘리베이터 ' + esc(d.elevator));
-  var cn = S.cutNote ? cutNote() : '';
-  if (cn) foot.push('· ' + esc(cn));
-  foot.push('· ' + S.ship + (d ? ' — 이번 현장 ' + (d.shipUsed + (S.ship !== '직접 수령' ? 1 : 0)) + '회차' : ''));
-  if (d && d.woodStart) foot.push('· 목공 착수 ' + d.woodStart + ' 기준, 전일 도착 부탁드립니다');
-  var note = el('noteIn').value.trim();
-  if (note) foot.push('· ' + esc(note));
+  var foot = footLines().map(function (t) { return '· ' + esc(t); });
 
   el('sheet').innerHTML =
     '<div class="sh"><div><div class="no">' + esc(S.orderNo || '') + '</div><h2>발 주 서</h2></div>'
@@ -1207,6 +1199,18 @@ function loadPastById(id) { el('pastSel').value = id; loadPast(); }
 function row2(k, v) { return '<div class="r"><dt>' + k + '</dt><dd>' + v + '</dd></div>'; }
 
 // ═════ 출력 ═════
+// 발주서 · 텍스트 · 노션이 같은 문장을 쓰도록 한 곳에서 만듭니다
+function footLines() {
+  var d = S.detail, out = [];
+  var un = unloadNow(); if (un) out.push(un);
+  if (d && d.elevator) out.push('엘리베이터 ' + d.elevator);
+  var cn = S.cutNote ? cutNote() : ''; if (cn) out.push(cn);
+  out.push(S.ship + (d ? ' — 이번 현장 ' + (d.shipUsed + (S.ship !== '직접 수령' ? 1 : 0)) + '회차' : ''));
+  if (d && d.woodStart) out.push('목공 착수 ' + d.woodStart + ' 기준, 전일 도착 부탁드립니다');
+  var note = el('noteIn').value.trim(); if (note) out.push(note);
+  return out;
+}
+
 function textVersion() {
   var d = S.detail, lines = picked(), due = el('dueIn').value;
   var t = '[발주서] ' + CO.name + (S.orderNo ? '  ' + S.orderNo : '') + '\n';
@@ -1222,9 +1226,7 @@ function textVersion() {
     t += ' ' + n + '. ' + x.name + (x.spec ? ' (' + x.spec + ')' : '') + '  ' + x.qty + (x.unit || '') + '\n';
   });
   t += '──────────────\n';
-  var un = unloadNow(); if (un) t += '· ' + un + '\n';
-  var cn = S.cutNote ? cutNote() : ''; if (cn) t += '· ' + cn + '\n';
-  var note = el('noteIn').value.trim(); if (note) t += '· ' + note + '\n';
+  footLines().forEach(function (x) { t += '· ' + x + '\n'; });
   t += '──────────────\n';
   t += '담당 ' + (localStorage.getItem(LS_OWNER) || '') + ' · ' + CO.tel + '\n' + CO.mail + '\n';
   return t;
@@ -1261,7 +1263,7 @@ function submit() {
     return api('submitOrder', {
       sitePageId: S.site.id, type: S.type, vendor: vendorName(), orderNo: S.orderNo,
       due: el('dueIn').value || null, shipKind: S.ship,
-      note: el('noteIn').value.trim(), items: lines, image: img
+      note: el('noteIn').value.trim(), notes: footLines(), items: lines, image: img
     });
   }).then(function (r) {
     S.busy = false;
