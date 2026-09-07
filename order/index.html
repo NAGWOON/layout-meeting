@@ -320,9 +320,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   <div class="card" id="calcCard">
     <div class="ch click" id="calcHead" onclick="toggleCalc()">
       <span>🧮 물량으로 산출</span>
-      <span><em id="calcSum">접힘</em> <span class="caret">›</span></span>
+      <span><em id="calcSum"></em> <span class="caret">›</span></span>
     </div>
-    <div id="calcBody" class="hide">
+    <div id="calcBody">
       <div class="f"><label>로스율</label><div class="chips" id="lossChips"></div></div>
 
       <div class="sect">🧱 벽체 <span>높이 2.4 · 양면 마감</span></div>
@@ -499,7 +499,7 @@ var CO = {
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
   type: '목자재', qty: {}, cut: {}, extra: [], orderNo: '', ship: '양중 포함', busy: false, safe: 5, cutNote: true,
-  only: false, calcOpen: false, loss: 10, elev: null, unload: null,
+  only: false, calcOpen: true, loss: 10, elev: null, unload: null,   // 산출부터 하는 게 순서입니다
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }]
 };
@@ -587,6 +587,7 @@ function boot() {
     });
     renderTypes(); renderVendors(); renderShip();
     renderLoss(); renderWalls(); renderIns();
+    el('calcHead').classList.toggle('open', S.calcOpen);
     renderItems(); calcPreview(); draw(); bar(); side();
     toast('준비됐습니다');
   }).catch(function () { toast('연결에 실패했습니다'); });
@@ -732,7 +733,7 @@ function calc() {
 }
 function calcPreview() {
   var r = calc(), names = Object.keys(r);
-  el('calcSum').textContent = names.length ? names.length + '품목 산출됨' : '접힘';
+  el('calcSum').textContent = names.length ? names.length + '품목 산출됨' : (S.calcOpen ? '' : '접힘');
   if (!S.calcOpen) return;
   if (!names.length) {
     el('calcOut').innerHTML = '<span style="color:var(--txt4)">벽 길이나 천장 면적을 넣으면 여기에 나옵니다</span>';
@@ -1030,8 +1031,23 @@ function liftMax() {
   return {
     panelRaw: Math.floor(panelRaw), panel: Math.floor(panelRaw * f),
     longRaw:  Math.floor(longRaw),  long:  Math.floor(longRaw * f),
+    // 문 폭은 판재의 긴 변이 아니라 「짧은 변」을 막습니다. 길이 재단으로는 못 풉니다.
+    doorW: n.dw || null,
     bind: (thru && thru <= (box || Infinity)) ? '문으로 진입' : '카 대각선'
   };
+}
+// 규격에서 짧은 변을 뽑습니다 — 문 폭에 걸리는 건 이쪽입니다
+function specWidth(spec) {
+  if (!spec) return null;
+  var s = String(spec).replace(/\s/g, '');
+  var mm = s.match(/\d{3,4}/g);
+  if (mm && mm.length >= 2) {
+    var two = mm.map(Number).filter(function (v) { return v >= 300; }).sort(function (a,b){ return a-b; });
+    if (two.length >= 2) return two[0];
+  }
+  var ja = s.match(/^(\d+)[×x*](\d+)/);        // 3×6, 4×8 — 앞이 폭입니다
+  if (ja) { var m = Math.min(+ja[1], +ja[2]); return JA[m] || m * 305; }
+  return null;
 }
 function isLong(x) { return !!LONG_GROUPS[x.group]; }
 
@@ -1103,6 +1119,7 @@ function elevCalc() {
   });
   var note = cutNote();
   el('liftBox').innerHTML = chips
+    + doorBox()
     + (note
         ? '<div class="cutbox">' + esc(note) + '</div>'
           + '<label class="mchk" style="margin:8px 0 4px"><input type="checkbox" id="cutNoteChk"'
@@ -1112,6 +1129,33 @@ function elevCalc() {
         : '<div class="note" style="margin:0">' + (picked().length
             ? '담은 품목은 모두 원장으로 들어갑니다'
             : '품목을 담으면 재단이 필요한 것을 알려드립니다') + '</div>');
+}
+
+// 길이와 폭은 다른 문제입니다.
+// 길이는 잘라 달라고 하면 되지만, 짧은 변이 문 폭보다 넓으면 길이를 아무리 줄여도 안 들어갑니다.
+// 이때는 폭 재단(세로 반)이나 3×6 대체를 사람이 판단해야 합니다.
+function doorWide() {
+  var m = liftMax();
+  if (!m || !m.doorW) return null;
+  var hit = [];
+  picked().forEach(function (x) {
+    if (isLong(x)) return;                       // 몰딩·각재는 가늘어 해당 없음
+    var W = specWidth(x.spec);
+    if (W && W > m.doorW) hit.push({ name: x.name, w: W });
+  });
+  return hit.length ? { doorW: m.doorW, hit: hit } : null;
+}
+function doorBox() {
+  var d = doorWide();
+  if (!d) return '';
+  return '<div class="cutbox" style="border-left-color:#c2410c;margin-bottom:8px">'
+    + '문 폭 <b>' + d.doorW.toLocaleString('ko-KR') + 'mm</b> — 아래 판재는 폭이 더 넓어 <b>세워도 똑바로 안 들어갑니다</b>.'
+    + '<br><span style="font-weight:400">기울여 넣거나, 폭 재단(세로 반) 또는 3×6 대체를 정하셔야 합니다.</span></div>'
+    + d.hit.map(function (x) {
+        return '<div class="lrow bad"><span>' + esc(x.name)
+          + '<span style="font-size:10px;opacity:.7"> 폭</span></span>'
+          + '<span class="len">' + x.w.toLocaleString('ko-KR') + '</span></div>';
+      }).join('');
 }
 
 // ═════ 지난 현장 참고 ═════
