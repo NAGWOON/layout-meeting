@@ -359,6 +359,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .settbl .gap.dn{ color:var(--txt4); }
 .settbl .rm{ color:var(--txt4); cursor:pointer; font-size:14px; }
 .settbl .rm:hover{ color:var(--warn); }
+.asof{ font-size:9.5px; color:var(--txt4); text-align:right; margin-top:2px; letter-spacing:-.2px; }
 .modal .f label{ width:52px; }
 .mchk{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--txt2);
   margin:11px 0 4px; cursor:pointer; }
@@ -1106,7 +1107,7 @@ function setFromOrders() {
   T2.rows = Object.keys(T2.ordered).map(function (n) {
     var it = byName[n];
     return { id: it ? it.id : '', name: n, was: T2.ordered[n], qty: T2.ordered[n],
-             price: it && it.price ? it.price : '' };
+             price: it && it.price ? it.price : '', asOf: it ? (it.asOf || '') : '' };
   }).filter(function (r) { return r.id; });
   renderSettle();
 }
@@ -1118,6 +1119,7 @@ function setRow(i, k, v) {
     T2.rows[i].id = v;
     T2.rows[i].name = it ? it.name : '';
     T2.rows[i].was = it ? (T2.ordered[it.name] || 0) : 0;
+    T2.rows[i].asOf = it ? (it.asOf || '') : '';
     if (it && it.price && !T2.rows[i].price) T2.rows[i].price = it.price;
     renderSettle();
     return;
@@ -1154,7 +1156,8 @@ function renderSettle() {
       + '" oninput="setRow(' + i + ',\'qty\',this.value)"></td>'
       + '<td class="q" data-gap="' + i + '">' + gapHtml(r.was, r.qty) + '</td>'
       + '<td class="p"><input type="number" min="0" value="' + (r.price === '' ? '' : r.price)
-      + '" placeholder="원" oninput="setRow(' + i + ',\'price\',this.value)"></td>'
+      + '" placeholder="원" oninput="setRow(' + i + ',\'price\',this.value)">'
+      + (r.asOf ? '<div class="asof">' + esc(r.asOf) + ' 기준</div>' : '') + '</td>'
       + '<td class="x"><span class="rm" onclick="delSetRow(' + i + ')">×</span></td></tr>';
   }).join('');
 }
@@ -1669,6 +1672,16 @@ function applyHistory(i) {
 }
 
 // ═════ 우측 사이드바 ═════
+// 담은 품목들의 단가 중 가장 오래된 기준일. 예상 금액이 얼마나 묵은 값인지 말해줍니다.
+function priceAsOf(lines) {
+  var oldest = '';
+  lines.forEach(function (x) {
+    var it = S.items.filter(function (i) { return i.id === x.id; })[0];
+    if (!it || !it.asOf || !x.price) return;
+    if (!oldest || it.asOf < oldest) oldest = it.asOf;
+  });
+  return oldest;
+}
 function side() {
   // 품목 수만 세면 「몇 개 시키는지」를 알 수 없습니다. 단위가 같은 것끼리 수량도 더합니다.
   var lines = picked(), byG = {}, sum = 0;
@@ -1691,6 +1704,11 @@ function side() {
       }).join('')
       + '<div class="stot"><span style="font-size:12px;color:var(--txt2)">' + lines.length + '품목</span>'
       + '<b>' + won(Math.round(sum)) + '<span style="font-size:11px;font-weight:400"> 원</span></b></div>'
+      // 예상 금액이 언제 단가로 뽑힌 것인지 알아야 믿을지 말지 판단이 됩니다
+      + (function () {
+          var old = priceAsOf(lines);
+          return old ? '<div class="asof" style="text-align:right;margin-top:3px">단가 ' + esc(old) + ' 기준</div>' : '';
+        })()
     : '<div class="note" style="margin:0">수량을 입력하면 여기에 쌓입니다</div>';
 
   var d = S.detail;
