@@ -878,7 +878,10 @@ function doAdd() {
     return;
   }
   toast('마스터에 등록 중…');
-  api('addMaterial', { name:name, spec:spec, unit:unit, group:group, type:S.type, vendor:vendorName() })
+  // 임시 발주처를 마스터의 「기본 발주처」로 굳혀버리면 다음 발주부터 엉뚱한 데로 갑니다.
+  // 목록에서 고른 발주처일 때만 기본값으로 넣습니다.
+  var vd = el('vendorSel').value === '__free' ? '' : el('vendorSel').value;
+  api('addMaterial', { name:name, spec:spec, unit:unit, group:group, type:S.type, vendor:vd })
     .then(function (r) {
       if (!r || !r.ok) return toast('등록에 실패했습니다');
       S.items.push(r.item);
