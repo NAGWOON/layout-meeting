@@ -251,6 +251,8 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 /* 재단 */
 .it .cut{ width:76px; font-size:11.5px; padding:5px 7px; flex:none; text-align:center; }
 .it .cut::placeholder{ color:var(--txt4); font-size:11px; }
+/* 좁은 화면에서는 품명·수량이 먼저입니다 */
+@media(max-width:420px){ .it .cut{ width:58px; font-size:10.5px; padding:5px 4px; } }
 
 /* 모달 */
 .mask{ position:fixed; inset:0; z-index:30; background:rgba(10,12,16,.44);
@@ -767,33 +769,62 @@ function renderItems() {
     var v = S.qty[i.id] || '', rg = S.ranges[i.name];
     var sub = i.spec || '';
     if (rg) sub += (sub ? '  ·  ' : '') + '지난 현장 ' + rg.min + '–' + rg.max;
-    html += '<div class="it' + (v ? '' : ' dim') + '"><div class="nm"><b>' + esc(i.name) + '</b>'
+    html += '<div class="it' + (v ? '' : ' dim') + '" data-row="' + i.id + '">'
+      + '<div class="nm"><b>' + esc(i.name) + '</b>'
       + (sub ? '<i>' + esc(sub) + '</i>' : '') + '</div>'
+      + '<input class="cut' + (v ? '' : ' hide') + '" list="cutlist" placeholder="재단" value="'
+      + esc(S.cut[i.id] || '') + '" oninput="setCut(\'' + i.id + '\',this.value)">'
       + '<input class="q' + (v ? ' has' : '') + '" type="number" min="0" inputmode="numeric" value="' + v
       + '" oninput="setQty(\'' + i.id + '\',this.value)"><div class="u">' + esc(i.unit || '') + '</div></div>';
   });
   if (S.extra.length) {
     html += '<div class="gh">이번 발주에만</div>';
     S.extra.forEach(function (x, i) {
-      html += '<div class="it tmp"><div class="nm"><b>' + esc(x.name) + '</b>'
+      html += '<div class="it tmp' + (x.qty > 0 ? '' : ' dim') + '" data-extra="' + i + '">'
+        + '<div class="nm"><b>' + esc(x.name) + '</b>'
         + (x.spec ? '<i>' + esc(x.spec) + '</i>' : '') + '</div>'
-        + '<input class="q has" type="number" min="0" value="' + x.qty
-        + '" oninput="setExtra(' + i + ',this.value)"><div class="u">' + esc(x.unit || '') + '</div></div>';
+        + '<input class="cut" list="cutlist" placeholder="재단" value="' + esc(x.cut || '')
+        + '" oninput="setExtraCut(' + i + ',this.value)">'
+        + '<input class="q' + (x.qty > 0 ? ' has' : '') + '" type="number" min="0" value="' + x.qty
+        + '" oninput="setExtra(' + i + ',this.value)" onblur="blurExtra(' + i + ')">'
+        + '<div class="u">' + esc(x.unit || '') + '</div></div>';
     });
   }
   el('itemList').innerHTML = html || '<div class="note">보여줄 품목이 없습니다.</div>';
 }
 function setQty(id, v) {
   var n = Number(v);
-  if (!n || n <= 0) { delete S.qty[id]; delete S.cut[id]; renderItems(); }
-  else { var had = !!S.qty[id]; S.qty[id] = n; if (!had) renderItems(); }
+  if (!n || n <= 0) { delete S.qty[id]; delete S.cut[id]; }
+  else S.qty[id] = n;
+  markRow(id);                     // 목록을 통째로 다시 그리면 치고 있던 칸이 사라집니다
   draw(); bar(); side(); elevCalc();
+}
+// 그 줄의 표시만 바꿉니다 — 포커스를 건드리지 않습니다
+function markRow(id) {
+  var row = el('itemList').querySelector('[data-row="' + id + '"]');
+  if (!row) return;
+  var on = !!S.qty[id];
+  row.classList.toggle('dim', !on);
+  var q = row.querySelector('.q');   if (q) q.classList.toggle('has', on);
+  var c = row.querySelector('.cut');
+  if (c) { c.classList.toggle('hide', !on); if (!on) c.value = ''; }
 }
 function setCut(id, v) { if (v) S.cut[id] = v; else delete S.cut[id]; draw(); elevCalc(); }
 function setExtra(i, v) {
   var n = Number(v);
-  if (!n || n <= 0) S.extra.splice(i, 1); else S.extra[i].qty = n;
-  renderItems(); draw(); bar(); side();
+  S.extra[i].qty = n > 0 ? n : 0;   // 고치려고 지운 것일 수 있으니 줄은 남깁니다
+  var row = el('itemList').querySelector('[data-extra="' + i + '"]');
+  if (row) {
+    row.classList.toggle('dim', !(n > 0));
+    row.querySelector('.q').classList.toggle('has', n > 0);
+  }
+  draw(); bar(); side();
+}
+function setExtraCut(i, v) { S.extra[i].cut = v; draw(); }
+// 비운 채로 칸을 벗어나면 그때 줄을 없앱니다
+function blurExtra(i) {
+  if (S.extra[i] && S.extra[i].qty > 0) return;
+  S.extra.splice(i, 1); renderItems(); draw(); bar(); side();
 }
 function toggleOnly() {
   S.only = !S.only;
@@ -961,17 +992,19 @@ function elevNums() {
 function elevText() {
   var n = elevNums();
   if (!n.w && !n.d && !n.h && !n.dw && !n.dh) return '';
-  var a = (n.w && n.d && n.h) ? '내부 ' + n.w + '×' + n.d + '×' + n.h : '';
-  var b = (n.dw && n.dh) ? '문 ' + n.dw + '×' + n.dh : '';
+  // 셋 다 있어야만 저장하면, 폭·깊이만 재 온 날의 값이 통째로 날아갑니다
+  var a = (n.w || n.d || n.h) ? '내부 ' + (n.w || '?') + '×' + (n.d || '?') + '×' + (n.h || '?') : '';
+  var b = (n.dw || n.dh) ? '문 ' + (n.dw || '?') + '×' + (n.dh || '?') : '';
   return [a, b].filter(Boolean).join(' · ');
 }
 function elevParse(t) {
   var z = { w:'', d:'', h:'', dw:'', dh:'' };
   if (!t) return z;
-  var a = t.match(/내부\s*(\d+)\s*[×x*]\s*(\d+)\s*[×x*]\s*(\d+)/);
-  if (a) { z.w = a[1]; z.d = a[2]; z.h = a[3]; }
-  var b = t.match(/문\s*(\d+)\s*[×x*]\s*(\d+)/);
-  if (b) { z.dw = b[1]; z.dh = b[2]; }
+  var num = function (x) { return /^\d+$/.test(x) ? x : ''; };   // 「?」로 저장된 자리는 빈 칸으로
+  var a = t.match(/내부\s*([\d?]+)\s*[×x*]\s*([\d?]+)\s*[×x*]\s*([\d?]+)/);
+  if (a) { z.w = num(a[1]); z.d = num(a[2]); z.h = num(a[3]); }
+  var b = t.match(/문\s*([\d?]+)\s*[×x*]\s*([\d?]+)/);
+  if (b) { z.dw = num(b[1]); z.dh = num(b[2]); }
   return z;
 }
 // 판재와 장척은 조건이 다릅니다.
