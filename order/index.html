@@ -1305,7 +1305,9 @@ function submit() {
     if (!r || !r.ok) { bar(); return toast('등록에 실패했습니다 — ' + ((r && r.error) || '')); }
     el('resultNote').innerHTML = '✅ <b>' + esc(r.orderNo) + '</b> 등록됨 · ' + r.count + '품목'
       + '<br><a href="' + r.pageUrl + '" target="_blank" style="color:var(--accent)">노션에서 열기</a>'
-      + (r.fileUrl ? ' · <a href="' + r.fileUrl + '" target="_blank" style="color:var(--accent)">드라이브 발주서</a>' : '');
+      + (r.fileUrl ? ' · <a href="' + r.fileUrl + '" target="_blank" style="color:var(--accent)">드라이브 발주서</a>' : '')
+      // 드라이브 저장이 조용히 실패하면 없어진 줄도 모릅니다
+      + (r.fileError ? '<div class="warn">⚠ 드라이브에 발주서를 남기지 못했습니다 — ' + esc(r.fileError) + '</div>' : '');
     toast(r.orderNo + ' 등록했습니다');
     S.orderNo = '';
     pickSite(); bar();
