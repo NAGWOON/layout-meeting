@@ -998,8 +998,10 @@ var STOP = { '수입':1, '고급':1, '동남아':1, '특호':1, '일반':0, 'u':
 
 function pnorm(s) {
   return String(s == null ? '' : s).toLowerCase()
+    .replace(/(\d)\.(\d)/g, '$1_$2')                 // 8.5T 는 한 낱말로 둡니다
     .replace(/[()[\]{}·,./\\×x*+~\-–—]/g, ' ').replace(/\s+/g, ' ').trim();
 }
+function pflat(s) { return pnorm(s).replace(/ /g, ''); }   // 「일반석고」처럼 붙여 쓴 말도 잡습니다
 function ptoks(s) { return pnorm(s).split(' ').filter(Boolean); }
 // 규격을 가리키는 토큰인지 — 9t, 422, f50, 8.5 처럼 숫자가 든 말
 function isSpecTok(t) { return /\d/.test(t); }
@@ -1023,29 +1025,35 @@ function pasteSegs(text) {
 }
 
 // 조각 하나를 품목 하나에 맞춥니다. 확신이 없으면 null 을 돌려 사람에게 넘깁니다.
-function pasteMatch(raw) {
-  var seg = pnorm(raw), segT = ptoks(raw);
+function pasteMatch(raw, unit) {
+  var segT = ptoks(raw);
   if (!segT.length) return null;
   var best = null, second = 0;
   pool().forEach(function (i) {
-    var hay = pnorm(i.name + ' ' + (i.spec || ''));
+    var flat = pflat(i.name + ' ' + (i.spec || ''));
     var nameT = ptoks(i.name);
     // 규격 숫자가 어긋나면 다른 물건입니다 — MDF 9T 와 12T 를 섞으면 안 됩니다
     var clash = segT.some(function (t) {
-      return isSpecTok(t) && t.length >= 2 && hay.indexOf(t) < 0
+      return isSpecTok(t) && t.length >= 2 && flat.indexOf(t) < 0
              && nameT.some(function (n) { return isSpecTok(n); });
     });
     if (clash) return;
     var hit = 0, weight = 0;
     segT.forEach(function (t) {
+      var found = flat.indexOf(t) >= 0;
       var w = isSpecTok(t) ? 2 : (STOP[t] ? 0.3 : 1);
+      if (!found) w = Math.min(w, 0.5);        // 「사장님」 같은 말이 점수를 깎지 않게
       weight += w;
-      if (hay.indexOf(t) >= 0) hit += w;
+      if (found) hit += w;
     });
     if (!weight) return;
     var score = hit / weight;
     // 짧은 말이 긴 이름에 우연히 걸리는 것을 눌러줍니다
     score -= Math.min(0.18, nameT.length * 0.012);
+    // 단위가 맞으면 그 물건일 가능성이 높습니다 — 「본드 1박스」는 박스 단위 쪽입니다
+    if (unit && i.unit && unit === i.unit) score += 0.10;
+    // 「다루끼」처럼 여러 종류가 있을 때, 평소 쓰는 것으로 기웁니다
+    if (i.base) score += 0.08;
     if (!best || score > best.score) { second = best ? best.score : 0; best = { item: i, score: score }; }
     else if (score > second) second = score;
   });
@@ -1068,10 +1076,11 @@ function readPaste() {
   var t = el('pasteIn').value;
   var r = pasteSegs(t);
   P.rows = r.segs.map(function (s) {
-    var it = pasteMatch(s.raw);
+    var it = pasteMatch(s.raw, s.unit);
     return { src: s.raw, qty: s.qty, unit: s.unit, id: it ? it.id : '' };
   });
-  P.tail = r.tail;
+  // 「추가 부탁드려요」 같은 인사말까지 경고할 이유는 없습니다. 숫자가 남았을 때만 알립니다.
+  P.tail = /\d/.test(r.tail) ? r.tail : '';
   renderPaste();
 }
 function renderPaste() {
