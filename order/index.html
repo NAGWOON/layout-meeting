@@ -1241,7 +1241,10 @@ function row2(k, v) { return '<div class="r"><dt>' + k + '</dt><dd>' + v + '</dd
 function footLines() {
   var d = S.detail, out = [];
   var un = unloadNow(); if (un) out.push(un);
-  if (d && d.elevator) out.push('엘리베이터 ' + d.elevator);
+  // 재단 문구는 화면에 친 치수로 계산합니다. 여기서 노션에 저장된 옛 치수를 적으면
+  // 한 장의 발주서에 서로 다른 엘리베이터가 두 줄 실립니다.
+  var ev = elevText() || (d ? d.elevator : '');
+  if (ev) out.push('엘리베이터 ' + ev);
   var cn = S.cutNote ? cutNote() : ''; if (cn) out.push(cn);
   out.push(S.ship + (d ? ' — 이번 현장 ' + (d.shipUsed + (S.ship !== '직접 수령' ? 1 : 0)) + '회차' : ''));
   if (d && d.woodStart) out.push('목공 착수 ' + d.woodStart + ' 기준, 전일 도착 부탁드립니다');
