@@ -73,6 +73,8 @@
     letter-spacing:-.5px; color:var(--txt); white-space:nowrap;
     font-variant-numeric:tabular-nums;
   }
+  /* 「미입력」처럼 글자가 들어갈 때 — 숫자용 크기로는 넘칩니다 */
+  .num.small { font-family:var(--sans); font-size:15px; font-weight:700; letter-spacing:-.2px; }
 
   /* 우측 정보 + 바 */
   .right { flex:1; padding:9px 15px 10px; display:flex; flex-direction:column; justify-content:center; gap:7px; min-width:0; }
@@ -140,29 +142,39 @@
 
   const pctEl = document.getElementById("pctNum");
   const capEl = document.getElementById("cap");
-  if (preStart) {
-    const dToStart = Math.round((s - today) / 86400000);
-    capEl.textContent = "착공까지";
-    pctEl.textContent = "D-" + dToStart;
+  // 날짜가 아예 없으면 0%가 아니라 「미입력」입니다.
+  // 0%는 사실처럼 보여서, 날짜 주입이 실패한 걸 아무도 눈치채지 못합니다.
+  const noDates = !startStr && !endStr && !q.has("pct");
+  if (noDates) {
+    capEl.textContent = "일정";
+    pctEl.textContent = "미입력";
+    pctEl.classList.add("small");
+    document.getElementById("detail").innerHTML = '<b>착공일과 준공 예정일을 넣어주세요</b>';
   } else {
-    capEl.textContent = "진행률";
-    pctEl.textContent = pct + "%";
-  }
-  requestAnimationFrame(() => {
-    document.getElementById("fill").style.width = pct + "%";
-  });
+    if (preStart) {
+      const dToStart = Math.round((s - today) / 86400000);
+      capEl.textContent = "착공까지";
+      pctEl.textContent = "D-" + dToStart;
+    } else {
+      capEl.textContent = "진행률";
+      pctEl.textContent = pct + "%";
+    }
+    requestAnimationFrame(() => {
+      document.getElementById("fill").style.width = pct + "%";
+    });
 
-  const fmt = (str) => {
-    const d = new Date(str + "T00:00:00");
-    return isNaN(d) ? "" : (d.getMonth() + 1) + "." + String(d.getDate()).padStart(2, "0");
-  };
-  let parts = [];
-  if (startStr && endStr) parts.push(`착공 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`);
-  if (e && !isNaN(e)) {
-    const left = Math.round((e - today) / 86400000);
-    parts.push(left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>"));
+    const fmt = (str) => {
+      const d = new Date(str + "T00:00:00");
+      return isNaN(d) ? "" : (d.getMonth() + 1) + "." + String(d.getDate()).padStart(2, "0");
+    };
+    let parts = [];
+    if (startStr && endStr) parts.push(`착공 <b>${fmt(startStr)}</b> — 준공 예정 <b>${fmt(endStr)}</b>`);
+    if (e && !isNaN(e)) {
+      const left = Math.round((e - today) / 86400000);
+      parts.push(left > 0 ? `준공까지 <b>${left}일</b>` : (left === 0 ? "<b>오늘 준공</b>" : "<b>준공 완료</b>"));
+    }
+    document.getElementById("detail").innerHTML = parts.join('<span class="sep">·</span>');
   }
-  document.getElementById("detail").innerHTML = parts.join('<span class="sep">·</span>');
 </script>
 </body>
 </html>
