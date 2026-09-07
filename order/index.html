@@ -339,6 +339,26 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .pr.miss select{ border-color:var(--warn); }
 .psum{ font-size:11.5px; color:var(--txt3); margin:11px 0 4px; }
 .psum b{ color:var(--txt); }
+
+/* 정산 입력 */
+.setwrap{ max-height:calc(100vh - 300px); overflow-y:auto; }
+.settbl{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.settbl th{ position:sticky; top:0; background:var(--card); z-index:1;
+  font-size:10px; letter-spacing:.5px; color:var(--txt4); font-weight:800;
+  padding:0 4px 7px; border-bottom:1px solid var(--line); white-space:nowrap; }
+.settbl td{ padding:4px; border-bottom:1px solid var(--soft); vertical-align:middle; }
+.settbl th.q, .settbl td.q{ width:66px; text-align:right; }
+.settbl th.p, .settbl td.p{ width:84px; text-align:right; }
+.settbl th.x, .settbl td.x{ width:24px; text-align:center; }
+.settbl select{ width:100%; font-size:12px; padding:5px 7px; }
+.settbl input{ width:100%; text-align:right; font-size:12.5px; padding:5px 7px;
+  font-family:var(--didone); }
+.settbl .was{ font-family:var(--didone); font-size:13px; color:var(--txt3); }
+.settbl .gap{ font-family:var(--didone); font-size:12.5px; }
+.settbl .gap.up{ color:var(--warn); font-weight:700; }
+.settbl .gap.dn{ color:var(--txt4); }
+.settbl .rm{ color:var(--txt4); cursor:pointer; font-size:14px; }
+.settbl .rm:hover{ color:var(--warn); }
 .modal .f label{ width:52px; }
 .mchk{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--txt2);
   margin:11px 0 4px; cursor:pointer; }
@@ -534,6 +554,61 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   </div>
 </div>
 
+<!-- ═════ ③ 정산 입력 ═════ -->
+<div id="scr-settle" class="wrap hide">
+  <div class="hd">
+    <div class="back" onclick="goInput()">‹</div>
+    <div class="dmark">D</div>
+    <div><div class="sub">거래명세서</div><div class="ttl" id="setTtl">—</div></div>
+    <div class="sp"></div>
+    <div class="who">정산</div>
+  </div>
+
+  <div class="cols"><div class="colA">
+    <div class="card" style="margin-top:13px">
+      <div class="ch">🧾 현장 기록 <em>지난 현장 참고에 쌓입니다</em></div>
+      <div class="f"><label>평형</label><input type="number" id="setPy" placeholder="예) 33"></div>
+      <div class="f"><label>단열 범위</label><select id="setIns">
+        <option value="">— 고르세요 —</option><option>안 함</option><option>확장부만</option>
+        <option>일부</option><option>전체 재시공</option></select></div>
+      <div class="f"><label>다루끼</label><select id="setKind">
+        <option value="">— 고르세요 —</option><option>합판 LVL 8자</option>
+        <option>소송 8R</option><option>소송 12R</option></select></div>
+      <div class="f"><label>재단비</label><input type="number" id="setCutFee" placeholder="건수"></div>
+      <div class="f"><label>명세서일</label><input type="date" id="setDate"></div>
+      <textarea id="setNote" placeholder="비고 — 다음 현장에 참고될 내용" style="margin-top:9px"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="ch">💡 이렇게 씁니다</div>
+      <div class="tips">
+        · 명세서 파일은 <b>03.공사운영 / 02.발주-견적자료</b>에 넣어두세요.<br>
+        · <b>단가</b>는 품목 마스터에 덮어씁니다 — 다음 발주 예상 금액이 맞아갑니다.<br>
+        · <b>수량</b>은 주자재 11품목만 이력에 남습니다. 나머지는 단가만 갱신됩니다.<br>
+        · 발주한 것과 실제가 다르면 <b>차이</b>가 표시됩니다. 계수를 고칠 근거입니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="colC" style="grid-column:2 / -1">
+    <div class="card" style="margin-top:13px">
+      <div class="ch">명세서 품목 <em id="setCnt"></em></div>
+      <div class="tools">
+        <div class="btn2" onclick="setAddRow()">＋ 줄 추가</div>
+        <div class="btn2" onclick="setFromOrders()">발주한 것 불러오기</div>
+        <div class="sp" style="flex:1"></div>
+        <div class="btn2" onclick="setClear()">비우기</div>
+      </div>
+      <div class="setwrap"><table class="settbl"><thead><tr>
+        <th style="text-align:left">품목</th><th class="q">발주</th><th class="q">실제</th>
+        <th class="q">차이</th><th class="p">단가</th><th class="x"></th>
+      </tr></thead><tbody id="setRows"></tbody></table></div>
+      <div class="note" id="setNote2"></div>
+    </div>
+  </div>
+  </div>
+</div>
+
 <!-- ═════ 하단바 ═════ -->
 <div class="bar hide" id="bar"><div class="in">
   <div class="cnt" id="barCnt">—</div>
@@ -633,13 +708,14 @@ function login() {
 }
 function logout() {
   localStorage.removeItem(LS_KEY);
-  ['scr-input','scr-sheet','bar'].forEach(function (i) { el(i).classList.add('hide'); });
+  ['scr-input','scr-sheet','scr-settle','bar'].forEach(function (i) { el(i).classList.add('hide'); });
   el('scr-key').classList.remove('hide');
 }
 
 // ═════ 화면 전환 ═════
 function goInput() {
   el('scr-sheet').classList.add('hide');
+  el('scr-settle').classList.add('hide');
   el('scr-input').classList.remove('hide');
   window.scrollTo(0, 0); bar();
 }
@@ -694,6 +770,8 @@ function boot() {
 function pickSite() {
   var id = el('siteSel').value;
   S.site = null; S.detail = null; S.elev = null; S.unload = null;
+  T2.rows = []; T2.ordered = {};        // 현장이 바뀌면 정산도 새로 불러옵니다
+  el('setNote2').textContent = '';
   el('pastSel').innerHTML = '<option value="">지난 발주 불러오기</option>';
   if (!id) { draw(); bar(); side(); return; }
   S.site = S.sites.filter(function (x) { return x.id === id; })[0];
@@ -990,6 +1068,116 @@ function doAdd() {
     }).catch(function () { toast('연결에 실패했습니다'); });
 }
 
+// ═════ 정산 입력 ═════
+// 현장이 끝나면 명세서가 옵니다. 한 번 넣으면 단가와 실사용량이 같이 갱신됩니다.
+// 발주한 것과 실제의 차이를 나란히 보여줍니다 — 계수를 고칠 근거가 여기서 나옵니다.
+var T2 = { rows: [], ordered: {}, busy: false };
+
+function goSettle() {
+  if (!S.site) return toast('현장을 먼저 고르세요');
+  el('scr-input').classList.add('hide');
+  el('scr-sheet').classList.add('hide');
+  el('scr-settle').classList.remove('hide');
+  el('setTtl').textContent = S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '—';
+  if (!el('setDate').value) el('setDate').value = ymd(new Date());
+  window.scrollTo(0, 0); bar();
+  if (!T2.rows.length) {
+    el('setNote2').textContent = '불러오는 중…';
+    api('getSettleInit', { sitePageId: S.site.id }).then(function (r) {
+      if (!r || !r.ok) { el('setNote2').textContent = '불러오지 못했습니다'; return; }
+      T2.ordered = r.ordered || {};
+      setFromOrders();
+      el('setNote2').textContent = (r.orders || []).length
+        ? '발주 ' + r.orders.length + '건에서 불러왔습니다. 명세서와 다르면 고치세요.'
+        : '이 현장은 앱으로 등록한 발주가 없습니다. 줄을 추가해 직접 넣으세요.';
+    }).catch(function () { el('setNote2').textContent = '연결에 실패했습니다'; });
+  }
+}
+function setFromOrders() {
+  var byName = {}; S.items.forEach(function (i) { byName[i.name] = i; });
+  T2.rows = Object.keys(T2.ordered).map(function (n) {
+    var it = byName[n];
+    return { id: it ? it.id : '', name: n, was: T2.ordered[n], qty: T2.ordered[n],
+             price: it && it.price ? it.price : '' };
+  }).filter(function (r) { return r.id; });
+  renderSettle();
+}
+function setAddRow() { T2.rows.push({ id:'', name:'', was:0, qty:'', price:'' }); renderSettle(); }
+function setClear() { T2.rows = []; renderSettle(); }
+function setRow(i, k, v) {
+  if (k === 'id') {
+    var it = S.items.filter(function (x) { return x.id === v; })[0];
+    T2.rows[i].id = v;
+    T2.rows[i].name = it ? it.name : '';
+    T2.rows[i].was = it ? (T2.ordered[it.name] || 0) : 0;
+    if (it && it.price && !T2.rows[i].price) T2.rows[i].price = it.price;
+    renderSettle();
+    return;
+  }
+  T2.rows[i][k] = v;
+  if (k === 'qty') renderGap(i);
+}
+function delSetRow(i) { T2.rows.splice(i, 1); renderSettle(); }
+function gapHtml(was, qty) {
+  var d = (Number(qty) || 0) - (Number(was) || 0);
+  if (!was || !d) return '<span class="gap dn">—</span>';
+  return '<span class="gap ' + (d > 0 ? 'up' : 'dn') + '">' + (d > 0 ? '+' : '') + d + '</span>';
+}
+function renderGap(i) {
+  var td = el('setRows').querySelector('[data-gap="' + i + '"]');
+  if (td) td.innerHTML = gapHtml(T2.rows[i].was, T2.rows[i].qty);
+}
+function renderSettle() {
+  el('setCnt').textContent = T2.rows.length ? T2.rows.length + '품목' : '';
+  if (!T2.rows.length) {
+    el('setRows').innerHTML = '<tr><td colspan="6" style="padding:22px;text-align:center;color:var(--txt4)">'
+      + '「발주한 것 불러오기」를 누르거나 줄을 추가하세요</td></tr>';
+    return;
+  }
+  var opts = S.items.map(function (i) { return { id: i.id, label: i.name, unit: i.unit || '' }; });
+  el('setRows').innerHTML = T2.rows.map(function (r, i) {
+    return '<tr><td><select onchange="setRow(' + i + ',\'id\',this.value)">'
+      + '<option value="">— 품목을 고르세요 —</option>'
+      + opts.map(function (o) {
+          return '<option value="' + o.id + '"' + (o.id === r.id ? ' selected' : '') + '>' + esc(o.label) + '</option>';
+        }).join('') + '</select></td>'
+      + '<td class="q"><span class="was">' + (r.was || '—') + '</span></td>'
+      + '<td class="q"><input type="number" min="0" value="' + (r.qty === '' ? '' : r.qty)
+      + '" oninput="setRow(' + i + ',\'qty\',this.value)"></td>'
+      + '<td class="q" data-gap="' + i + '">' + gapHtml(r.was, r.qty) + '</td>'
+      + '<td class="p"><input type="number" min="0" value="' + (r.price === '' ? '' : r.price)
+      + '" placeholder="원" oninput="setRow(' + i + ',\'price\',this.value)"></td>'
+      + '<td class="x"><span class="rm" onclick="delSetRow(' + i + ')">×</span></td></tr>';
+  }).join('');
+}
+function submitSettle() {
+  if (T2.busy) return;
+  var rows = T2.rows.filter(function (r) { return r.id && (Number(r.qty) > 0 || Number(r.price) > 0); });
+  if (!rows.length) return toast('넣을 내용이 없습니다');
+  T2.busy = true; bar();
+  api('saveSettle', {
+    sitePageId: S.site.id,
+    siteName: S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '',
+    py: el('setPy').value, ins: el('setIns').value, kind: el('setKind').value,
+    cutFee: el('setCutFee').value, date: el('setDate').value, note: el('setNote').value.trim(),
+    rows: rows.map(function (r) { return { id:r.id, name:r.name, qty:Number(r.qty)||0, price:Number(r.price)||0 }; })
+  }).then(function (r) {
+    T2.busy = false; bar();
+    if (!r || !r.ok) return toast('저장에 실패했습니다 — ' + ((r && r.error) || ''));
+    // 화면의 단가도 바로 맞춰둡니다. 다음 발주 예상 금액이 곧바로 반영됩니다
+    rows.forEach(function (x) {
+      var it = S.items.filter(function (i) { return i.id === x.id; })[0];
+      if (it && x.price > 0) it.price = x.price;
+    });
+    el('setNote2').innerHTML = '✅ 단가 <b>' + r.priced + '</b>품목 갱신 · 이력 <b>' + r.logged + '</b>품목 기록'
+      + (r.skipped && r.skipped.length ? '<br><span style="color:var(--txt4)">이력에 칸이 없어 수량은 안 남은 것 '
+        + r.skipped.length + '품목 — 단가는 갱신됐습니다</span>' : '')
+      + '<br><a href="' + r.pageUrl + '" target="_blank" style="color:var(--accent)">노션에서 열기</a>';
+    toast('정산을 기록했습니다');
+    side();
+  }).catch(function () { T2.busy = false; bar(); toast('연결에 실패했습니다'); });
+}
+
 // ═════ 카톡 붙여넣기 ═════
 // 2차 발주의 마찰은 검색이 아니라 「팀장 카톡을 손으로 옮기는 것」입니다.
 // AI 없이 규칙으로 짚습니다 — 틀리면 왜 틀렸는지 보이고, 사람이 고칠 수 있어야 합니다.
@@ -1137,17 +1325,32 @@ function picked() {
   return out;
 }
 function bar() {
+  el('bar').classList.toggle('hide', !localStorage.getItem(LS_KEY));
+  var onSheet  = !el('scr-sheet').classList.contains('hide');
+  var onSettle = !el('scr-settle').classList.contains('hide');
+
+  if (onSettle) {
+    var n = T2.rows.filter(function (r) { return r.id && Number(r.qty) > 0; }).length;
+    var tot = 0;
+    T2.rows.forEach(function (r) { tot += (Number(r.price) || 0) * (Number(r.qty) || 0); });
+    el('barCnt').innerHTML = '<b>' + n + '</b> 품목'
+      + '<span>' + (tot ? '명세서 ' + won(Math.round(tot)) + '원' : '명세서를 보고 넣으세요') + '</span>';
+    el('barBtns').innerHTML = '<div class="btn" onclick="goInput()">발주로</div>'
+      + '<div class="btn pri' + (T2.busy || !n ? ' dis' : '') + '" onclick="submitSettle()">'
+      + (T2.busy ? '저장 중…' : '정산 기록') + '</div>';
+    return;
+  }
+
   var lines = picked(), sum = 0;
   lines.forEach(function (x) { sum += (x.price || 0) * x.qty; });
-  var onSheet = !el('scr-sheet').classList.contains('hide');
-  el('bar').classList.toggle('hide', !localStorage.getItem(LS_KEY));
   el('barCnt').innerHTML = '<b>' + lines.length + '</b> 품목'
     + '<span>' + (sum ? '예상 ' + won(Math.round(sum)) + '원' : '수량을 입력하세요') + '</span>';
   el('barBtns').innerHTML = onSheet
     ? '<div class="btn" onclick="copyText()">텍스트</div>'
       + '<div class="btn" onclick="saveImage()">이미지</div>'
       + '<div class="btn pri" id="submitBtn" onclick="submit()">발주 등록</div>'
-    : '<div class="btn pri' + (lines.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
+    : '<div class="btn" onclick="goSettle()">🧾 정산</div>'
+      + '<div class="btn pri' + (lines.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
 }
 function draw() {
   var d = S.detail, lines = picked(), due = el('dueIn').value;
