@@ -95,6 +95,12 @@ body{ font-family:var(--sans); color:var(--txt); min-height:100vh;
 .tipcard[open] > summary{ padding-bottom:8px; }
 .tipcard[open] > summary em{ opacity:0; }
 .tipcard .tips{ padding:0 16px 15px; }
+.why{ margin:0 0 7px; }
+.why > summary{ font-size:10.5px; color:var(--txt4); cursor:pointer; list-style:none;
+  padding:2px 0; }
+.why > summary::-webkit-details-marker{ display:none; }
+.why > summary::after{ content:" ›"; }
+.why[open] > summary::after{ content:" ⌄"; }
 .hide{ display:none !important; }
 .num{ font-family:var(--didone); font-variant-numeric:tabular-nums; }
 
@@ -1175,12 +1181,14 @@ function elevCalc() {
     + [[0,'없음'],[5,'5%'],[10,'10%'],[15,'15%']].map(function (a) {
         return '<div class="chip' + (a[0] === S.safe ? ' on' : '') + '" onclick="setSafe(' + a[0] + ')">' + a[1] + '</div>';
       }).join('') + '</div></div>'
-    + '<div class="note" style="margin:0 0 8px;font-size:10.5px;line-height:1.75">'
+    // 근거는 한 번 보면 됩니다. 매번 자리를 차지할 이유가 없어 접어둡니다
+    + '<details class="why"><summary>계산 근거</summary>'
+    + '<div class="note" style="margin:5px 0 8px;font-size:10.5px;line-height:1.75">'
     + '판재 <b>' + m.panelRaw.toLocaleString('ko-KR') + '</b> (' + m.bind + ') − ' + S.safe
     + '% → <b>' + m.panel.toLocaleString('ko-KR') + '</b>mm<br>'
     + '장척 <b>' + m.longRaw.toLocaleString('ko-KR') + '</b> (카 대각선) − ' + S.safe
     + '% → <b>' + m.long.toLocaleString('ko-KR') + '</b>mm'
-    + '<br><span style="opacity:.75">몰딩·각재는 가늘어서 문이 거의 제약이 아닙니다</span></div>';
+    + '<br><span style="opacity:.75">몰딩·각재는 가늘어서 문이 거의 제약이 아닙니다</span></div></details>';
 
   // 거래처가 알아서 잘라 보내므로 품목마다 경고하지 않고, 초과분만 참고로 보여줍니다
   var rows = [], bad = 0;
