@@ -52,9 +52,26 @@ body{ font-family:var(--sans); color:var(--txt); min-height:100vh;
   background:var(--bg); background-attachment:fixed; padding:14px 14px 92px; }
 .wrap{ max-width:1120px; margin:0 auto; }
 .cols{ display:grid; grid-template-columns:1fr; gap:0 14px; }
-@media(min-width:1000px){ .cols{ grid-template-columns:1.4fr .9fr; align-items:start; } }
-@media(min-width:1000px){ .colR{ position:sticky; top:14px; } }
 .bar .in{ max-width:1120px; }
+
+/* 폰 — 위에서 아래로 한 줄. 손가락으로 훑는 화면입니다 */
+/* 노트북 — 왼쪽에서 작업하고 오른쪽에서 확인합니다 */
+@media(min-width:1000px){
+  .cols{ grid-template-columns:1.4fr .9fr; align-items:start; }
+  .colA{ grid-column:1; grid-row:1; }
+  .colB{ grid-column:1; grid-row:2; }
+  .colC{ grid-column:2; grid-row:1 / span 2; position:sticky; top:14px; }
+}
+/* 데스크탑 — 스크롤 없이 한눈에. 설정 · 품목 · 확인을 나란히 둡니다 */
+@media(min-width:1440px){
+  .wrap, .bar .in{ max-width:min(1720px, 96vw); }
+  .cols{ grid-template-columns:.92fr 1.18fr .9fr; }
+  .colA{ grid-column:1; grid-row:1; position:sticky; top:14px; }
+  .colB{ grid-column:2; grid-row:1; }
+  .colC{ grid-column:3; grid-row:1; }
+  .items{ max-height:calc(100vh - 290px); }
+  .side .card{ padding:14px 16px; }
+}
 .hide{ display:none !important; }
 .num{ font-family:var(--didone); font-variant-numeric:tabular-nums; }
 
@@ -176,39 +193,57 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   line-height:1.55; border:1px solid #999; display:flex; flex-direction:column; }
 .sheet .stbl{ flex:none; }
 .sheet .grow{ flex:1; }
-.sheet .sh{ display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
-  padding:19px 20px 12px; border-bottom:2px solid #111; }
-.sheet .sh h2{ font-size:21px; font-weight:800; letter-spacing:.3em; }
-.sheet .sh .no{ font-size:10.5px; color:#777; letter-spacing:.06em; margin-bottom:5px; font-family:ui-monospace,monospace; }
-.sheet .sh .br{ display:flex; align-items:center; gap:10px; text-align:right; line-height:1.5; }
-.sheet .sh .br > div:last-child{ text-align:right; }
-.slogo{ width:38px; height:38px; border-radius:9px; background:#111; color:#fff; flex:none;
+/* 머리 — 발신자는 왼쪽, 문서 종류와 번호는 오른쪽. 거래명세서를 읽던 순서 그대로입니다 */
+.sheet .sh{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px;
+  padding:20px 20px 14px; }
+.sheet .sh .from{ display:flex; align-items:center; gap:11px; }
+.slogo{ width:36px; height:36px; border-radius:8px; background:#111; color:#fff; flex:none;
   display:flex; align-items:center; justify-content:center;
-  font-family:var(--didone); font-size:23px; font-weight:600; line-height:1; }
-.sheet .sh .br .en{ font-family:var(--didone); font-size:9.5px; letter-spacing:.18em;
-  color:#999; display:block; }
-.sheet .sh .br b{ display:block; font-size:12.5px; font-weight:800; }
-.sheet .sh .br span{ display:block; font-size:10px; color:#777; }
+  font-family:var(--didone); font-size:22px; font-weight:600; line-height:1; }
+.sheet .sh .from b{ display:block; font-size:14.5px; font-weight:800; letter-spacing:-.01em; }
+.sheet .sh .from .en{ font-family:var(--didone); font-size:9px; letter-spacing:.2em;
+  color:#9a9aa4; display:block; margin-top:1px; }
+.sheet .sh .doc{ text-align:right; }
+.sheet .sh h2{ font-size:20px; font-weight:800; letter-spacing:.34em; line-height:1.1;
+  padding-left:.34em; }
+.sheet .sh .no{ font-size:11px; color:#111; letter-spacing:.08em; margin-top:5px;
+  font-family:ui-monospace,monospace; font-weight:600; }
+/* 회사 세부는 한 줄 띠로 눌러둡니다 — 거래처가 볼 것은 아래 표입니다 */
+.sheet .biz{ padding:6px 20px 7px; border-top:1px solid #e4e4ea; border-bottom:2px solid #111;
+  font-size:10px; color:#767680; letter-spacing:.01em; display:flex; flex-wrap:wrap; gap:0 9px; }
+.sheet .biz i{ font-style:normal; color:#c8c8d0; }
+
 .meta{ display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid #999; }
-.meta .r{ display:flex; border-bottom:1px solid #e4e4ea; min-height:31px; align-items:center; }
+.meta .r{ display:flex; border-bottom:1px solid #e4e4ea; min-height:32px; align-items:center; }
 .meta .r:nth-child(odd){ border-right:1px solid #e4e4ea; }
 .meta .r dt{ flex:0 0 72px; padding:6px 10px; font-size:10.5px; color:#777; background:#fafafc;
   align-self:stretch; display:flex; align-items:center; }
 .meta .r dd{ padding:6px 10px; flex:1; }
+/* 거래처가 가장 먼저 확인하는 두 칸 */
+.meta .r.key dd{ font-weight:800; font-size:13.5px; }
+.meta .r.key dt{ color:#111; font-weight:700; }
 .stbl{ width:100%; border-collapse:collapse; font-size:12.5px; }
 .stbl th{ padding:7px 10px; font-size:10px; letter-spacing:.1em; color:#555; font-weight:700;
   border-bottom:1.5px solid #999; background:#fafafc; }
 .stbl td{ padding:5.5px 10px; border-bottom:1px solid #eee; }
 .stbl .cat td{ background:#f4f4f7; font-size:11px; font-weight:800; letter-spacing:.05em;
   border-top:1px solid #ddd; border-bottom:1px solid #ddd; }
-.stbl .no{ width:32px; text-align:center; color:#888; font-family:ui-monospace,monospace; font-size:10.5px; }
-.stbl .sp{ color:#666; font-family:ui-monospace,monospace; font-size:11px; white-space:nowrap; }
-.stbl .ct{ width:64px; text-align:center; color:#333; font-size:11px; font-weight:600; }
-.stbl .un{ width:36px; text-align:center; color:#666; font-size:11px; }
-.stbl .qt{ width:56px; text-align:right; font-weight:700; font-size:14px; }
+.stbl .no{ width:32px; text-align:center; color:#a0a0aa; font-family:ui-monospace,monospace; font-size:10px; }
+/* 품명이 이 표의 주인공입니다 */
+.stbl .nm{ font-weight:600; color:#111; }
+.stbl .sp{ width:1%; color:#8a8a94; font-family:ui-monospace,monospace; font-size:10.5px; white-space:nowrap; }
+/* 재단은 지시입니다 — 놓치면 원장이 그대로 옵니다 */
+.stbl .ct{ width:70px; text-align:center; }
+.stbl .ct em{ font-style:normal; display:inline-block; padding:1px 7px; border-radius:3px;
+  background:#111; color:#fff; font-size:10px; font-weight:700; letter-spacing:.02em; }
+.stbl .un{ width:34px; text-align:center; color:#8a8a94; font-size:10.5px; }
+.stbl .qt{ width:58px; text-align:right; font-weight:800; font-size:15.5px;
+  font-variant-numeric:tabular-nums; color:#111; }
 .sfoot{ flex:none; padding:12px 15px; border-top:1px solid #999; background:#fafafc; font-size:11.5px;
   color:#555; line-height:1.85; }
 .sfoot b{ display:block; color:#111; font-size:10.5px; letter-spacing:.08em; margin-bottom:3px; }
+/* 지켜주셔야 하는 줄만 검게 남깁니다. 다 굵으면 아무것도 안 굵은 것과 같습니다 */
+.sfoot .key{ color:#111; font-weight:700; }
 
 /* 사이드바 */
 .side .card{ padding:13px 14px; }
@@ -305,7 +340,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="who" id="whoTxt">—</div>
   </div>
 
-  <div class="cols"><div class="colL">
+  <div class="cols"><div class="colA">
   <div class="card" style="margin-top:13px">
     <div class="tabs" id="typeTabs"></div>
     <div class="f"><label>발주처</label><select id="vendorSel" onchange="vendorChange()"></select></div>
@@ -350,6 +385,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     </div>
   </div>
 
+  </div><!-- /colA -->
+
+  <div class="colB">
   <div class="card">
     <div class="ch">품목 <em id="cntTxt">0건</em></div>
     <div class="srch"><input id="search" placeholder="품목 검색" oninput="renderItems()"></div>
@@ -370,9 +408,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <textarea id="noteIn" placeholder="예) 석고보드 먼저 부탁드립니다 / 오전 도착 요청" oninput="draw()"></textarea>
   </div>
 
-  </div><!-- /colL -->
+  </div><!-- /colB -->
 
-  <div class="colR side">
+  <div class="colC side">
     <div class="card" style="margin-top:13px">
       <div class="ch">📋 담은 것</div>
       <div id="sumBox"><div class="note" style="margin:0">수량을 입력하면 여기에 쌓입니다</div></div>
@@ -932,38 +970,52 @@ function draw() {
   el('dueWarn').innerHTML = w ? '<div class="warn">' + w + '</div>'
     : (d && d.woodStart ? '<div class="okline">목공 착수 ' + d.woodStart + dow(d.woodStart) + '</div>' : '');
 
+  // 재단이 하나도 없으면 빈 열을 세워둘 이유가 없습니다
+  var hasCut = lines.some(function (x) { return x.cut; });
+  var cols = hasCut ? 6 : 5;
+
   var rows = '', group = null, n = 0;
   lines.forEach(function (x) {
-    if (x.group !== group) { group = x.group; rows += '<tr class="cat"><td colspan="6">' + esc(group || '기타') + '</td></tr>'; }
+    if (x.group !== group) { group = x.group; rows += '<tr class="cat"><td colspan="' + cols + '">' + esc(group || '기타') + '</td></tr>'; }
     n++;
-    rows += '<tr><td class="no">' + (n < 10 ? '0' + n : n) + '</td><td>' + esc(x.name) + '</td>'
+    rows += '<tr><td class="no">' + (n < 10 ? '0' + n : n) + '</td>'
+      + '<td class="nm">' + esc(x.name) + '</td>'
       + '<td class="sp">' + esc(x.spec || '') + '</td>'
-      + '<td class="ct">' + esc(x.cut || '') + '</td>'
+      + (hasCut ? '<td class="ct">' + (x.cut ? '<em>' + esc(x.cut) + '</em>' : '') + '</td>' : '')
       + '<td class="un">' + esc(x.unit || '') + '</td>'
       + '<td class="qt">' + x.qty + '</td></tr>';
   });
-  if (!rows) rows = '<tr><td colspan="6" style="padding:26px;text-align:center;color:#aaa">품목이 없습니다</td></tr>';
+  if (!rows) rows = '<tr><td colspan="' + cols + '" style="padding:26px;text-align:center;color:#aaa">품목이 없습니다</td></tr>';
 
-  var foot = footLines().map(function (t) { return '· ' + esc(t); });
+  // 재단·도착시점처럼 「지켜주셔야 하는 것」만 검게 남깁니다
+  var foot = footLines().map(function (t) {
+    var key = /재단|도착|양중 포함|하차/.test(t);
+    return '· ' + (key ? '<span class="key">' + esc(t) + '</span>' : esc(t));
+  });
+
+  var biz = [];
+  if (CO.biz) biz.push('사업자 ' + CO.biz);
+  biz.push('담당 ' + esc(localStorage.getItem(LS_OWNER) || ''));
+  if (CO.tel) biz.push(CO.tel);
+  if (CO.mail) biz.push(CO.mail);
 
   el('sheet').innerHTML =
-    '<div class="sh"><div><div class="no">' + esc(S.orderNo || '') + '</div><h2>발 주 서</h2></div>'
-    + '<div class="br">'
-    + '<div class="slogo">D</div>'
+    '<div class="sh">'
+    + '<div class="from"><div class="slogo">D</div>'
     + '<div><b>' + CO.name + '</b>'
-    + (CO.en ? '<span class="en">' + CO.en + '</span>' : '')
-    + (CO.biz ? '<span>사업자 ' + CO.biz + '</span>' : '')
-    + '<span>담당 ' + esc(localStorage.getItem(LS_OWNER) || '') + (CO.tel ? ' · ' + CO.tel : '') + '</span>'
-    + (CO.mail ? '<span>' + CO.mail + '</span>' : '')
-    + '</div></div></div>'
+    + (CO.en ? '<span class="en">' + CO.en + '</span>' : '') + '</div></div>'
+    + '<div class="doc"><h2>발 주 서</h2>'
+    + '<div class="no">' + esc(S.orderNo || '') + '</div></div></div>'
+    + '<div class="biz">' + biz.join('<i>·</i>') + '</div>'
     + '<div class="meta">'
-    + row2('수　신', (vendorName() || '—') + ' 귀중') + row2('발주일', ymd(new Date()))
+    + row2('수　신', (vendorName() || '—') + ' 귀중', true)
+    + row2('발주일', ymd(new Date()))
     + row2('현　장', d ? esc(d.name.replace(/\s*PROJECT\s*$/, '')) : '—')
-    + row2('납품요청', due ? due + dow(due) : '—')
+    + row2('납품요청', due ? due + dow(due) : '—', true)
     + row2('주　소', d && d.address ? esc(d.address) : '—')
     + row2('배송구분', S.ship) + '</div>'
     + '<table class="stbl"><thead><tr><th class="no">No</th><th style="text-align:left">품　명</th>'
-    + '<th style="text-align:left">규　격</th><th class="ct">재단</th>'
+    + '<th style="text-align:left">규　격</th>' + (hasCut ? '<th class="ct">재단</th>' : '')
     + '<th class="un">단위</th><th class="qt">수량</th></tr></thead>'
     + '<tbody>' + rows + '</tbody></table>'
     + '<div class="grow"></div>'
@@ -1278,7 +1330,9 @@ function saveSite() {
 }
 function loadPastById(id) { el('pastSel').value = id; loadPast(); }
 
-function row2(k, v) { return '<div class="r"><dt>' + k + '</dt><dd>' + v + '</dd></div>'; }
+function row2(k, v, key) {
+  return '<div class="r' + (key ? ' key' : '') + '"><dt>' + k + '</dt><dd>' + v + '</dd></div>';
+}
 
 // ═════ 출력 ═════
 // 발주서 · 텍스트 · 노션이 같은 문장을 쓰도록 한 곳에서 만듭니다
