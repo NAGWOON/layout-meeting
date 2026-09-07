@@ -325,6 +325,19 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .modal{ width:100%; max-width:380px; background:var(--card); border:1px solid var(--cardbd);
   border-radius:18px; box-shadow:var(--cardsh); backdrop-filter:blur(20px); padding:17px 18px; }
 .modal h3{ font-size:14px; font-weight:800; margin-bottom:13px; }
+.modal.wide{ max-width:520px; }
+/* 카톡에서 읽어낸 줄 */
+.pr{ display:flex; align-items:center; gap:7px; padding:6px 0; border-bottom:1px solid var(--soft); }
+.pr:last-of-type{ border-bottom:0; }
+.pr .src{ flex:0 0 108px; font-size:11px; color:var(--txt4); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.pr select{ flex:1; min-width:0; font-size:12px; padding:5px 8px; }
+.pr input{ width:56px; flex:none; text-align:right; font-size:13px; padding:5px 7px;
+  font-family:var(--didone); }
+.pr .u{ width:20px; flex:none; font-size:11px; color:var(--txt4); }
+.pr.miss select{ border-color:var(--warn); }
+.psum{ font-size:11.5px; color:var(--txt3); margin:11px 0 4px; }
+.psum b{ color:var(--txt); }
 .modal .f label{ width:52px; }
 .mchk{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--txt2);
   margin:11px 0 4px; cursor:pointer; }
@@ -459,6 +472,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="tools">
       <div class="btn2" onclick="applyBase()">초도 세트</div>
       <div class="btn2" id="onlyBtn" onclick="toggleOnly()">담은 것만</div>
+      <div class="btn2" onclick="openPaste()">💬 카톡 붙여넣기</div>
       <div class="btn2" onclick="openAdd()">＋ 품목</div>
       <div class="btn2" style="padding:0"><select id="pastSel" onchange="loadPast()" style="padding:7px 11px">
         <option value="">지난 발주 불러오기</option></select></div>
@@ -541,6 +555,19 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="mrow">
       <div class="btn" onclick="closeAdd()">취소</div>
       <div class="btn pri" onclick="doAdd()">추가</div>
+    </div>
+  </div>
+</div>
+
+<div class="mask hide" id="pasteMask">
+  <div class="modal wide">
+    <h3>💬 카톡 붙여넣기 <em style="font-weight:400;color:var(--txt4);font-size:11.5px">팀장이 보낸 그대로 넣으세요</em></h3>
+    <textarea id="pasteIn" rows="4" placeholder="예) 다루끼 5단, 일반석고 20장&#10;우레탄폼 2개랑 실리콘 10개요"
+      style="width:100%;font-size:13px" oninput="readPaste()"></textarea>
+    <div id="pasteOut"></div>
+    <div class="mrow">
+      <div class="btn" onclick="closePaste()">취소</div>
+      <div class="btn pri" onclick="applyPaste()">담기</div>
     </div>
   </div>
 </div>
@@ -960,6 +987,133 @@ function doAdd() {
       closeAdd(); renderItems(); draw(); bar(); side();
       toast('마스터에 등록했습니다 — 다음부터 목록에 나옵니다');
     }).catch(function () { toast('연결에 실패했습니다'); });
+}
+
+// ═════ 카톡 붙여넣기 ═════
+// 2차 발주의 마찰은 검색이 아니라 「팀장 카톡을 손으로 옮기는 것」입니다.
+// AI 없이 규칙으로 짚습니다 — 틀리면 왜 틀렸는지 보이고, 사람이 고칠 수 있어야 합니다.
+var PUNIT = '장|단|개|박스|봉|갑|롤|세트|조|모|EA|ea';
+// 이름에 흔해서 구별에 도움이 안 되는 말들
+var STOP = { '수입':1, '고급':1, '동남아':1, '특호':1, '일반':0, 'u':1, '30':0 };
+
+function pnorm(s) {
+  return String(s == null ? '' : s).toLowerCase()
+    .replace(/[()[\]{}·,./\\×x*+~\-–—]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function ptoks(s) { return pnorm(s).split(' ').filter(Boolean); }
+// 규격을 가리키는 토큰인지 — 9t, 422, f50, 8.5 처럼 숫자가 든 말
+function isSpecTok(t) { return /\d/.test(t); }
+
+// 카톡 한 덩어리를 「이름 + 수량」 조각들로 자릅니다.
+// 수량이 나오는 자리에서 끊으면 「다루끼 5단 석고 20장」 같은 한 줄도 갈립니다.
+function pasteSegs(text) {
+  var out = [], re = new RegExp('(\\d+(?:\\.\\d+)?)\\s*(' + PUNIT + ')', 'g'), m, last = 0;
+  while ((m = re.exec(text)) !== null) {
+    out.push({ raw: text.slice(last, m.index).trim(), qty: Number(m[1]), unit: m[2] });
+    last = re.lastIndex;
+  }
+  if (!out.length) {                       // 단위를 안 적은 경우 — 줄 끝 숫자로 봅니다
+    text.split(/[\n,]/).forEach(function (ln) {
+      var g = ln.match(/^(.*?)(\d+(?:\.\d+)?)\s*$/);
+      if (g && g[1].trim()) out.push({ raw: g[1].trim(), qty: Number(g[2]), unit: '' });
+    });
+  }
+  var tail = text.slice(last).trim();
+  return { segs: out.filter(function (s) { return s.raw && s.qty > 0; }), tail: tail };
+}
+
+// 조각 하나를 품목 하나에 맞춥니다. 확신이 없으면 null 을 돌려 사람에게 넘깁니다.
+function pasteMatch(raw) {
+  var seg = pnorm(raw), segT = ptoks(raw);
+  if (!segT.length) return null;
+  var best = null, second = 0;
+  pool().forEach(function (i) {
+    var hay = pnorm(i.name + ' ' + (i.spec || ''));
+    var nameT = ptoks(i.name);
+    // 규격 숫자가 어긋나면 다른 물건입니다 — MDF 9T 와 12T 를 섞으면 안 됩니다
+    var clash = segT.some(function (t) {
+      return isSpecTok(t) && t.length >= 2 && hay.indexOf(t) < 0
+             && nameT.some(function (n) { return isSpecTok(n); });
+    });
+    if (clash) return;
+    var hit = 0, weight = 0;
+    segT.forEach(function (t) {
+      var w = isSpecTok(t) ? 2 : (STOP[t] ? 0.3 : 1);
+      weight += w;
+      if (hay.indexOf(t) >= 0) hit += w;
+    });
+    if (!weight) return;
+    var score = hit / weight;
+    // 짧은 말이 긴 이름에 우연히 걸리는 것을 눌러줍니다
+    score -= Math.min(0.18, nameT.length * 0.012);
+    if (!best || score > best.score) { second = best ? best.score : 0; best = { item: i, score: score }; }
+    else if (score > second) second = score;
+  });
+  if (!best || best.score < 0.55) return null;
+  if (best.score - second < 0.06) return null;    // 둘이 비슷하면 사람이 고릅니다
+  return best.item;
+}
+
+var P = { rows: [] };
+function openPaste() {
+  if (!S.site) return toast('현장을 먼저 고르세요');
+  el('pasteIn').value = ''; P.rows = [];
+  el('pasteOut').innerHTML = '<div class="note" style="margin:10px 0 0">붙여넣으면 품목을 짚어 보여드립니다.</div>';
+  el('pasteMask').classList.remove('hide');
+  setTimeout(function () { el('pasteIn').focus(); }, 60);
+}
+function closePaste() { el('pasteMask').classList.add('hide'); }
+
+function readPaste() {
+  var t = el('pasteIn').value;
+  var r = pasteSegs(t);
+  P.rows = r.segs.map(function (s) {
+    var it = pasteMatch(s.raw);
+    return { src: s.raw, qty: s.qty, unit: s.unit, id: it ? it.id : '' };
+  });
+  P.tail = r.tail;
+  renderPaste();
+}
+function renderPaste() {
+  if (!P.rows.length) {
+    el('pasteOut').innerHTML = '<div class="note" style="margin:10px 0 0">'
+      + (el('pasteIn').value.trim() ? '수량이 붙은 말을 못 찾았습니다 — 「다루끼 5단」처럼 적혀 있어야 합니다.'
+                                    : '붙여넣으면 품목을 짚어 보여드립니다.') + '</div>';
+    return;
+  }
+  var opts = pool().map(function (i) {
+    return { id: i.id, label: i.name + (i.spec ? ' · ' + i.spec : '') };
+  });
+  var miss = P.rows.filter(function (r) { return !r.id; }).length;
+  var html = '<div class="psum"><b>' + P.rows.length + '줄</b>을 읽었습니다'
+    + (miss ? ' · <b style="color:var(--warn)">' + miss + '줄은 못 찾았습니다</b> — 골라주세요' : '') + '</div>';
+  P.rows.forEach(function (r, i) {
+    html += '<div class="pr' + (r.id ? '' : ' miss') + '">'
+      + '<div class="src" title="' + esc(r.src) + '">' + esc(r.src) + '</div>'
+      + '<select onchange="setPasteItem(' + i + ',this.value)">'
+      + '<option value="">— 품목을 고르세요 —</option>'
+      + opts.map(function (o) {
+          return '<option value="' + o.id + '"' + (o.id === r.id ? ' selected' : '') + '>' + esc(o.label) + '</option>';
+        }).join('') + '</select>'
+      + '<input type="number" min="0" value="' + r.qty + '" oninput="setPasteQty(' + i + ',this.value)">'
+      + '<div class="u">' + esc(r.unit || (r.id ? unitOf(r.id) : '')) + '</div></div>';
+  });
+  if (P.tail) html += '<div class="note" style="margin:8px 0 0;color:var(--warn)">읽지 못한 말 — '
+    + esc(P.tail.slice(0, 60)) + '</div>';
+  el('pasteOut').innerHTML = html;
+}
+function unitOf(id) { var i = pool().filter(function (x) { return x.id === id; })[0]; return i ? (i.unit || '') : ''; }
+function setPasteItem(i, v) { P.rows[i].id = v; renderPaste(); }
+function setPasteQty(i, v) { P.rows[i].qty = Number(v) || 0; }
+
+function applyPaste() {
+  var ok = P.rows.filter(function (r) { return r.id && r.qty > 0; });
+  if (!ok.length) return toast('담을 품목이 없습니다');
+  // 팀장이 짚어준 건 「추가로 더」입니다. 같은 품목이면 더합니다.
+  ok.forEach(function (r) { S.qty[r.id] = (Number(S.qty[r.id]) || 0) + r.qty; });
+  var miss = P.rows.length - ok.length;
+  closePaste(); renderItems(); draw(); bar(); side(); elevCalc();
+  toast(ok.length + '품목을 담았습니다' + (miss ? ' · ' + miss + '줄은 건너뛰었습니다' : ''));
 }
 
 // ═════ 발주서 ═════
@@ -1456,6 +1610,7 @@ if (localStorage.getItem(LS_KEY)) boot();
 else el('scr-key').classList.remove('hide');
 el('keyIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
 el('addMask').addEventListener('click', function (e) { if (e.target === this) closeAdd(); });
+el('pasteMask').addEventListener('click', function (e) { if (e.target === this) closePaste(); });
 </script>
 </body>
 </html>
