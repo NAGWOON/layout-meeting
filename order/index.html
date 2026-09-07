@@ -1080,7 +1080,7 @@ function goSettle() {
   el('scr-settle').classList.remove('hide');
   el('setTtl').textContent = S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '—';
   if (!el('setDate').value) el('setDate').value = ymd(new Date());
-  window.scrollTo(0, 0); bar();
+  window.scrollTo(0, 0); renderSettle(); bar();
   if (!T2.rows.length) {
     el('setNote2').textContent = '불러오는 중…';
     api('getSettleInit', { sitePageId: S.site.id }).then(function (r) {
