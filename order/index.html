@@ -340,7 +340,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .psum{ font-size:11.5px; color:var(--txt3); margin:11px 0 4px; }
 .psum b{ color:var(--txt); }
 
-/* 정산 입력 */
+/* 명세서 입력 */
 .setwrap{ max-height:calc(100vh - 300px); overflow-y:auto; }
 .settbl{ width:100%; border-collapse:collapse; font-size:12.5px; }
 .settbl th{ position:sticky; top:0; background:var(--card); z-index:1;
@@ -554,19 +554,20 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   </div>
 </div>
 
-<!-- ═════ ③ 정산 입력 ═════ -->
+<!-- ═════ ③ 명세서 입력 ═════ -->
 <div id="scr-settle" class="wrap hide">
   <div class="hd">
     <div class="back" onclick="goInput()">‹</div>
     <div class="dmark">D</div>
-    <div><div class="sub">거래명세서</div><div class="ttl" id="setTtl">—</div></div>
+    <div><div class="sub">DASIFILL</div><div class="ttl" id="setTtl">명세서 입력</div></div>
     <div class="sp"></div>
-    <div class="who">정산</div>
+    <div class="who">단가 · 실적</div>
   </div>
 
   <div class="cols"><div class="colA">
     <div class="card" style="margin-top:13px">
       <div class="ch">🧾 현장 기록 <em>지난 현장 참고에 쌓입니다</em></div>
+      <div class="f"><label>현장명</label><input id="setSite" placeholder="예) 동부센트레빌1단지" oninput="bar()"></div>
       <div class="f"><label>평형</label><input type="number" id="setPy" placeholder="예) 33"></div>
       <div class="f"><label>단열 범위</label><select id="setIns">
         <option value="">— 고르세요 —</option><option>안 함</option><option>확장부만</option>
@@ -582,10 +583,11 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="card">
       <div class="ch">💡 이렇게 씁니다</div>
       <div class="tips">
+        · 현장 진행 단계와 <b>상관없이</b> 아무 때나 넣어도 됩니다. 단가와 실적을 적어두는 칸입니다.<br>
+        · 현장을 고르면 <b>발주한 것</b>을 불러올 수 있고, 안 골라도 현장명만 적으면 됩니다.<br>
         · 명세서 파일은 <b>03.공사운영 / 02.발주-견적자료</b>에 넣어두세요.<br>
         · <b>단가</b>는 품목 마스터에 덮어씁니다 — 다음 발주 예상 금액이 맞아갑니다.<br>
-        · <b>수량</b>은 주자재 11품목만 이력에 남습니다. 나머지는 단가만 갱신됩니다.<br>
-        · 발주한 것과 실제가 다르면 <b>차이</b>가 표시됩니다. 계수를 고칠 근거입니다.
+        · <b>수량</b>은 주자재 11품목만 이력에 남습니다. 나머지는 단가만 갱신됩니다.
       </div>
     </div>
   </div>
@@ -770,7 +772,7 @@ function boot() {
 function pickSite() {
   var id = el('siteSel').value;
   S.site = null; S.detail = null; S.elev = null; S.unload = null;
-  T2.rows = []; T2.ordered = {};        // 현장이 바뀌면 정산도 새로 불러옵니다
+  T2.rows = []; T2.ordered = {};        // 현장이 바뀌면 불러온 발주도 버립니다
   el('setNote2').textContent = '';
   el('pastSel').innerHTML = '<option value="">지난 발주 불러오기</option>';
   if (!id) { draw(); bar(); side(); return; }
@@ -1068,32 +1070,38 @@ function doAdd() {
     }).catch(function () { toast('연결에 실패했습니다'); });
 }
 
-// ═════ 정산 입력 ═════
+// ═════ 명세서 입력 — 단가·실적 ═════
 // 현장이 끝나면 명세서가 옵니다. 한 번 넣으면 단가와 실사용량이 같이 갱신됩니다.
 // 발주한 것과 실제의 차이를 나란히 보여줍니다 — 계수를 고칠 근거가 여기서 나옵니다.
 var T2 = { rows: [], ordered: {}, busy: false };
 
+// 이건 프로젝트 정산이 아니라 단가와 실적을 적어두는 입력 화면입니다.
+// 현장 진행 단계와 무관하고, 현장을 고르지 않아도 넣을 수 있어야 합니다.
 function goSettle() {
-  if (!S.site) return toast('현장을 먼저 고르세요');
   el('scr-input').classList.add('hide');
   el('scr-sheet').classList.add('hide');
   el('scr-settle').classList.remove('hide');
-  el('setTtl').textContent = S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '—';
+  if (!el('setSite').value && S.detail) el('setSite').value = S.detail.name.replace(/\s*PROJECT\s*$/, '');
   if (!el('setDate').value) el('setDate').value = ymd(new Date());
   window.scrollTo(0, 0); renderSettle(); bar();
+  if (!S.site) {
+    el('setNote2').textContent = '현장을 고르면 발주한 것을 불러옵니다. 안 고르셔도 직접 넣을 수 있습니다.';
+    return;
+  }
   if (!T2.rows.length) {
     el('setNote2').textContent = '불러오는 중…';
     api('getSettleInit', { sitePageId: S.site.id }).then(function (r) {
-      if (!r || !r.ok) { el('setNote2').textContent = '불러오지 못했습니다'; return; }
+      if (!r || !r.ok) { el('setNote2').textContent = '발주 내역을 불러오지 못했습니다 — 직접 넣으셔도 됩니다'; return; }
       T2.ordered = r.ordered || {};
       setFromOrders();
       el('setNote2').textContent = (r.orders || []).length
         ? '발주 ' + r.orders.length + '건에서 불러왔습니다. 명세서와 다르면 고치세요.'
         : '이 현장은 앱으로 등록한 발주가 없습니다. 줄을 추가해 직접 넣으세요.';
-    }).catch(function () { el('setNote2').textContent = '연결에 실패했습니다'; });
+    }).catch(function () { el('setNote2').textContent = '연결에 실패했습니다 — 직접 넣으셔도 됩니다'; });
   }
 }
 function setFromOrders() {
+  if (!S.site) return toast('현장을 골라야 불러올 수 있습니다');
   var byName = {}; S.items.forEach(function (i) { byName[i.name] = i; });
   T2.rows = Object.keys(T2.ordered).map(function (n) {
     var it = byName[n];
@@ -1152,12 +1160,13 @@ function renderSettle() {
 }
 function submitSettle() {
   if (T2.busy) return;
+  var name = el('setSite').value.trim();
+  if (!name) { toast('현장명을 적어주세요'); el('setSite').focus(); return; }
   var rows = T2.rows.filter(function (r) { return r.id && (Number(r.qty) > 0 || Number(r.price) > 0); });
   if (!rows.length) return toast('넣을 내용이 없습니다');
   T2.busy = true; bar();
   api('saveSettle', {
-    sitePageId: S.site.id,
-    siteName: S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '',
+    siteName: name,
     py: el('setPy').value, ins: el('setIns').value, kind: el('setKind').value,
     cutFee: el('setCutFee').value, date: el('setDate').value, note: el('setNote').value.trim(),
     rows: rows.map(function (r) { return { id:r.id, name:r.name, qty:Number(r.qty)||0, price:Number(r.price)||0 }; })
@@ -1173,7 +1182,7 @@ function submitSettle() {
       + (r.skipped && r.skipped.length ? '<br><span style="color:var(--txt4)">이력에 칸이 없어 수량은 안 남은 것 '
         + r.skipped.length + '품목 — 단가는 갱신됐습니다</span>' : '')
       + '<br><a href="' + r.pageUrl + '" target="_blank" style="color:var(--accent)">노션에서 열기</a>';
-    toast('정산을 기록했습니다');
+    toast('기록했습니다 — 단가가 갱신됐습니다');
     side();
   }).catch(function () { T2.busy = false; bar(); toast('연결에 실패했습니다'); });
 }
@@ -1333,11 +1342,13 @@ function bar() {
     var n = T2.rows.filter(function (r) { return r.id && Number(r.qty) > 0; }).length;
     var tot = 0;
     T2.rows.forEach(function (r) { tot += (Number(r.price) || 0) * (Number(r.qty) || 0); });
+    var named = !!el('setSite').value.trim();
     el('barCnt').innerHTML = '<b>' + n + '</b> 품목'
-      + '<span>' + (tot ? '명세서 ' + won(Math.round(tot)) + '원' : '명세서를 보고 넣으세요') + '</span>';
+      + '<span>' + (tot ? '명세서 ' + won(Math.round(tot)) + '원'
+                        : (named ? '명세서를 보고 넣으세요' : '현장명을 적어주세요')) + '</span>';
     el('barBtns').innerHTML = '<div class="btn" onclick="goInput()">발주로</div>'
-      + '<div class="btn pri' + (T2.busy || !n ? ' dis' : '') + '" onclick="submitSettle()">'
-      + (T2.busy ? '저장 중…' : '정산 기록') + '</div>';
+      + '<div class="btn pri' + (T2.busy || !n || !named ? ' dis' : '') + '" onclick="submitSettle()">'
+      + (T2.busy ? '저장 중…' : '기록하기') + '</div>';
     return;
   }
 
@@ -1349,7 +1360,7 @@ function bar() {
     ? '<div class="btn" onclick="copyText()">텍스트</div>'
       + '<div class="btn" onclick="saveImage()">이미지</div>'
       + '<div class="btn pri" id="submitBtn" onclick="submit()">발주 등록</div>'
-    : '<div class="btn" onclick="goSettle()">🧾 정산</div>'
+    : '<div class="btn" onclick="goSettle()">🧾 명세서</div>'
       + '<div class="btn pri' + (lines.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
 }
 function draw() {
