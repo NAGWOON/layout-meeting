@@ -79,8 +79,8 @@ body{ font-family:var(--sans); color:var(--txt); min-height:100vh;
 }
 /* 넓은 화면 — 네 덩어리를 한 줄에. 스크롤 없이 전부 눈에 들어옵니다 */
 @media(min-width:1520px){
-  .wrap, .bar .in{ max-width:min(1840px, 97vw); }
-  .cols{ grid-template-columns:.95fr .95fr 1.06fr .86fr; }
+  .wrap, .bar .in{ max-width:min(2360px, 96vw); }   /* 2560 모니터를 다 씁니다 */
+  .cols{ grid-template-columns:.95fr .95fr 1.06fr .9fr; }
   .colA{ grid-column:1; grid-row:1; }
   .colB{ grid-column:2; grid-row:1; }
   .colC{ grid-column:3; grid-row:1; }
@@ -260,6 +260,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .stbl .no{ width:32px; text-align:center; color:#a0a0aa; font-family:ui-monospace,monospace; font-size:10px; }
 /* 품명이 이 표의 주인공입니다 */
 .stbl .nm{ font-weight:600; color:#111; }
+.stbl .nm .dim{ font-weight:400; color:#9a9aa4; font-size:11.5px; }
 .stbl .sp{ width:1%; color:#8a8a94; font-family:ui-monospace,monospace; font-size:10.5px; white-space:nowrap; }
 /* 재단은 지시입니다 — 놓치면 원장이 그대로 옵니다 */
 .stbl .ct{ width:70px; text-align:center; }
@@ -419,6 +420,11 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     </div>
   </div>
 
+  <div class="card">
+    <div class="ch">특기사항 <em>이번 발주에만</em></div>
+    <textarea id="noteIn" placeholder="예) 석고보드 먼저 부탁드립니다 / 오전 도착 요청" oninput="draw()"></textarea>
+  </div>
+
   </div><!-- /colA -->
 
   <div class="colB">
@@ -455,14 +461,6 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     </div>
   </div>
 
-  <div class="card side" id="histCard">
-    <div class="ch">📊 지난 현장 참고 <em>실제 발주량</em></div>
-    <select id="histSel" onchange="renderHistory()" style="width:100%;font-size:12px;padding:7px 9px">
-      <option value="">비슷한 현장 고르기</option>
-    </select>
-    <div id="histBox"></div>
-  </div>
-
   </div><!-- /colB -->
 
   <div class="colC">
@@ -482,11 +480,6 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="items" id="itemList"></div>
   </div>
 
-  <div class="card">
-    <div class="ch">특기사항 <em>이번 발주에만</em></div>
-    <textarea id="noteIn" placeholder="예) 석고보드 먼저 부탁드립니다 / 오전 도착 요청" oninput="draw()"></textarea>
-  </div>
-
   </div><!-- /colC -->
 
   <div class="colD side">
@@ -498,6 +491,14 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="card hide" id="liftCard">
       <div class="ch">🚧 양중 점검 <em id="liftMax"></em></div>
       <div id="liftBox"></div>
+    </div>
+
+    <div class="card" id="histCard">
+      <div class="ch">📊 지난 현장 참고 <em>실제 발주량</em></div>
+      <select id="histSel" onchange="renderHistory()" style="width:100%;font-size:12px;padding:7px 9px">
+        <option value="">비슷한 현장 고르기</option>
+      </select>
+      <div id="histBox"></div>
     </div>
 
     <div class="card">
@@ -1173,7 +1174,7 @@ function draw() {
     if (x.group !== group) { group = x.group; rows += '<tr class="cat"><td colspan="' + cols + '">' + esc(group || '기타') + '</td></tr>'; }
     n++;
     rows += '<tr><td class="no">' + (n < 10 ? '0' + n : n) + '</td>'
-      + '<td class="nm">' + esc(x.name) + '</td>'
+      + '<td class="nm">' + nmHtml(x.name) + '</td>'
       + '<td class="sp">' + esc(x.spec || '') + '</td>'
       + (hasCut ? '<td class="ct">' + (x.cut ? '<em>' + esc(x.cut) + '</em>' : '') + '</td>' : '')
       + '<td class="un">' + esc(x.unit || '') + '</td>'
@@ -1526,6 +1527,14 @@ function saveSite() {
 }
 function loadPastById(id) { el('pastSel').value = id; loadPast(); }
 
+// 「고밀도 MDF 9T (U-30) 수입」에서 눈에 먼저 들어와야 하는 건 앞쪽입니다.
+// 등급 표기는 거래처가 확인해야 하니 지우지 않고 눌러만 둡니다.
+// 「타카핀 (F50)」처럼 괄호가 곧 품목인 것은 건드리지 않습니다.
+function nmHtml(name) {
+  var m = String(name == null ? '' : name).match(/^(.*?)\s*(\(.*)$/);
+  if (!m || m[1].length < 7) return esc(name);
+  return esc(m[1]) + ' <span class="dim">' + esc(m[2]) + '</span>';
+}
 function row2(k, v, key) {
   return '<div class="r' + (key ? ' key' : '') + '"><dt>' + k + '</dt><dd>' + v + '</dd></div>';
 }
