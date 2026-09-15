@@ -625,14 +625,46 @@ var state = {
 };
 
 // ═════════ API 호출 ═════════
-function api(action, data) {
-  return fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: action, key: localStorage.getItem(LS_KEY) || '', data: data || {} })
-  }).then(function (r) { return r.json(); }).then(function (r) {
-    if (r && r.error === 'unauthorized') { logout(); throw new Error('unauthorized'); }
-    return r;
+// 2026-09-15: 현장에서 「계속 로딩만 되고 안 넘어간다」는 일이 있었습니다.
+// 서버 기록을 보니 요청이 도착조차 안 했습니다 — 현장 신호가 끊긴 겁니다.
+// fetch 는 시간제한이 없어서, 끊기면 영원히 안 끝나고 화면은 로딩만 돕니다.
+// 직원분은 실패했다는 사실조차 모르고 기다리게 됩니다.
+//
+// 그래서 시간을 재고, 한 번 다시 시도하고, 그래도 안 되면 「안 됐다」고 말합니다.
+// 사진 업로드는 파일이 커서 넉넉히 줍니다.
+var API_대기 = 25000;        // 보통 요청
+var API_대기_사진 = 90000;   // 사진 한 장
+
+function api(action, data, 남은시도) {
+  var 제한 = (action === 'uploadPhoto') ? API_대기_사진 : API_대기;
+  var 시도 = (남은시도 === undefined) ? 2 : 남은시도;
+
+  return new Promise(function (풀림, 깨짐) {
+    var 끝남 = false;
+    var 시계 = setTimeout(function () {
+      if (끝남) return;
+      끝남 = true;
+      깨짐(new Error('시간초과'));
+    }, 제한);
+
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, key: localStorage.getItem(LS_KEY) || '', data: data || {} })
+    }).then(function (r) { return r.json(); }).then(function (r) {
+      if (끝남) return;
+      끝남 = true; clearTimeout(시계);
+      if (r && r.error === 'unauthorized') { logout(); 깨짐(new Error('unauthorized')); return; }
+      풀림(r);
+    }).catch(function (e) {
+      if (끝남) return;
+      끝남 = true; clearTimeout(시계);
+      깨짐(e);
+    });
+  }).catch(function (e) {
+    if (String(e.message) === 'unauthorized') throw e;
+    if (시도 > 1) return api(action, data, 시도 - 1);   // 한 번 더
+    throw new Error('현장 신호가 약해 서버에 닿지 못했습니다. 신호가 잡히는 곳에서 다시 눌러주세요.');
   });
 }
 function toast(msg) {
@@ -998,7 +1030,7 @@ function uploadQueue() {
 }
 function uploadOne(idx, tries) {
   var p = state.photos[idx];
-  return fileToBase64(p.file).then(function (b64) {
+  return 사진줄이기(p.file).then(fileToBase64).then(function (b64) {
     return api('uploadPhoto', { folderId: state.result.folderId, filename: p.file.name || ('photo' + (idx+1) + '.jpg'), base64: b64 });
   }).then(function (r) {
     if (!r.ok) throw new Error(r.error);
@@ -1078,6 +1110,48 @@ function resetAll() {
 }
 
 // ═════════ 헬퍼 ═════════
+
+// 사진을 올리기 전에 줄입니다.
+// 2026-09-15: 직원분이 현장에서 30장 올리는 데 11분이 걸렸습니다.
+// 원본 4032px 3.3MB 를 그대로 올리고 있었고, base64 로 바뀌며 33% 더 커집니다.
+// 노션은 어차피 2000px 썸네일로 보여주므로 원본을 올려도 화면에서 달라지는 게 없습니다.
+// 3000px 로 줄이면 459KB — 원본의 1/7 이고, 확대해 봐도 원본과 거의 구분이 안 됩니다.
+//
+// 못 줄이면 원본을 그대로 올립니다. 사진을 잃는 것보다 느린 편이 낫습니다.
+var 사진_긴변 = 3000;
+var 사진_품질 = 0.85;
+
+function 사진줄이기(file) {
+  return new Promise(function (done) {
+    var 끝남 = false;
+    var 그대로 = function () { if (!끝남) { 끝남 = true; done(file); } };
+    // 아이폰이 HEIC 를 주면 캔버스가 못 읽습니다. 8초 안에 안 되면 원본으로 갑니다.
+    var 시계 = setTimeout(그대로, 8000);
+    try {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var 배 = 사진_긴변 / Math.max(w, h);
+          if (!w || !h || 배 >= 1) { URL.revokeObjectURL(url); clearTimeout(시계); return 그대로(); }
+          var c = document.createElement('canvas');
+          c.width = Math.round(w * 배); c.height = Math.round(h * 배);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob(function (b) {
+            URL.revokeObjectURL(url); clearTimeout(시계);
+            if (끝남) return;
+            끝남 = true;
+            done(b && b.size && b.size < file.size ? b : file);
+          }, 'image/jpeg', 사진_품질);
+        } catch (e) { URL.revokeObjectURL(url); clearTimeout(시계); 그대로(); }
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); clearTimeout(시계); 그대로(); };
+      img.src = url;
+    } catch (e) { clearTimeout(시계); 그대로(); }
+  });
+}
+
 function fileToBase64(file) {
   return new Promise(function (res, rej) {
     var fr = new FileReader();
