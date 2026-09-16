@@ -770,6 +770,7 @@ var S = {
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }],
   sheetNo: {}, ven: {}, cur: 1, done: {},   // 발주서 분리 — 품목→장, 장→발주처, 장→발주번호
+  calcQty: {},   // 「채우기」가 넣은 값. 대표님이 고친 값과 달라지면 그게 계수를 고칠 재료입니다
   exp:   [{ n: '', a: '', d: '' }], expOpen: true,   // 확장부 바닥 (설비·방수)
   tile:  [{ n: '', a: '', d: '' }], tileOpen: true   // 타일 바닥 (설비·방수 · 타일)
 };
@@ -1047,7 +1048,7 @@ function applyCalc() {
   var r = calc(), n = 0, miss = [];
   Object.keys(r).forEach(function (name) {
     var it = S.items.filter(function (i) { return i.name === name; })[0];
-    if (it) { S.qty[it.id] = r[name]; n++; } else miss.push(name);
+    if (it) { S.qty[it.id] = r[name]; S.calcQty[it.id] = r[name]; n++; } else miss.push(name);
   });
   if (!n) return toast('산출된 게 없습니다 — 물량을 먼저 넣으세요');
   renderItems(); draw(); bar(); side();
@@ -1192,7 +1193,7 @@ function applyExp() {
   var r = expCalc(), n = 0, miss = [];
   r.out.forEach(function (o) {
     var it = S.items.filter(function (i) { return i.name === o[0]; })[0];
-    if (it) { S.qty[it.id] = o[1]; n++; } else miss.push(o[0]);
+    if (it) { S.qty[it.id] = o[1]; S.calcQty[it.id] = o[1]; n++; } else miss.push(o[0]);
   });
   if (!n) return toast('산출된 게 없습니다 — 면적과 깊이를 먼저 넣으세요');
   renderItems(); draw(); bar(); side();
@@ -1336,7 +1337,9 @@ function applyTile() {
   r.out.forEach(function (o) {
     var it = S.items.filter(function (i) { return i.name === o[0]; })[0];
     // 확장부 산출로 이미 담긴 게 있으면 더합니다 (레미탈은 두 계산기에서 같이 나옵니다)
-    if (it) { S.qty[it.id] = (Number(S.qty[it.id]) || 0) + o[1]; n++; } else miss.push(o[0]);
+    // 타일은 확장부 위에 더합니다. 산출값도 같이 더해야 짝이 맞습니다.
+    if (it) { S.qty[it.id] = (Number(S.qty[it.id]) || 0) + o[1];
+              S.calcQty[it.id] = (Number(S.calcQty[it.id]) || 0) + o[1]; n++; } else miss.push(o[0]);
   });
   if (!n) return toast('담을 품목을 찾지 못했습니다');
   renderItems(); draw(); bar(); side();
@@ -1424,7 +1427,7 @@ function applyBase() {
 }
 function clearQty() {
   S.qty = {}; S.cut = {}; S.extra = [];
-  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1;
+  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1; S.calcQty = {};
   renderItems(); draw(); bar(); side(); toast('비웠습니다');
 }
 function loadPast() {
@@ -1742,7 +1745,8 @@ function picked() {
   S.items.forEach(function (i) {
     var v = Number(S.qty[i.id]);
     if (v > 0) out.push({ id:i.id, name:i.name, spec:i.spec, cut:S.cut[i.id] || '', unit:i.unit,
-                          group:i.group, price:i.price, qty:v, type:i.type });
+                          group:i.group, price:i.price, qty:v, type:i.type,
+                          calc:(S.calcQty[i.id] != null ? S.calcQty[i.id] : null) });
   });
   S.extra.forEach(function (x) { if (x.qty > 0) out.push(x); });
   return out;
