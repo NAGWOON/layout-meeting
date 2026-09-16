@@ -175,6 +175,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   font-family:var(--sans); font-size:12.5px; }
 .addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:3px 0 1px; }
 .btn2.pri{ border-color:var(--accent); color:var(--accent); background:rgba(47,111,237,.09); font-weight:700; }
+.it .nm i.ds{ color:var(--txt3); font-style:normal; line-height:1.45; }
 .stabs{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:11px; }
 .stab{ padding:6px 11px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer;
   border:1px solid var(--fieldbd); background:var(--field); color:var(--txt2); white-space:nowrap; }
@@ -1359,7 +1360,8 @@ function renderItems() {
     if (rg) sub += (sub ? '  ·  ' : '') + '지난 현장 ' + rg.min + '–' + rg.max;
     html += '<div class="it' + (v ? '' : ' dim') + '" data-row="' + i.id + '">'
       + '<div class="nm"><b>' + esc(i.name) + '</b>'
-      + (sub ? '<i>' + esc(sub) + '</i>' : '') + '</div>'
+      + (sub ? '<i>' + esc(sub) + '</i>' : '')
+      + (i.desc ? '<i class="ds">' + esc(i.desc) + '</i>' : '') + '</div>'
       + '<input class="cut' + (v ? '' : ' hide') + '" list="cutlist" placeholder="재단" value="'
       + esc(S.cut[i.id] || '') + '" oninput="setCut(\'' + i.id + '\',this.value)">'
       + '<input class="q' + (v ? ' has' : '') + '" type="number" min="0" inputmode="numeric" value="' + v
