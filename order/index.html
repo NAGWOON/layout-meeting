@@ -501,6 +501,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
         <div class="crow"><input type="number" id="x_level"  value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">수평몰탈 설계두께</span></div>
         <div class="crow"><input type="number" id="x_dev"    value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">바탕 편차</span></div>
         <div class="crow"><input type="number" id="x_foam"   value="3"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">폼본드 여유</span></div>
+        <div class="crow"><input type="number" id="x_yield" value="12.8" step="0.1" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">수평몰탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 두께 기준</b></span></div>
         <div class="crow"><input type="number" id="x_loss"   value="10" oninput="expPreview()"><span class="cu">%</span><span class="cl">단열재 재단여유</span></div>
       </div>
 
@@ -1014,7 +1015,7 @@ function applyCalc() {
 // 설계 5mm 라도 바탕이 ±5mm 면 실제 평균은 7.5mm 라서, 5mm 로 뽑으면 현장에서 모자랍니다.
 var XSIZE  = [50, 30, 20, 10], XSHEET = 1.62;   // 900×1800 = 1.62㎡
 var XMORTAR = 21;    // 레미탈 40kg ≈ 굳은부피 0.021㎥ → 면적(㎡)×두께(mm)/21 = 포
-var XLEVEL  = 12.8;  // 수평몰탈 25kg ≈ 0.0128㎥
+// 수평몰탈 25kg 으로 1mm 두께에 몇 ㎡ — 제품마다 다릅니다. 화면에서 고칠 수 있게 빼뒀습니다.
 var XFOAM   = 10;    // 폼본드 750ml 1개로 약 10㎡ (추정값 — 쓰면서 고칠 자리)
 var XN = { i:'아이소핑크 ', f:'우레탄 폼본드 (폼건용)', m:'레미탈 (드라이몰탈)',
            l:'수평몰탈 (셀프레벨링)', p:'수평몰탈 프라이머' };
@@ -1059,6 +1060,7 @@ function expCalc() {
       수평   = Number(el('x_level').value)  || 0,
       편차   = Number(el('x_dev').value)    || 0,
       폼여유  = Number(el('x_foam').value)   || 0,
+      포당   = Number(el('x_yield').value)  || 12.8,
       로스   = (Number(el('x_loss').value)  || 0) / 100;
 
   var 면적 = 0, 시트 = {}, 접착 = 0, 부피 = 0, cuts = [], warn = [];
@@ -1091,7 +1093,11 @@ function expCalc() {
   });
   if (접착) out.push([XN.f, Math.ceil(접착 / XFOAM)]);
   if (부피) out.push([XN.m, Math.ceil(부피 / XMORTAR)]);
-  if (면적) out.push([XN.l, Math.ceil(면적 * (수평 + 편차 / 2) / XLEVEL)]);
+  // 설계두께가 아니라 평균두께로 뽑습니다. 바탕이 고르지 않으면 얇은 데와 두꺼운 데가 생기고,
+  // 설계값으로만 뽑으면 현장에서 모자랍니다 (2026-09-16 · 미장팀 실측과 대조).
+  var 평균 = 수평 + 편차 / 2;
+  if (면적) out.push([XN.l, Math.ceil(면적 * 평균 / 포당),
+    '평균 ' + (Math.round(평균 * 10) / 10) + 'mm · ' + (Math.round(면적 * 10) / 10) + '㎡']);
   if (면적) out.push([XN.p, Math.max(1, Math.ceil(면적 / 100))]);
 
   return { out: out, cuts: cuts, warn: warn, 면적: Math.round(면적 * 10) / 10 };
@@ -1119,6 +1125,7 @@ function expPreview() {
         var rg = S.ranges[o[0]], over = rg && (o[1] < rg.min * 0.5 || o[1] > rg.max * 1.5);
         return '<div class="r' + (over ? ' over' : '') + '"><span>' + esc(o[0]) + '</span>'
           + '<b>' + o[1] + ' <span style="font-size:11px;font-weight:400">' + esc(it ? it.unit : '') + '</span></b></div>'
+          + (o[2] ? '<div class="rng">' + esc(o[2]) + '</div>' : '')
           + (rg ? '<div class="rng' + (over ? ' over' : '') + '">지난 현장 ' + rg.min + ' – ' + rg.max
                   + (over ? '  ⚠ 범위를 벗어납니다' : '') + '</div>' : '');
       }).join('')
