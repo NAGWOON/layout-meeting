@@ -91,6 +91,9 @@
   .cal .dow span:first-child { color:var(--sun); }
 
   .cal .week { border-top:1px solid var(--line); padding:3px 0 4px; }
+  /* 주마다 최소 높이를 줍니다. 안 주면 일정 없는 주가 한 줄로 납작해져
+     달력 전체가 가로로만 긴 띠처럼 보입니다. 폰에서는 안 씁니다. */
+  .cal:not(.narrow) .week { min-height:64px; }
   .cal .cells { display:grid; grid-template-columns:repeat(7,1fr); }
   .cal .cell { text-align:center; }
   .cal .dnum { font-size:11.5px; color:var(--ink2); line-height:18px; display:inline-block; min-width:18px; }
@@ -133,7 +136,7 @@
   .cal.wide .now { font-size:13px; padding-bottom:12px; margin-bottom:12px; }
   .cal.wide .now .dot { width:6px; height:6px; }
   .cal.wide .dow span { font-size:10.5px; padding-bottom:7px; }
-  .cal.wide .week { padding:7px 0 10px; }
+  .cal.wide .week { padding:9px 0 12px; min-height:96px; }
   .cal.wide .dnum { font-size:13.5px; line-height:22px; min-width:22px; }
   .cal.wide .cell.now .dnum { width:22px; height:22px; }
   .cal.wide .bars { gap:3px; margin-top:4px; }
