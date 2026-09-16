@@ -501,7 +501,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
         <div class="crow"><input type="number" id="x_level"  value="20" oninput="expPreview()"><span class="cu">mm</span><span class="cl">수평몰탈 두께</span></div>
         <div class="crow"><input type="number" id="x_dev"    value="0"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">바탕 편차 <b style="font-weight:400;color:var(--txt4)">더 볼 때만</b></span></div>
         <div class="crow"><input type="number" id="x_foam"   value="3"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">폼본드 여유</span></div>
-        <div class="crow"><input type="number" id="x_yield" value="13.2" step="0.1" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">수평몰탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 25kg</b></span></div>
+        <div class="crow"><input type="number" id="x_yield" value="14" step="0.1" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">수평몰탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 25kg</b></span></div>
         <div class="crow"><input type="number" id="x_myield" value="21" step="0.5" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">레미탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 40kg</b></span></div>
         <div class="crow"><input type="number" id="x_loss"   value="10" oninput="expPreview()"><span class="cu">%</span><span class="cl">단열재 재단여유</span></div>
       </div>
@@ -1063,7 +1063,7 @@ function expCalc() {
       수평   = Number(el('x_level').value)  || 0,
       편차   = Number(el('x_dev').value)    || 0,
       폼여유  = Number(el('x_foam').value)   || 0,
-      포당   = Number(el('x_yield').value)  || 13.2,
+      포당   = Number(el('x_yield').value)  || 14,
       레미포당 = Number(el('x_myield').value) || 21,
       로스   = (Number(el('x_loss').value)  || 0) / 100;
 
