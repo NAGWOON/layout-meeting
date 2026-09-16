@@ -174,6 +174,19 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .crow input.xn{ flex:1; min-width:0; width:auto; text-align:left;
   font-family:var(--sans); font-size:12.5px; }
 .addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:3px 0 1px; }
+.btn2.pri{ border-color:var(--accent); color:var(--accent); background:rgba(47,111,237,.09); font-weight:700; }
+.stabs{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:11px; }
+.stab{ padding:6px 11px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer;
+  border:1px solid var(--fieldbd); background:var(--field); color:var(--txt2); white-space:nowrap; }
+.stab.on{ border-color:var(--accent); color:var(--accent); background:rgba(47,111,237,.09); }
+.stab.done{ opacity:.5; }
+.svin{ flex:1; min-width:130px; padding:7px 10px; border-radius:9px; border:1px solid var(--fieldbd);
+  background:var(--field); color:var(--txt); font-family:var(--sans); font-size:12.5px; outline:none; }
+.svin:focus{ border-color:var(--accent); }
+.srow{ display:flex; align-items:center; gap:9px; padding:8px 0; border-bottom:1px solid var(--line); }
+.srow:last-child{ border-bottom:0; }
+.srow .snm{ flex:1; min-width:0; font-size:12.5px; line-height:1.4; }
+.srow .snm i{ font-style:normal; color:var(--txt3); font-size:11.5px; }
 .calcout{ margin-top:12px; padding:11px 12px; border-radius:12px; background:var(--soft); font-size:12.5px; }
 .calcout .r{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
 .calcout .r b{ font-family:var(--didone); font-size:15px; font-weight:600; }
@@ -556,6 +569,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div class="btn2" id="onlyBtn" onclick="toggleOnly()">담은 것만</div>
       <div class="btn2" onclick="openPaste()">💬 카톡 붙여넣기</div>
       <div class="btn2" onclick="openAdd()">＋ 품목</div>
+      <div class="btn2" onclick="openSplit()">✂ 나누기</div>
       <div class="btn2" style="padding:0"><select id="pastSel" onchange="loadPast()" style="padding:7px 11px">
         <option value="">지난 발주 불러오기</option></select></div>
       <div class="sp" style="flex:1"></div>
@@ -613,6 +627,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="who" id="sheetSub"></div>
   </div>
   <div class="card">
+    <div class="stabs hide" id="sheetTabs"></div>
     <div class="sheetwrap"><div class="sheet" id="sheet"></div></div>
     <div class="note" id="resultNote"></div>
   </div>
@@ -681,6 +696,20 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   <div id="barBtns" style="display:flex;gap:7px"></div>
 </div></div>
 
+<!-- ═════ 발주서 나누기 ═════ -->
+<div class="mask hide" id="splitMask">
+  <div class="modal">
+    <h3>발주서 나누기</h3>
+    <div class="note" style="margin:0 0 10px">품목마다 몇 번째 장에 넣을지 고르세요.
+      장 하나가 발주서 한 장이 되고, 거래처 이름은 발주서 화면에서 적으시면 됩니다.</div>
+    <div id="splitRows"></div>
+    <div style="display:flex;gap:7px;margin-top:13px">
+      <div class="btn2" style="flex:1;text-align:center;padding:10px" onclick="resetSplit()">한 장으로 되돌리기</div>
+      <div class="btn2 pri" style="flex:1;text-align:center;padding:10px" onclick="closeSplit()">닫기</div>
+    </div>
+  </div>
+</div>
+
 <!-- ═════ 품목 추가 ═════ -->
 <div class="mask hide" id="addMask">
   <div class="modal">
@@ -740,6 +769,7 @@ var S = {
   only: false, calcOpen: true, loss: 10, elev: null, unload: null,   // 산출부터 하는 게 순서입니다
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }],
+  sheetNo: {}, ven: {}, cur: 1, done: {},   // 발주서 분리 — 품목→장, 장→발주처, 장→발주번호
   exp:   [{ n: '', a: '', d: '' }], expOpen: true,   // 확장부 바닥 (설비·방수)
   tile:  [{ n: '', a: '', d: '' }], tileOpen: true   // 타일 바닥 (설비·방수 · 타일)
 };
@@ -795,7 +825,8 @@ function goSheet() {
   }).catch(function () {});
   draw();
   el('sheetTtl').textContent = S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '—';
-  el('sheetSub').textContent = (vendorName() || '발주처 미지정');
+  if (sheetsUsed().indexOf(S.cur) < 0) S.cur = sheetsUsed()[0];
+  el('sheetSub').textContent = (venOf(S.cur) || '발주처 미지정');
   el('scr-input').classList.add('hide');
   el('scr-sheet').classList.remove('hide');
   window.scrollTo(0, 0); bar();
@@ -868,6 +899,7 @@ function renderTypes() {
 }
 function setType(t) {
   S.type = t; S.qty = {}; S.cut = {}; S.extra = [];
+  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1;   // 유형이 바뀌면 나눈 것도 무의미해집니다
   el('calcCard').classList.toggle('hide', t !== '목자재');   // 계수는 목자재 기준입니다
   el('expCard').classList.toggle('hide', t !== '설비·방수');   // 확장부 단면은 설비 기준입니다
   // 타일 바닥 몰탈은 설비 발주로 나가지만, 타일 작업을 보며 잡는 값이라 두 탭에서 봅니다
@@ -1376,7 +1408,11 @@ function applyBase() {
   renderItems(); draw(); bar(); side();
   toast('초도 기본 ' + n + '품목을 올렸습니다 — 수량을 조정하세요');
 }
-function clearQty() { S.qty = {}; S.cut = {}; S.extra = []; renderItems(); draw(); bar(); side(); toast('비웠습니다'); }
+function clearQty() {
+  S.qty = {}; S.cut = {}; S.extra = [];
+  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1;
+  renderItems(); draw(); bar(); side(); toast('비웠습니다');
+}
 function loadPast() {
   var id = el('pastSel').value; if (!id) return;
   toast('불러오는 중…');
@@ -1696,6 +1732,83 @@ function picked() {
   S.extra.forEach(function (x) { if (x.qty > 0) out.push(x); });
   return out;
 }
+
+// ═════ 발주서 나누기 ═════
+//
+// 자재는 거래처가 고정이 아닙니다. 그래서 품목에 발주처를 묶지 않고,
+// 장을 먼저 나눈 뒤 각 장에 거래처 이름을 적는 쪽으로 했습니다.
+// 이름은 비워도 됩니다 — 새 거래처면 발주서를 먼저 만들고 나중에 정하시면 됩니다.
+function keyOf(x) { return x.id || ('x:' + x.name); }
+function sheetOf(x) { return Number(S.sheetNo[keyOf(x)]) || 1; }
+
+// 쓰이고 있는 장 번호. 비어 있는 장은 빠집니다.
+function sheetsUsed() {
+  var seen = {};
+  picked().forEach(function (x) { seen[sheetOf(x)] = 1; });
+  var ns = Object.keys(seen).map(Number).sort(function (a, b) { return a - b; });
+  return ns.length ? ns : [1];
+}
+function pickedOf(n) {
+  return picked().filter(function (x) { return sheetOf(x) === n; });
+}
+function venOf(n) {
+  var v = (S.ven[n] || '').trim();
+  return v || (n === sheetsUsed()[0] ? vendorName() : '');
+}
+
+function openSplit() {
+  if (!picked().length) return toast('담은 품목이 없습니다');
+  renderSplit();
+  el('splitMask').classList.remove('hide');
+}
+function closeSplit() {
+  el('splitMask').classList.add('hide');
+  if (sheetsUsed().indexOf(S.cur) < 0) S.cur = sheetsUsed()[0];
+  draw(); bar();
+}
+function resetSplit() { S.sheetNo = {}; S.cur = 1; renderSplit(); draw(); bar(); }
+
+function renderSplit() {
+  var lines = picked(), max = Math.max.apply(null, sheetsUsed());
+  el('splitRows').innerHTML = lines.map(function (x) {
+    var n = sheetOf(x), chips = '';
+    for (var i = 1; i <= max + 1; i++) {
+      chips += '<div class="chip' + (i === n ? ' on' : '') + '" style="padding:4px 10px;font-size:11px"'
+             + ' onclick="setSheetNo(\'' + keyOf(x).replace(/'/g, "\'") + '\',' + i + ')">' + i + '</div>';
+    }
+    return '<div class="srow"><div class="snm">' + esc(x.name)
+      + ' <i>' + x.qty + esc(x.unit || '') + '</i></div>'
+      + '<div class="chips">' + chips + '</div></div>';
+  }).join('');
+}
+function setSheetNo(k, n) { S.sheetNo[k] = n; renderSplit(); draw(); bar(); }
+
+function renderSheetTabs() {
+  var ns = sheetsUsed();
+  el('sheetTabs').classList.toggle('hide', ns.length < 2);
+  if (ns.length < 2) return;
+  el('sheetTabs').innerHTML = ns.map(function (n) {
+    var cnt = pickedOf(n).length, nm = (S.ven[n] || '').trim();
+    return '<div class="stab' + (n === S.cur ? ' on' : '') + (S.done[n] ? ' done' : '') + '"'
+      + ' onclick="goSheetNo(' + n + ')">' + (S.done[n] ? '✓ ' : '') + n + '장'
+      + (nm ? ' · ' + esc(nm) : '') + ' <span style="font-weight:400">' + cnt + '</span></div>';
+  }).join('')
+    + '<input class="svin" id="venIn" placeholder="이 장의 거래처 (비워도 됩니다)" value="'
+    + esc(S.ven[S.cur] || '') + '" oninput="setVen(this.value)">'
+    + '<div class="stab" onclick="openSplit()">✂</div>';
+}
+function setVen(v) {
+  S.ven[S.cur] = v;
+  el('sheetSub').textContent = venOf(S.cur) || '발주처 미지정';
+  clearTimeout(S.venT);
+  S.venT = setTimeout(function () { draw(); renderSheetTabs(); }, 400);
+}
+function goSheetNo(n) {
+  S.cur = n;
+  draw(); bar();
+  el('sheetSub').textContent = venOf(n) || '발주처 미지정';
+}
+
 function bar() {
   el('bar').classList.toggle('hide', !localStorage.getItem(LS_KEY));
   var onSheet  = !el('scr-sheet').classList.contains('hide');
@@ -1715,20 +1828,24 @@ function bar() {
     return;
   }
 
-  var lines = picked(), sum = 0;
-  lines.forEach(function (x) { sum += (x.price || 0) * x.qty; });
-  el('barCnt').innerHTML = '<b>' + lines.length + '</b> 품목'
-    + '<span>' + (sum ? '예상 ' + won(Math.round(sum)) + '원' : '수량을 입력하세요') + '</span>';
+  var all = picked(), ns = sheetsUsed(), sum = 0;
+  all.forEach(function (x) { sum += (x.price || 0) * x.qty; });
+  var 여러장 = ns.length > 1;
+  el('barCnt').innerHTML = '<b>' + all.length + '</b> 품목'
+    + '<span>' + (여러장 ? '발주서 ' + ns.length + '장' + (onSheet ? ' · 지금 ' + S.cur + '장' : '')
+                        : (sum ? '예상 ' + won(Math.round(sum)) + '원' : '수량을 입력하세요')) + '</span>';
   el('barBtns').innerHTML = onSheet
     ? '<div class="btn" onclick="copyText()">텍스트</div>'
       + '<div class="btn" onclick="saveImage()">이미지</div>'
-      + '<div class="btn pri" id="submitBtn" onclick="submit()">발주 등록</div>'
+      + '<div class="btn pri' + (S.done[S.cur] ? ' dis' : '') + '" id="submitBtn" onclick="submit()">'
+      + (S.done[S.cur] ? '등록됨' : (여러장 ? S.cur + '장 등록' : '발주 등록')) + '</div>'
     : '<div class="btn" onclick="goSettle()">🧾 명세서</div>'
-      + '<div class="btn pri' + (lines.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
+      + '<div class="btn pri' + (all.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
 }
 function draw() {
-  var d = S.detail, lines = picked(), due = el('dueIn').value;
-  el('cntTxt').textContent = lines.length + '건';
+  var d = S.detail, lines = pickedOf(S.cur), due = el('dueIn').value;
+  el('cntTxt').textContent = picked().length + '건';
+  renderSheetTabs();
 
   var w = '';
   if (d && due) {
@@ -1780,7 +1897,7 @@ function draw() {
     + '<div class="no">' + esc(S.orderNo || '') + '</div></div></div>'
     + '<div class="biz">' + biz.join('<i>·</i>') + '</div>'
     + '<div class="meta">'
-    + row2('수　신', (vendorName() || '—') + ' 귀중', true)
+    + row2('수　신', (venOf(S.cur) || '—') + ' 귀중', true)
     + row2('발주일', ymd(new Date()))
     + row2('현　장', d ? esc(d.name.replace(/\s*PROJECT\s*$/, '')) : '—')
     + row2('납품요청', due ? due + dow(due) : '—', true)
@@ -2151,7 +2268,7 @@ function textVersion() {
   var d = S.detail, lines = picked(), due = el('dueIn').value;
   var t = '[발주서] ' + CO.name + (S.orderNo ? '  ' + S.orderNo : '') + '\n';
   t += CO.en + ' · 사업자 ' + CO.biz + '\n──────────────\n';
-  t += '수신 : ' + (vendorName() || '—') + '\n';
+  t += '수신 : ' + (venOf(S.cur) || '—') + '\n';
   t += '현장 : ' + (d ? d.name.replace(/\s*PROJECT\s*$/, '') : '—') + '\n';
   if (d && d.address) t += '주소 : ' + d.address + '\n';
   t += '납품요청 : ' + (due || '미정') + dow(due) + '\n배송 : ' + S.ship + '\n──────────────\n';
@@ -2178,7 +2295,8 @@ function saveImage() {
   toast('이미지를 만드는 중…');
   shot().then(function (c) {
     var a = document.createElement('a');
-    a.download = '발주서_' + (S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '') + '_' + ymd(new Date()) + '.png';
+    var many = sheetsUsed().length > 1, vnm = (S.ven[S.cur] || '').trim();
+    a.download = '발주서_' + (many ? (vnm || S.cur + '장') + '_' : '') + (S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '') + '_' + ymd(new Date()) + '.png';
     a.href = c.toDataURL('image/png'); a.click(); toast('저장했습니다');
   }).catch(function () { toast('이미지를 만들지 못했습니다'); });
 }
@@ -2186,10 +2304,11 @@ function saveImage() {
 // ═════ 제출 ═════
 function submit() {
   if (S.busy) return;
-  var lines = picked();
+  var lines = pickedOf(S.cur);
   if (!S.site) return toast('현장을 먼저 고르세요');
-  if (!lines.length) return toast('품목이 없습니다');
-  if (!vendorName()) return toast('발주처를 입력하세요');
+  if (!lines.length) return toast('이 장에 품목이 없습니다');
+  if (S.done[S.cur]) return toast('이미 등록한 장입니다');
+  // 거래처는 비워도 넘어갑니다 — 새 거래처면 발주서를 먼저 만들고 나중에 정하십니다.
   S.busy = true;
   var b = el('submitBtn'); if (b) { b.classList.add('dis'); b.textContent = '등록 중…'; }
 
@@ -2197,7 +2316,7 @@ function submit() {
     var img = null;
     try { if (c) img = c.toDataURL('image/png').split(',')[1]; } catch (e) { img = null; }
     return api('submitOrder', {
-      sitePageId: S.site.id, type: S.type, vendor: vendorName(), orderNo: S.orderNo,
+      sitePageId: S.site.id, type: S.type, vendor: venOf(S.cur), orderNo: S.orderNo,
       due: el('dueIn').value || null, shipKind: S.ship,
       note: el('noteIn').value.trim(), notes: footLines(), items: lines, image: img
     });
@@ -2210,8 +2329,21 @@ function submit() {
       // 드라이브 저장이 조용히 실패하면 없어진 줄도 모릅니다
       + (r.fileError ? '<div class="warn">⚠ 드라이브에 발주서를 남기지 못했습니다 — ' + esc(r.fileError) + '</div>' : '');
     toast(r.orderNo + ' 등록했습니다');
+    S.done[S.cur] = r.orderNo;
     S.orderNo = '';
-    pickSite(); bar();
+
+    // 남은 장이 있으면 그리로 넘겨드립니다. 다음 장은 발주번호를 새로 받아야 합니다.
+    var 남음 = sheetsUsed().filter(function (n) { return !S.done[n]; });
+    if (남음.length) {
+      S.cur = 남음[0];
+      el('resultNote').innerHTML += '<div class="okline" style="margin-top:6px">'
+        + '다음 ' + S.cur + '장으로 넘어갔습니다 · ' + 남음.length + '장 남았습니다</div>';
+      api('peekOrderNo').then(function (q) {
+        if (q && q.ok) { S.orderNo = q.orderNo; draw(); }
+      }).catch(function () {});
+      el('sheetSub').textContent = venOf(S.cur) || '발주처 미지정';
+    }
+    pickSite(); draw(); bar();
   }).catch(function () { S.busy = false; bar(); toast('연결에 실패했습니다'); });
 }
 
@@ -2221,6 +2353,7 @@ else el('scr-key').classList.remove('hide');
 el('keyIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
 el('addMask').addEventListener('click', function (e) { if (e.target === this) closeAdd(); });
 el('pasteMask').addEventListener('click', function (e) { if (e.target === this) closePaste(); });
+el('splitMask').addEventListener('click', function (e) { if (e.target === this) closeSplit(); });
 </script>
 </body>
 </html>
