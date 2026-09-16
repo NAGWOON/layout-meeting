@@ -1811,8 +1811,26 @@ function setSheetNo(k, n) { S.sheetNo[k] = n; renderSplit(); draw(); bar(); }
 
 function renderSheetTabs() {
   var ns = sheetsUsed();
-  el('sheetTabs').classList.toggle('hide', ns.length < 2);
-  if (ns.length < 2) return;
+
+  // 안 나눴는데 유형이 섞여 있으면 한 장에 다 들어갑니다.
+  // 목자재와 설비 자재는 보통 받는 데가 달라서, 그대로 보내면 엉뚱한 데로 갑니다.
+  if (ns.length < 2) {
+    var ts = {};
+    picked().forEach(function (x) { ts[x.type || S.type] = 1; });
+    var ks = Object.keys(ts);
+    if (ks.length > 1) {
+      el('sheetTabs').classList.remove('hide');
+      el('sheetTabs').innerHTML =
+        '<div class="stab" style="border-color:var(--warn);color:var(--warn);'
+        + 'background:rgba(192,86,29,.08);flex:1;font-weight:600;white-space:normal;line-height:1.5">'
+        + '⚠ ' + ks.map(esc).join(' · ') + ' 가 한 장에 섞여 있습니다</div>'
+        + '<div class="stab" onclick="openSplit()">✂ 나누기</div>';
+      return;
+    }
+    el('sheetTabs').classList.add('hide');
+    return;
+  }
+  el('sheetTabs').classList.remove('hide');
   el('sheetTabs').innerHTML = ns.map(function (n) {
     var cnt = pickedOf(n).length, nm = (S.ven[n] || '').trim();
     return '<div class="stab' + (n === S.cur ? ' on' : '') + (S.done[n] ? ' done' : '') + '"'
