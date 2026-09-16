@@ -498,7 +498,23 @@
         <div><div class="t">실측 사진</div><div class="d">찍어둔 사진을 공간별로 정리<br>드라이브 · 노션에 동시 저장됩니다</div></div>
         <div class="go">›</div>
       </div>
+      <div class="modecard" onclick="startOrders()">
+        <div class="ic">📦</div>
+        <div><div class="t">발주 검수</div><div class="d">사무실에서 시킨 자재 확인<br>받으신 것부터 체크하시면 됩니다</div></div>
+        <div class="go">›</div>
+      </div>
       <div class="hint">현장에서는 평소처럼 촬영하시고, 편할 때 올리시면 됩니다.</div>
+    </div>
+  </div>
+
+  <!-- ═══ 화면 6: 발주 검수 ═══ -->
+  <div id="scr-order" class="hide">
+    <div class="hd">
+      <div class="topline"><span class="back" onclick="backToMode()">‹</span><div class="dmark">D</div><div class="stage">발주 검수</div></div>
+      <div class="site" id="oSite">현장</div>
+    </div>
+    <div class="body">
+      <div id="oList"></div>
     </div>
   </div>
 
@@ -637,7 +653,7 @@ var state = {
 // 2026-09-15 사고 — 보고 제출이 25초를 넘기자 앱이 자동으로 한 번 더 보냈고,
 // 노션에 같은 일지가 26초 간격으로 두 개 생겼습니다.
 // 저장하는 요청은 결과를 못 받아도 다시 보내지 않습니다.
-var 읽기요청 = ['ping', 'getSites', 'getSiteDetail', 'getSpaces'];
+var 읽기요청 = ['ping', 'getSites', 'getSiteDetail', 'getSpaces', 'getSiteOrders'];
 var API_대기 = 25000;        // 읽기
 var API_대기_사진 = 90000;   // 사진 한 장
 var API_대기_저장 = 120000;  // 저장 — 사진 43장 첨부에 57초 걸린 적이 있습니다
@@ -684,10 +700,111 @@ function toast(msg) {
   setTimeout(function () { t.classList.remove('show'); }, 2200);
 }
 function show(id) {
-  ['scr-key','scr-sites','scr-mode','scr-form','scr-done','scr-survey','scr-spaces','scr-smemo','scr-sdone'].forEach(function (s) {
+  ['scr-key','scr-sites','scr-mode','scr-form','scr-done','scr-survey','scr-spaces','scr-smemo','scr-sdone','scr-order'].forEach(function (s) {
     document.getElementById(s).classList.toggle('hide', s !== id);
   });
   window.scrollTo(0, 0);
+}
+
+
+// ═════════ 화면 6: 발주 검수 ═════════
+//
+// 현장에서 노션을 여는 게 불편해서 여기로 옮겼습니다.
+// 체크는 노션 발주 페이지의 「할 일」에 그대로 저장되므로 사무실에서도 같은 게 보입니다.
+var OD = { orders: [], open: '' };
+
+function startOrders() {
+  OD = { orders: [], open: '' };
+  document.getElementById('oSite').textContent = state.site.name.replace(/\s*PROJECT\s*$/, '');
+  document.getElementById('oList').innerHTML = '<div class="spin"></div>';
+  show('scr-order');
+  loadOrders('');
+}
+
+function loadOrders(orderPageId) {
+  api('getSiteOrders', { sitePageId: state.site.id, orderPageId: orderPageId || '' })
+    .then(function (r) {
+      if (!r || !r.ok) return void (document.getElementById('oList').innerHTML =
+        '<div class="hint">불러오지 못했습니다. 잠시 뒤 다시 열어주세요.</div>');
+      // 품목은 펼친 발주 것만 옵니다. 이미 받아둔 것은 지우지 않고 덮어씁니다.
+      var 이전 = {};
+      OD.orders.forEach(function (o) { if (o.items) 이전[o.id] = o.items; });
+      OD.orders = (r.orders || []).map(function (o) {
+        if (!o.items && 이전[o.id]) o.items = 이전[o.id];
+        return o;
+      });
+      renderOrders();
+    })
+    .catch(function () {
+      document.getElementById('oList').innerHTML =
+        '<div class="hint">연결에 실패했습니다. 신호가 약한 곳일 수 있습니다.</div>';
+    });
+}
+
+function renderOrders() {
+  if (!OD.orders.length) {
+    document.getElementById('oList').innerHTML =
+      '<div class="hint">이 현장에 아직 발주가 없습니다.</div>';
+    return;
+  }
+  document.getElementById('oList').innerHTML = OD.orders.map(function (o) {
+    var 펼침 = (OD.open === o.id);
+    var 끝남 = (o.state === '입고완료');
+    var 남음 = o.items ? o.items.filter(function (x) { return !x.checked; }).length : null;
+
+    var 머리 = '<div class="ocard' + (끝남 ? ' done' : '') + '">'
+      + '<div class="ohd" onclick="toggleOrder(\'' + o.id + '\')">'
+      + '<div class="oi">' + (끝남 ? '✅' : '📦') + '</div>'
+      + '<div class="ot"><b>' + esc(o.name || o.no || '발주') + '</b>'
+      + '<i>' + [o.vendor, o.due ? '입고예정 ' + o.due : '', o.no].filter(String).map(esc).join('  ·  ') + '</i></div>'
+      + '<div class="oc">' + (남음 === null ? (o.count || 0) + '품목'
+          : (남음 ? '<b>' + 남음 + '</b> 남음' : '완료')) + '</div>'
+      + '<div class="og">' + (펼침 ? '⌄' : '›') + '</div></div>';
+
+    if (!펼침) return 머리 + '</div>';
+    if (!o.items) return 머리 + '<div class="obody"><div class="spin"></div></div></div>';
+
+    return 머리 + '<div class="obody">'
+      + o.items.map(function (x) {
+          return '<label class="oitem' + (x.checked ? ' on' : '') + '">'
+            + '<input type="checkbox"' + (x.checked ? ' checked' : '')
+            + ' onchange="checkItem(\'' + o.id + '\',\'' + x.id + '\',this.checked)">'
+            + '<span>' + esc(x.text) + '</span></label>';
+        }).join('')
+      + '<div class="hint" style="margin-top:9px">받으신 것부터 체크하세요. 다 체크되면 사무실에 알림이 갑니다.</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function toggleOrder(id) {
+  OD.open = (OD.open === id) ? '' : id;
+  renderOrders();
+  var o = OD.orders.filter(function (x) { return x.id === id; })[0];
+  if (OD.open && o && !o.items) loadOrders(id);   // 품목은 펼칠 때 받아옵니다
+}
+
+function checkItem(orderId, blockId, checked) {
+  // 먼저 화면부터 바꿉니다. 현장에서 신호가 느릴 때 손이 멈추면 안 됩니다.
+  var o = OD.orders.filter(function (x) { return x.id === orderId; })[0];
+  if (o && o.items) {
+    o.items.forEach(function (x) { if (x.id === blockId) x.checked = checked; });
+    renderOrders();
+  }
+  api('checkOrderItem', { orderPageId: orderId, blockId: blockId, checked: checked })
+    .then(function (r) {
+      if (!r || !r.ok) return;
+      if (o) { o.items = r.items; if (r.완료) o.state = '입고완료'; }
+      renderOrders();
+      if (r.완료) alert('검수가 끝났습니다. 사무실에 알림을 보냈습니다.');
+    })
+    .catch(function () {
+      // 되돌립니다 — 저장이 안 됐는데 체크된 채로 두면 받은 줄 알게 됩니다
+      if (o && o.items) {
+        o.items.forEach(function (x) { if (x.id === blockId) x.checked = !checked; });
+        renderOrders();
+      }
+      alert('저장하지 못했습니다. 신호를 확인하고 다시 눌러주세요.');
+    });
 }
 
 // ═════════ 화면 0: 진입코드 ═════════
