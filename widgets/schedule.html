@@ -6,490 +6,378 @@
 <title>DASIFILL Schedule</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&display=swap" rel="stylesheet">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
+/* ===== CAL:CSS:START ===== */
+  .cal, .cal * { margin:0; padding:0; box-sizing:border-box; }
 
-  :root {
+  /* 색은 .cal 에 붙습니다 — 한 페이지에 여러 개를 놓아도 서로 안 섞입니다 */
+  .cal {
     --sans:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
-    --didone:"Bodoni Moda",Didot,Georgia,"Times New Roman",serif;
+    --serif:"Bodoni Moda",Didot,Georgia,"Times New Roman",serif;
 
-    /* 진행률 막대와 같은 다크 글래스 — 노션이 밝든 어둡든 같게 읽힙니다 */
-    --card:rgba(18,20,25,.86);
-    --bd:rgba(255,255,255,.13);
-    --sh: inset 0 1px 0 rgba(255,255,255,.10),
-          0 1px 2px rgba(10,12,16,.16),
-          0 4px 10px rgba(10,12,16,.18),
-          0 12px 24px rgba(10,12,16,.20);
-    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);
-    --txt:#f2f4f7; --txt2:rgba(255,255,255,.74); --txt3:rgba(255,255,255,.50);
-    --txt4:rgba(255,255,255,.34);
-    --div:rgba(255,255,255,.10);
-    --cell:rgba(255,255,255,.035);
-    --today:rgba(255,255,255,.14);
-    --sun:#e58b8b; --sat:#8fb4de;
-  }
-  body[data-theme="light"] {
-    --card:rgba(255,255,255,.62); --bd:rgba(255,255,255,.85);
-    --sh: inset 0 1px 0 rgba(255,255,255,.7), 0 1px 2px rgba(16,18,22,.06), 0 4px 10px rgba(16,18,22,.07), 0 12px 22px rgba(16,18,22,.07);
-    --gloss: linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
-    --txt:#16181d; --txt2:#5a616a; --txt3:#8b9199; --txt4:#a8aeb6;
-    --div:rgba(120,128,140,.16);
-    --cell:rgba(120,128,140,.05);
-    --today:rgba(120,128,140,.16);
-    --sun:#c25b5b; --sat:#3f72a8;
-  }
+    /* 밝은 노션 기준. 배경은 칠하지 않습니다 — 노션 종이가 그대로 비칩니다. */
+    --ink:#16181d;                     /* 진행 중 · 오늘 */
+    --ink2:rgba(22,24,29,.72);         /* 예정 */
+    --ink3:rgba(22,24,29,.40);         /* 완료 · 보조 */
+    --ink4:rgba(22,24,29,.24);         /* 요일 · 지난달 */
+    --line:rgba(22,24,29,.11);
+    --soft:rgba(22,24,29,.055);        /* 예정 막대 속 */
+    --softer:rgba(22,24,29,.028);      /* 완료 막대 속 */
+    --rev:#fff;                        /* 진한 막대 위 글자 */
+    --sun:#c0564f;
 
-  /* color-scheme 선언이 없으면 브라우저가 iframe 캔버스를 흰색으로 칠합니다.
-     'light dark' 라야 감싸는 노션 페이지 밝기를 따라가 투명하게 유지됩니다. */
-  html { color-scheme: light dark; }
-  html, body { background:transparent; }
-  body { font-family:var(--sans); color:var(--txt); -webkit-font-smoothing:antialiased; }
-
-  .wrap {
-    position:relative; overflow:hidden;
-    background:var(--card);
-    border:1px solid var(--bd); border-left:0; border-right:0;
-    box-shadow:var(--sh);
-    -webkit-backdrop-filter:blur(10px) saturate(150%); backdrop-filter:blur(10px) saturate(150%);
-    padding:11px 14px 13px;
+    font-family:var(--sans); color:var(--ink);
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+    background:transparent;
   }
-  .wrap::before {
-    content:""; position:absolute; left:16px; right:16px; top:0; height:1px;
-    background:var(--gloss); pointer-events:none;
+  /* 기기가 어두우면 따라갑니다. ?theme=light 로 고정하면 그게 이깁니다. */
+  @media (prefers-color-scheme: dark) {
+    .cal:not([data-theme="light"]) {
+      --ink:#f2f4f7; --ink2:rgba(242,244,247,.74); --ink3:rgba(242,244,247,.42);
+      --ink4:rgba(242,244,247,.26); --line:rgba(242,244,247,.14);
+      --soft:rgba(242,244,247,.085); --softer:rgba(242,244,247,.04);
+      --rev:#14161a; --sun:#e08b84;
+    }
+  }
+  .cal[data-theme="dark"] {
+    --ink:#f2f4f7; --ink2:rgba(242,244,247,.74); --ink3:rgba(242,244,247,.42);
+    --ink4:rgba(242,244,247,.26); --line:rgba(242,244,247,.14);
+    --soft:rgba(242,244,247,.085); --softer:rgba(242,244,247,.04);
+    --rev:#14161a; --sun:#e08b84;
+  }
+  .cal[data-theme="light"] {
+    --ink:#16181d; --ink2:rgba(22,24,29,.72); --ink3:rgba(22,24,29,.40);
+    --ink4:rgba(22,24,29,.24); --line:rgba(22,24,29,.11);
+    --soft:rgba(22,24,29,.055); --softer:rgba(22,24,29,.028);
+    --rev:#fff; --sun:#c0564f;
   }
 
-  /* ───── 머리 ───── */
-  .head { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
-  .mon {
-    font-family:var(--didone); font-size:21px; font-weight:500; line-height:1;
-    letter-spacing:-.3px; font-variant-numeric:tabular-nums; white-space:nowrap;
+  .cal .head { display:flex; align-items:baseline; gap:9px; margin-bottom:2px; }
+  .cal .mon { font-family:var(--serif); font-size:20px; font-weight:500; line-height:1.1; letter-spacing:-.2px; }
+  .cal .mon .yr { font-size:11.5px; color:var(--ink3); margin-right:5px; letter-spacing:.2px; }
+  .cal .grow { flex:1; }
+  .cal .nav { display:flex; gap:3px; align-self:center; }
+  .cal .nav button {
+    font-family:var(--sans); font-size:11px; color:var(--ink2); background:transparent;
+    border:1px solid var(--line); border-radius:6px;
+    height:23px; min-width:23px; padding:0 8px; cursor:pointer; line-height:1;
   }
-  .mon .yr { font-size:12px; color:var(--txt3); margin-right:5px; letter-spacing:0; }
-  .spring { flex:1; }
-  .sum { font-size:10px; color:var(--txt3); white-space:nowrap; letter-spacing:-.1px; }
-  .sum b { color:var(--txt2); font-weight:700; font-variant-numeric:tabular-nums; }
-  .nav { display:flex; gap:4px; }
-  .nav button {
-    font-family:var(--sans); font-size:11px; color:var(--txt2);
-    background:var(--cell); border:1px solid var(--div); border-radius:6px;
-    height:24px; min-width:24px; padding:0 7px; cursor:pointer; line-height:1;
-    transition:background .12s, color .12s;
-  }
-  .nav button:hover { background:var(--today); color:var(--txt); }
-  .nav button:focus-visible { outline:2px solid var(--txt3); outline-offset:1px; }
+  .cal .nav button:hover { border-color:var(--ink3); color:var(--ink); }
+  .cal .nav button:focus-visible { outline:2px solid var(--ink3); outline-offset:1px; }
 
-  /* ───── 요일 ───── */
-  .dow { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:3px; }
-  .dow span {
-    font-size:9px; font-weight:700; letter-spacing:.6px; text-align:center;
-    color:var(--txt4); padding:2px 0;
+  /* 한 줄 요약 — 고객이 제일 먼저 보는 줄 */
+  .cal .now {
+    font-size:11.5px; color:var(--ink2); letter-spacing:-.2px;
+    padding:0 0 9px; margin-bottom:9px; border-bottom:1px solid var(--line);
   }
-  .dow span:first-child { color:var(--sun); }
-  .dow span:last-child  { color:var(--sat); }
+  .cal .now b { color:var(--ink); font-weight:700; }
+  .cal .now .dot {
+    display:inline-block; width:5px; height:5px; border-radius:50%;
+    background:var(--ink); margin-right:6px; vertical-align:2px;
+  }
+  .cal .now .sep { color:var(--ink4); margin:0 7px; }
 
-  /* ───── 주 ───── */
-  .week { position:relative; margin-bottom:2px; }
-  .cells { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-  .cell {
-    background:var(--cell); border-radius:5px; min-height:22px;
-    padding:3px 0 0; text-align:center;
+  .cal .dow { display:grid; grid-template-columns:repeat(7,1fr); }
+  .cal .dow span {
+    font-size:9.5px; font-weight:600; letter-spacing:.7px; text-align:center;
+    color:var(--ink4); padding-bottom:5px;
   }
-  .cell.out { opacity:.32; }
-  .cell.now { background:var(--today); box-shadow:inset 0 0 0 1px var(--bd); }
-  .dnum {
-    font-family:var(--didone); font-size:12px; line-height:1;
-    font-variant-numeric:tabular-nums; color:var(--txt2);
-  }
-  .cell.now .dnum { color:var(--txt); font-weight:500; }
-  .cell.s0 .dnum { color:var(--sun); }
-  .cell.s6 .dnum { color:var(--sat); }
+  .cal .dow span:first-child { color:var(--sun); }
 
-  /* 막대는 날짜 칸 위에 겹쳐 그립니다 */
-  .bars {
-    display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
-    padding:0; margin-top:2px;
+  .cal .week { border-top:1px solid var(--line); padding:3px 0 4px; }
+  .cal .cells { display:grid; grid-template-columns:repeat(7,1fr); }
+  .cal .cell { text-align:center; }
+  .cal .dnum { font-size:11.5px; color:var(--ink2); line-height:18px; display:inline-block; min-width:18px; }
+  .cal .cell.out .dnum { color:var(--ink4); }
+  .cal .cell.s0 .dnum { color:var(--sun); }
+  .cal .cell.out.s0 .dnum { color:var(--ink4); }
+  .cal .cell.now .dnum {
+    background:var(--ink); color:var(--rev); border-radius:50%;
+    font-weight:700; width:18px; height:18px;
   }
-  .bar {
-    min-width:0; height:15px; border-radius:4px;
-    display:flex; align-items:center; gap:3px;
-    padding:0 5px; font-size:9.5px; font-weight:700; letter-spacing:-.2px;
+
+  .cal .bars { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-top:2px; }
+  .cal .bar {
+    min-width:0; height:16px; line-height:16px; border-radius:3px;
+    padding:0 5px; font-size:10px; font-weight:600; letter-spacing:-.2px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    color:#0d0f13;
   }
-  body[data-theme="light"] .bar { color:#fff; }
-  /* 지난 일정 — 자동으로 완료 처리됩니다. 대표가 손으로 안 바꿔도 됩니다. */
-  .bar.done { opacity:.42; }
-  .bar.done .tick { opacity:1; }
-  .tick { opacity:0; font-size:8.5px; }
-  .bar.now { box-shadow:0 0 0 1.5px var(--txt); }
-  /* 공사가 아닌 것 — 공휴일·미팅·검수는 속을 비웁니다 */
-  .bar.ghost {
-    background:transparent !important;
-    box-shadow:inset 0 0 0 1px currentColor;
-    font-weight:500;
-  }
-  .more { font-size:8.5px; color:var(--txt4); padding:0 4px; line-height:15px; }
+  .cal .bar.plan { background:var(--soft); color:var(--ink2); }
+  .cal .bar.live { background:var(--ink); color:var(--rev); font-weight:700; }
+  .cal .bar.done { background:var(--softer); color:var(--ink3); }
+  .cal .bar.off  { background:transparent; border:1px dashed var(--line); color:var(--ink3); font-weight:500; }
+  .cal .bar.ship { background:var(--softer); color:var(--ink2); box-shadow:inset 2px 0 0 var(--ink3); }
+  .cal .more { font-size:9px; color:var(--ink4); line-height:16px; padding-left:5px; }
 
-  /* ───── 좁은 화면: 달력 대신 목록 ───── */
-  .list { display:none; }
-  .li { display:flex; gap:8px; align-items:flex-start; padding:5px 0; border-top:1px solid var(--div); }
-  .li:first-child { border-top:0; }
-  .li.done { opacity:.45; }
-  .li .d {
-    font-family:var(--didone); font-size:13px; line-height:1.25; min-width:42px;
-    font-variant-numeric:tabular-nums; color:var(--txt2); white-space:nowrap;
-  }
-  .li.now .d, .li.now .nm { color:var(--txt); }
-  .li .dot { width:3px; align-self:stretch; border-radius:2px; margin-top:2px; }
-  .li .nm { font-size:11.5px; font-weight:700; color:var(--txt2); line-height:1.35; letter-spacing:-.2px; }
-  .li .sub { font-size:9.5px; color:var(--txt4); margin-left:6px; font-weight:500; }
+  .cal .list { display:none; margin-top:10px; }
+  .cal .li { display:flex; gap:9px; align-items:baseline; padding:5px 0; border-top:1px solid var(--line); }
+  .cal .li .d { font-size:11px; color:var(--ink3); min-width:52px; white-space:nowrap; }
+  .cal .li .nm { font-size:12px; font-weight:600; color:var(--ink2); letter-spacing:-.2px; }
+  .cal .li.live .d, .cal .li.live .nm { color:var(--ink); font-weight:700; }
+  .cal .li.done .nm, .cal .li.done .d { color:var(--ink3); font-weight:500; }
+  .cal .li .tag { font-size:9.5px; color:var(--ink4); margin-left:6px; font-weight:500; }
 
-  /* ───── 범례 ───── */
-  .leg { display:flex; flex-wrap:wrap; gap:4px 9px; margin-top:8px; padding-top:8px; border-top:1px solid var(--div); }
-  .leg i { display:inline-flex; align-items:center; gap:4px; font-size:9px; color:var(--txt3); font-style:normal; }
-  .leg i b { width:7px; height:7px; border-radius:2px; display:inline-block; }
+  .cal .note { font-size:11.5px; color:var(--ink3); text-align:center; padding:28px 10px; line-height:1.7; }
+  .cal .note b { color:var(--ink2); display:block; margin-bottom:3px; }
 
-  /* ───── 알림 ───── */
-  .note { font-size:11px; color:var(--txt3); text-align:center; padding:26px 10px; line-height:1.6; }
-  .note b { color:var(--txt2); display:block; font-size:11.5px; margin-bottom:3px; }
+  /* 좁을 때 — 달력은 띠만, 아래에 목록.
+     화면 너비가 아니라 .cal 상자의 너비로 판단하게 「narrow」를 붙입니다. */
+  .cal.narrow .dnum { font-size:10.5px; }
+  .cal.narrow .bar { height:5px; padding:0; font-size:0; border-radius:2px; }
+  .cal.narrow .bar.off { border-style:dotted; }
+  .cal.narrow .more { display:none; }
+  .cal.narrow .list { display:block; }
+  .cal.narrow .mon { font-size:17px; }
+  .cal.narrow .now { font-size:11px; }
+/* ===== CAL:CSS:END ===== */
 
-  @media (max-width: 520px) {
-    .wrap { padding:10px 12px 12px; }
-    .dow, .week { display:none; }
-    .list { display:block; }
-    .mon { font-size:18px; }
-  }
+  html { color-scheme: light dark; }
+  html, body { background:transparent; margin:0; padding:0; }
+  body { padding:2px 2px 4px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="head">
-    <div class="mon" id="mon"><span class="yr">2026</span>9월</div>
-    <div class="spring"></div>
-    <div class="sum" id="sum"></div>
-    <div class="nav">
-      <button id="prev" type="button" aria-label="이전 달">‹</button>
-      <button id="today" type="button">오늘</button>
-      <button id="next" type="button" aria-label="다음 달">›</button>
-    </div>
-  </div>
-
-  <div id="cal">
-    <div class="note" id="note"><b>공정표를 불러오는 중입니다</b>잠시만 기다려주세요</div>
-  </div>
-  <div class="leg" id="leg" hidden></div>
-</div>
+<div class="cal" id="cal"></div>
 
 <script>
-/* 고객 공정표 위젯
- * ────────────────
- *   ?site=<현장 페이지 id>&api=<Apps Script /exec 주소>
- *   theme=light 를 붙이면 밝은 카드가 됩니다 (기본은 다크 글래스).
- *
- * 서버(Schedule.gs)는 일정명·시작·종료·공정·구분 다섯 칸만 내려줍니다.
- * 업체와 메모는 애초에 실리지 않습니다.
- *
- * 상태(예정/진행/완료)는 서버가 안 보냅니다 — 여기서 날짜로 정합니다.
- * 노션의 상태 칸은 41건 중 40건이 「예정」으로 굳어 있어서, 그대로 쓰면
- * 어제 끝난 공정이 고객 눈에 「예정」으로 보입니다. 날짜가 더 정확합니다.
+/* ===== CAL:JS:START =====
+ * 달력 한 개를 상자 안에 그립니다. 한 페이지에 여러 개 놓아도 서로 안 섞입니다.
+ *   달력만들기(상자, 일정목록)
+ * 일정 한 건 = { n:이름, s:시작 YYYY-MM-DD, e:종료, p:공정, g:구분, d:지연이면 1 }
  */
-var q = new URLSearchParams(location.search);
-if (q.get('theme') === 'light') document.body.dataset.theme = 'light';
+function 달력만들기(상자, 일정) {
+  var 오늘 = new Date(); 오늘.setHours(0,0,0,0);
+  var 오늘str = ymd(오늘);
+  var 공사아님 = { '행정':1, '미팅':1, '검수':1 };
+  var 보는달;
 
-var SITE = (q.get('site') || '').replace(/-/g, '');
-var API  = q.get('api') || '';
+  function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function 날짜(s){ return new Date(s+'T00:00:00'); }
+  function 더하기(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
+  function 짧은날(s){ var d=날짜(s); return (d.getMonth()+1)+'.'+String(d.getDate()).padStart(2,'0'); }
 
-/* 공정별 색 — 노션 공정표의 색을 어두운 카드 위에서 읽히게 맞춘 것입니다 */
-var 색 = {
-  '철거':'#e8807c', '설비':'#e3a05c', '전기':'#ddc65a', '샷시':'#6ba6dd',
-  '목공':'#b58465', '타일':'#e08cb4', '욕실':'#ab8ee0', '필름+도장':'#6cbd87',
-  '마루':'#a6afba', '도배':'#d97f8e', '가구':'#7db4e6', '조명':'#dcc76a',
-  '시스템AC':'#e09a6a', '마감+기타':'#9aa3ae', '금속':'#8b939e'
-};
-var 구분색 = { '행정':'#7c848f', '미팅':'#8b939e', '검수':'#9aa3ae', '납품':'#a6afba' };
-/* 공사가 아닌 것은 속을 비워 그립니다 — 달력이 공정 위주로 읽히게 */
-var 속빈것 = { '행정':1, '미팅':1, '검수':1 };
+  function 상태(x){
+    // 대표님이 「지연」으로 표시한 건 날짜가 지나도 완료로 치지 않습니다.
+    // 안 끝난 공정을 고객에게 끝났다고 보여주면 안 됩니다.
+    if (x.d) return (x.s <= 오늘str && 오늘str <= x.e) ? 'live' : 'plan';
+    if (x.e < 오늘str) return 'done';
+    if (x.s <= 오늘str && 오늘str <= x.e) return 'live';
+    return 'plan';
+  }
+  function 모양(x){
+    var st = 상태(x);
+    if (공사아님[x.g]) return 'off' + (st==='done' ? ' done' : '');
+    if (x.g === '납품') return st==='live' ? 'live' : (st==='done' ? 'ship done' : 'ship');
+    return st;
+  }
 
-function 색고르기(x) { return 색[x.p] || 구분색[x.g] || '#9aa3ae'; }
+  상자.innerHTML =
+    '<div class="head">'
+  +   '<div class="mon js-mon"></div><div class="grow"></div>'
+  +   '<div class="nav">'
+  +     '<button class="js-prev" type="button" aria-label="이전 달">‹</button>'
+  +     '<button class="js-today" type="button">오늘</button>'
+  +     '<button class="js-next" type="button" aria-label="다음 달">›</button>'
+  +   '</div>'
+  + '</div>'
+  + '<div class="now js-now"></div>'
+  + '<div class="js-body"></div>';
 
-/* ───── 날짜 도구 (시간대에 안 휘둘리게 문자열로 다룹니다) ───── */
-function ymd(d) {
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
-       + '-' + String(d.getDate()).padStart(2, '0');
-}
-function 날짜(s) { return new Date(s + 'T00:00:00'); }
-function 더하기(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  var 몸통 = 상자.querySelector('.js-body');
 
-var 오늘 = new Date(); 오늘.setHours(0, 0, 0, 0);
-var 오늘str = ymd(오늘);
+  /* 상자가 좁으면 띠+목록으로. 화면이 아니라 상자 너비로 봅니다 */
+  function 너비맞추기(){
+    var w = 상자.clientWidth || 상자.offsetWidth;
+    상자.classList.toggle('narrow', w > 0 && w < 520);
+  }
 
-var 일정 = [];
-var 보는달;          // 그리고 있는 달의 1일
+  function 윗줄(){
+    var 진행 = 일정.filter(function(x){ return 상태(x)==='live'; });
+    var 다음 = 일정.filter(function(x){ return x.s > 오늘str; })
+                   .sort(function(a,b){ return a.s<b.s?-1:1; });
+    var 조각 = [];
+    if (진행.length) {
+      조각.push('<span class="dot"></span>오늘 <b>' + 진행.map(function(x){return x.n;}).join(', ') + '</b>');
+    } else {
+      조각.push('<span class="dot" style="background:var(--ink4)"></span>오늘은 예정된 공정이 없습니다');
+    }
+    if (다음.length) {
+      var d = Math.round((날짜(다음[0].s) - 오늘)/86400000);
+      조각.push('다음 <b>' + 짧은날(다음[0].s) + ' ' + 다음[0].n + '</b> · D-' + d);
+    }
+    상자.querySelector('.js-now').innerHTML = 조각.join('<span class="sep">·</span>');
+  }
 
-/* ───── 불러오기 ───── */
-function 불러오기() {
-  if (!SITE || !API) {
-    알림('주소가 덜 채워졌습니다', 'site 와 api 값이 필요합니다');
+  function 첫달(){
+    var 끝 = 일정.reduce(function(m,x){ return x.e>m ? x.e : m; }, 일정[0].e);
+    if (오늘str <= 끝) return new Date(오늘.getFullYear(), 오늘.getMonth(), 1);
+    var d = 날짜(일정[0].s); return new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+
+  function 그리기(){
+    너비맞추기();
+    var y=보는달.getFullYear(), m=보는달.getMonth();
+    상자.querySelector('.js-mon').innerHTML = '<span class="yr">'+y+'</span>'+(m+1)+'월';
+    var 달시작=ymd(new Date(y,m,1)), 달끝=ymd(new Date(y,m+1,0));
+    var 이달=일정.filter(function(x){ return x.e>=달시작 && x.s<=달끝; });
+
+    몸통.innerHTML='';
+    if(!이달.length){
+      몸통.innerHTML='<div class="note"><b>이 달에는 예정된 일정이 없습니다</b>‹ › 로 다른 달을 보실 수 있습니다</div>';
+      return;
+    }
+    몸통.appendChild(달력(y,m));
+    몸통.appendChild(목록(이달));
+  }
+
+  function 달력(y,m){
+    var f=document.createDocumentFragment();
+    var 요일=document.createElement('div'); 요일.className='dow';
+    ['일','월','화','수','목','금','토'].forEach(function(s){
+      var e=document.createElement('span'); e.textContent=s; 요일.appendChild(e);
+    });
+    f.appendChild(요일);
+    var 첫날=new Date(y,m,1), 커서=더하기(첫날,-첫날.getDay()), 달끝=new Date(y,m+1,0);
+    while(true){
+      var 주시작=new Date(커서), 주끝=더하기(주시작,6);
+      f.appendChild(한주(주시작,주끝,m));
+      if(ymd(주끝)>=ymd(달끝)) break;
+      커서=더하기(커서,7);
+    }
+    return f;
+  }
+
+  function 한주(주시작,주끝,이달월){
+    var 주=document.createElement('div'); 주.className='week';
+    var 칸들=document.createElement('div'); 칸들.className='cells';
+    for(var i=0;i<7;i++){
+      var d=더하기(주시작,i), s=ymd(d);
+      var c=document.createElement('div');
+      c.className='cell s'+i+(d.getMonth()!==이달월?' out':'')+(s===오늘str?' now':'');
+      var n=document.createElement('div'); n.className='dnum'; n.textContent=d.getDate();
+      c.appendChild(n); 칸들.appendChild(c);
+    }
+    주.appendChild(칸들);
+
+    var a=ymd(주시작), b=ymd(주끝);
+    var 걸친것=일정.filter(function(x){ return x.e>=a && x.s<=b; }).map(function(x){
+      return { x:x,
+        st: x.s<a ? 0 : Math.round((날짜(x.s)-주시작)/86400000),
+        en: x.e>b ? 6 : Math.round((날짜(x.e)-주시작)/86400000) };
+    }).sort(function(p,r){
+      if(p.st!==r.st) return p.st-r.st;
+      return (r.en-r.st)-(p.en-p.st);
+    });
+
+    var 레인=[], 넘침=[0,0,0,0,0,0,0];
+    var 최대 = 상자.classList.contains('narrow') ? 4 : 3;
+    걸친것.forEach(function(it){
+      var L=0;
+      for(;L<최대;L++){
+        if(!레인[L]) 레인[L]=[];
+        if(!레인[L].some(function(o){ return !(it.en<o.st || it.st>o.en); })) break;
+      }
+      if(L>=최대){ for(var i=it.st;i<=it.en;i++) 넘침[i]++; return; }
+      레인[L].push(it); it.lane=L;
+    });
+
+    if(레인.length){
+      var 막대들=document.createElement('div'); 막대들.className='bars';
+      걸친것.forEach(function(it){
+        if(it.lane===undefined) return;
+        var el=document.createElement('div');
+        el.className='bar '+모양(it.x);
+        el.style.gridColumn=(it.st+1)+' / '+(it.en+2);
+        el.style.gridRow=(it.lane+1);
+        el.title=it.x.n;
+        el.textContent=(상태(it.x)==='done' ? '✓ ' : '')+it.x.n;
+        막대들.appendChild(el);
+      });
+      for(var i=0;i<7;i++){
+        if(!넘침[i]) continue;
+        var mo=document.createElement('div'); mo.className='more'; mo.textContent='+'+넘침[i];
+        mo.style.gridColumn=(i+1)+' / '+(i+2); mo.style.gridRow=레인.length;
+        막대들.appendChild(mo);
+      }
+      주.appendChild(막대들);
+    }
+    return 주;
+  }
+
+  function 목록(이달){
+    var 통=document.createElement('div'); 통.className='list';
+    이달.slice().sort(function(p,r){ return p.s<r.s?-1:1; }).forEach(function(x){
+      var st=상태(x);
+      var row=document.createElement('div'); row.className='li '+st;
+      var a=날짜(x.s), b=날짜(x.e);
+      var 짧=function(t){ return String(t.getDate()).padStart(2,'0'); };
+      var 긴=function(t){ return (t.getMonth()+1)+'.'+짧(t); };
+      var d=document.createElement('div'); d.className='d';
+      d.textContent=긴(a)+(x.e===x.s ? '' : '–'+(a.getMonth()===b.getMonth() ? 짧(b) : 긴(b)));
+      row.appendChild(d);
+      var nm=document.createElement('div'); nm.className='nm';
+      nm.textContent=(st==='done' ? '✓ ' : '')+x.n;
+      if(x.p||x.g){ var t=document.createElement('span'); t.className='tag'; t.textContent=x.p||x.g; nm.appendChild(t); }
+      row.appendChild(nm);
+      통.appendChild(row);
+    });
+    return 통;
+  }
+
+  상자.querySelector('.js-prev').onclick  = function(){ 보는달=new Date(보는달.getFullYear(),보는달.getMonth()-1,1); 그리기(); };
+  상자.querySelector('.js-next').onclick  = function(){ 보는달=new Date(보는달.getFullYear(),보는달.getMonth()+1,1); 그리기(); };
+  상자.querySelector('.js-today').onclick = function(){ 보는달=new Date(오늘.getFullYear(),오늘.getMonth(),1); 그리기(); };
+  window.addEventListener('resize', 그리기);
+
+  if(!일정.length){
+    상자.querySelector('.js-now').textContent='';
+    몸통.innerHTML='<div class="note"><b>등록된 일정이 없습니다</b>일정이 잡히면 이곳에 표시됩니다</div>';
     return;
   }
-  var 주소 = API + (API.indexOf('?') < 0 ? '?' : '&') + 'cal=' + SITE;
+  윗줄(); 보는달=첫달(); 그리기();
+}
+
+function 알림상자(상자, 제목, 설명) {
+  상자.innerHTML='<div class="note"><b></b><span></span></div>';
+  상자.querySelector('b').textContent=제목;
+  상자.querySelector('span').textContent=설명;
+}
+/* ===== CAL:JS:END ===== */
+
+/* ===== 실제 위젯 — 서버에서 일정을 받아 그립니다 =====
+ *   ?site=<현장 페이지 id>&api=<Apps Script /exec 주소>
+ *   theme=light|dark 를 붙이면 기기 테마와 상관없이 고정됩니다.
+ */
+(function () {
+  var 상자 = document.getElementById('cal');
+  var q = new URLSearchParams(location.search);
+  var th = q.get('theme');
+  if (th === 'light' || th === 'dark') 상자.dataset.theme = th;
+
+  var SITE = (q.get('site') || '').replace(/-/g, '');
+  var API = q.get('api') || '';
+  if (!SITE || !API) { 알림상자(상자, '주소가 덜 채워졌습니다', 'site 와 api 값이 필요합니다'); return; }
+
+  알림상자(상자, '공정표를 불러오는 중입니다', '잠시만 기다려주세요');
   var 늦음 = setTimeout(function () {
-    알림('불러오는 데 시간이 걸리고 있습니다', '잠시 후 새로고침해 주세요');
+    알림상자(상자, '불러오는 데 시간이 걸리고 있습니다', '잠시 후 새로고침해 주세요');
   }, 9000);
 
-  fetch(주소, { method: 'GET' })
+  fetch(API + (API.indexOf('?') < 0 ? '?' : '&') + 'cal=' + SITE)
     .then(function (r) { return r.json(); })
     .then(function (r) {
       clearTimeout(늦음);
       if (!r || !r.ok) throw new Error((r && r.error) || 'no data');
-      일정 = (r.items || []).filter(function (x) { return x && x.s; });
-      if (!일정.length) { 알림('등록된 일정이 없습니다', '일정이 잡히면 이곳에 표시됩니다'); return; }
-      보는달 = 첫달();
-      그리기();
+      달력만들기(상자, (r.items || []).filter(function (x) { return x && x.s; }));
     })
-    .catch(function (e) {
-      clearTimeout(늦음);
+    .catch(function () {
       // 조용히 빈 달력을 보여주면 아무도 실패한 걸 모릅니다.
-      알림('공정표를 불러오지 못했습니다', '잠시 후 새로고침해 주세요');
+      clearTimeout(늦음);
+      알림상자(상자, '공정표를 불러오지 못했습니다', '잠시 후 새로고침해 주세요');
     });
-}
-
-/* 오늘이 공사 기간 안이면 이번 달, 아니면 첫 일정이 있는 달부터 */
-function 첫달() {
-  var 처음 = 일정[0].s, 마지막 = 처음;
-  일정.forEach(function (x) { if (x.e > 마지막) 마지막 = x.e; });
-  if (오늘str >= 처음.slice(0, 7) + '-01' && 오늘str <= 마지막) {
-    return new Date(오늘.getFullYear(), 오늘.getMonth(), 1);
-  }
-  var d = 날짜(처음);
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-
-function 알림(제목, 설명) {
-  document.getElementById('cal').innerHTML =
-    '<div class="note"><b></b><span></span></div>';
-  var n = document.querySelector('#cal .note');
-  n.querySelector('b').textContent = 제목;
-  n.querySelector('span').textContent = 설명;
-  document.getElementById('sum').textContent = '';
-  document.getElementById('leg').hidden = true;
-}
-
-/* ───── 그리기 ───── */
-function 그리기() {
-  var y = 보는달.getFullYear(), m = 보는달.getMonth();
-  document.getElementById('mon').innerHTML =
-    '<span class="yr">' + y + '</span>' + (m + 1) + '월';
-
-  var 달시작 = ymd(new Date(y, m, 1));
-  var 달끝   = ymd(new Date(y, m + 1, 0));
-  var 이달 = 일정.filter(function (x) { return x.e >= 달시작 && x.s <= 달끝; });
-
-  var 끝난것 = 일정.filter(function (x) { return x.e < 오늘str; }).length;
-  document.getElementById('sum').innerHTML =
-    '전체 <b>' + 일정.length + '</b>건 · 완료 <b>' + 끝난것 + '</b>';
-
-  var 통 = document.getElementById('cal');
-  통.innerHTML = '';
-  if (!이달.length) {
-    통.innerHTML = '<div class="note"><b>이 달에는 예정된 일정이 없습니다</b>'
-                 + '‹ › 로 다른 달을 보실 수 있습니다</div>';
-  } else {
-    통.appendChild(달력(y, m));
-    통.appendChild(목록(이달));
-  }
-  범례(이달);
-}
-
-/* 한 일정이 지금 어느 상태인지 — 날짜만 봅니다 */
-function 상태(x) {
-  if (x.e < 오늘str) return 'done';
-  if (x.s <= 오늘str && 오늘str <= x.e) return 'now';
-  return '';
-}
-
-function 달력(y, m) {
-  var 판 = document.createDocumentFragment();
-
-  var 요일 = document.createElement('div');
-  요일.className = 'dow';
-  ['일','월','화','수','목','금','토'].forEach(function (s) {
-    var e = document.createElement('span'); e.textContent = s; 요일.appendChild(e);
-  });
-  판.appendChild(요일);
-
-  var 첫날 = new Date(y, m, 1);
-  var 커서 = 더하기(첫날, -첫날.getDay());          // 그 주의 일요일부터
-  var 달끝 = new Date(y, m + 1, 0);
-
-  while (true) {
-    var 주시작 = new Date(커서);
-    var 주끝 = 더하기(주시작, 6);
-    판.appendChild(한주(주시작, 주끝, m));
-    if (ymd(주끝) >= ymd(달끝)) break;
-    커서 = 더하기(커서, 7);
-  }
-  return 판;
-}
-
-function 한주(주시작, 주끝, 이달월) {
-  var 주 = document.createElement('div');
-  주.className = 'week';
-
-  var 칸들 = document.createElement('div');
-  칸들.className = 'cells';
-  for (var i = 0; i < 7; i++) {
-    var d = 더하기(주시작, i), s = ymd(d);
-    var c = document.createElement('div');
-    c.className = 'cell s' + i
-      + (d.getMonth() !== 이달월 ? ' out' : '')
-      + (s === 오늘str ? ' now' : '');
-    var n = document.createElement('div');
-    n.className = 'dnum'; n.textContent = d.getDate();
-    c.appendChild(n);
-    칸들.appendChild(c);
-  }
-  주.appendChild(칸들);
-
-  /* 이 주에 걸치는 일정을 줄(레인)에 배치합니다.
-     긴 것부터 넣어야 위쪽 줄이 길게 이어져 읽기 좋습니다. */
-  var a = ymd(주시작), b = ymd(주끝);
-  var 걸친것 = 일정.filter(function (x) { return x.e >= a && x.s <= b; })
-    .map(function (x) {
-      var st = x.s < a ? 0 : Math.round((날짜(x.s) - 주시작) / 86400000);
-      var en = x.e > b ? 6 : Math.round((날짜(x.e) - 주시작) / 86400000);
-      return { x: x, st: st, en: en };
-    })
-    .sort(function (p, r) {
-      if (p.st !== r.st) return p.st - r.st;
-      return (r.en - r.st) - (p.en - p.st);
-    });
-
-  var 레인 = [];                                   // 레인마다 [차지한 칸]
-  var 넘침 = [0,0,0,0,0,0,0];
-  var 최대레인 = 3;
-  걸친것.forEach(function (it) {
-    var L = 0;
-    for (; L < 최대레인; L++) {
-      if (!레인[L]) 레인[L] = [];
-      var 겹침 = 레인[L].some(function (o) { return !(it.en < o.st || it.st > o.en); });
-      if (!겹침) break;
-    }
-    if (L >= 최대레인) {
-      for (var i = it.st; i <= it.en; i++) 넘침[i]++;
-      return;
-    }
-    레인[L].push(it); it.lane = L;
-  });
-
-  if (레인.length) {
-    var 막대들 = document.createElement('div');
-    막대들.className = 'bars';
-    막대들.style.gridTemplateRows = 'repeat(' + 레인.length + ', 15px)';
-    막대들.style.rowGap = '2px';
-
-    걸친것.forEach(function (it) {
-      if (it.lane === undefined) return;
-      var el = document.createElement('div');
-      var st = 상태(it.x);
-      var 비움 = 속빈것[it.x.g] && !it.x.p;
-      el.className = 'bar' + (st ? ' ' + st : '') + (비움 ? ' ghost' : '');
-      el.style.gridColumn = (it.st + 1) + ' / ' + (it.en + 2);
-      el.style.gridRow = (it.lane + 1);
-      if (비움) el.style.color = 색고르기(it.x);
-      else el.style.background = 색고르기(it.x);
-      el.title = it.x.n;
-      var t = document.createElement('span');
-      t.className = 'tick'; t.textContent = '✓';
-      el.appendChild(t);
-      el.appendChild(document.createTextNode(it.x.n));
-      막대들.appendChild(el);
-    });
-
-    for (var i = 0; i < 7; i++) {
-      if (!넘침[i]) continue;
-      var mo = document.createElement('div');
-      mo.className = 'more'; mo.textContent = '+' + 넘침[i];
-      mo.style.gridColumn = (i + 1) + ' / ' + (i + 2);
-      mo.style.gridRow = 레인.length;
-      막대들.appendChild(mo);
-    }
-    주.appendChild(막대들);
-  }
-  return 주;
-}
-
-/* 좁은 화면용 — 같은 자료를 날짜순 목록으로 */
-function 목록(이달) {
-  var 통 = document.createElement('div');
-  통.className = 'list';
-  이달.slice().sort(function (p, r) { return p.s < r.s ? -1 : (p.s > r.s ? 1 : 0); })
-    .forEach(function (x) {
-      var st = 상태(x);
-      var row = document.createElement('div');
-      row.className = 'li' + (st ? ' ' + st : '');
-
-      var d = document.createElement('div');
-      d.className = 'd';
-      var a = 날짜(x.s), b = 날짜(x.e);
-      var 짧게 = function (t) { return String(t.getDate()).padStart(2, '0'); };
-      var 길게 = function (t) { return (t.getMonth() + 1) + '.' + 짧게(t); };
-      // 달을 걸치면 끝 날짜에도 월을 붙입니다 — 「9.30–02」는 읽히지 않습니다
-      d.textContent = 길게(a) + (x.e === x.s ? ''
-        : '–' + (a.getMonth() === b.getMonth() ? 짧게(b) : 길게(b)));
-      row.appendChild(d);
-
-      var dot = document.createElement('div');
-      dot.className = 'dot'; dot.style.background = 색고르기(x);
-      row.appendChild(dot);
-
-      var nm = document.createElement('div');
-      nm.className = 'nm';
-      nm.textContent = (st === 'done' ? '✓ ' : '') + x.n;
-      if (x.p || x.g) {
-        var sub = document.createElement('span');
-        sub.className = 'sub'; sub.textContent = x.p || x.g;
-        nm.appendChild(sub);
-      }
-      row.appendChild(nm);
-      통.appendChild(row);
-    });
-  return 통;
-}
-
-/* 이 달에 실제로 나오는 것만 범례에 올립니다 */
-function 범례(이달) {
-  var 본것 = [], 있음 = {};
-  이달.forEach(function (x) {
-    var k = x.p || x.g; if (!k || 있음[k]) return;
-    있음[k] = 1; 본것.push({ k: k, c: 색고르기(x) });
-  });
-  var el = document.getElementById('leg');
-  el.innerHTML = '';
-  el.hidden = !본것.length;
-  본것.forEach(function (v) {
-    var i = document.createElement('i');
-    var b = document.createElement('b'); b.style.background = v.c;
-    i.appendChild(b);
-    i.appendChild(document.createTextNode(v.k));
-    el.appendChild(i);
-  });
-}
-
-/* ───── 달 넘기기 ───── */
-function 옮기기(n) {
-  보는달 = new Date(보는달.getFullYear(), 보는달.getMonth() + n, 1);
-  그리기();
-}
-document.getElementById('prev').onclick = function () { 옮기기(-1); };
-document.getElementById('next').onclick = function () { 옮기기(1); };
-document.getElementById('today').onclick = function () {
-  보는달 = new Date(오늘.getFullYear(), 오늘.getMonth(), 1);
-  그리기();
-};
-
-불러오기();
+})();
 </script>
 </body>
 </html>
