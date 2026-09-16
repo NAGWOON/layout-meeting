@@ -491,19 +491,20 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <span><em id="expSum"></em> <span class="caret">›</span></span>
     </div>
     <div id="expBody">
-      <div class="sect">📐 구간 <span>원바닥 ~ 마루 완성면</span></div>
+      <div class="sect">📐 구간 <span>원바닥 ~ 마루 아래까지</span></div>
       <div id="expRows"></div>
       <div class="addrow" onclick="addExp()">＋ 구간 추가</div>
 
-      <div class="sect">⚙ 기준값 <span>현장이 다르면 바꾸세요</span></div>
-      <div class="crow"><input type="number" id="x_floor"  value="10" oninput="expPreview()"><span class="cu">mm</span><span class="cl">마루 두께</span></div>
-      <div class="crow"><input type="number" id="x_mortar" value="45" oninput="expPreview()"><span class="cu">mm</span><span class="cl">온돌 모르타르 <b style="font-weight:400;color:var(--txt4)">최소</b></span></div>
-      <div class="crow"><input type="number" id="x_level"  value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">수평몰탈 설계두께</span></div>
-      <div class="crow"><input type="number" id="x_dev"    value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">바탕 편차</span></div>
-      <div class="crow"><input type="number" id="x_foam"   value="3"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">폼본드 여유</span></div>
-      <div class="crow"><input type="number" id="x_loss"   value="10" oninput="expPreview()"><span class="cu">%</span><span class="cl">단열재 재단여유</span></div>
+      <div class="sect" id="xstdHead" onclick="toggleXstd()" style="cursor:pointer">⚙ 회사 기준 <span id="xstdSum"></span></div>
+      <div id="xstdBody" class="hide">
+        <div class="crow"><input type="number" id="x_mortar" value="45" oninput="expPreview()"><span class="cu">mm</span><span class="cl">온돌 모르타르 <b style="font-weight:400;color:var(--txt4)">최소</b></span></div>
+        <div class="crow"><input type="number" id="x_level"  value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">수평몰탈 설계두께</span></div>
+        <div class="crow"><input type="number" id="x_dev"    value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">바탕 편차</span></div>
+        <div class="crow"><input type="number" id="x_foam"   value="3"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">폼본드 여유</span></div>
+        <div class="crow"><input type="number" id="x_loss"   value="10" oninput="expPreview()"><span class="cu">%</span><span class="cl">단열재 재단여유</span></div>
+      </div>
 
-      <div id="expCut" class="calcout"></div>
+<div id="expCut" class="calcout"></div>
       <div id="expOut" class="calcout"></div>
       <div class="btn2" onclick="applyExp()" style="margin-top:11px;text-align:center;padding:10px">산출값으로 채우기</div>
       <div class="note">아이소핑크는 <b>10·20·30·50T</b> 조합으로만 맞춥니다.
@@ -986,6 +987,11 @@ var XFOAM   = 10;    // 폼본드 750ml 1개로 약 10㎡ (추정값 — 쓰면�
 var XN = { i:'아이소핑크 ', f:'우레탄 폼본드 (폼건용)', m:'레미탈 (드라이몰탈)',
            l:'수평몰탈 (셀프레벨링)', p:'수평몰탈 프라이머' };
 
+function toggleXstd() {
+  var b = el('xstdBody');
+  b.classList.toggle('hide');
+  el('xstdHead').classList.toggle('open', !b.classList.contains('hide'));
+}
 function toggleExp() {
   S.expOpen = !S.expOpen;
   el('expBody').classList.toggle('hide', !S.expOpen);
@@ -1017,8 +1023,7 @@ function xcombo(T) {
 }
 
 function expCalc() {
-  var 마루   = Number(el('x_floor').value)  || 0,
-      모르타르 = Number(el('x_mortar').value) || 0,
+  var 모르타르 = Number(el('x_mortar').value) || 0,
       수평   = Number(el('x_level').value)  || 0,
       편차   = Number(el('x_dev').value)    || 0,
       폼여유  = Number(el('x_foam').value)   || 0,
@@ -1030,12 +1035,12 @@ function expCalc() {
     var A = Number(x.a) || 0, D = Number(x.d) || 0;
     if (!A || !D) return;
     var 이름 = (x.n || '').trim() || ('구간 ' + (i + 1));
-    var c = xcombo(Math.max(0, D - 마루 - 모르타르 - 수평 - 폼여유));
+    var c = xcombo(Math.max(0, D - 모르타르 - 수평 - 폼여유));
     var 단열 = c.reduce(function (p, q) { return p + q; }, 0);
     if (!단열) { warn.push(이름 + ' — 깊이가 얕아 단열재가 안 들어갑니다'); return; }
 
     // 규격이 띄엄띄엄해서 남는 높이는 모르타르가 먹습니다. 설계값보다 두꺼워질 수 있습니다.
-    var 실모르타르 = D - 단열 - 마루 - 수평;
+    var 실모르타르 = D - 단열 - 수평;
     if (실모르타르 < 40) warn.push(이름 + ' — 모르타르가 ' + 실모르타르 + 'mm 로 얇습니다. 배관 피복을 확인하세요');
 
     면적 += A;
@@ -1045,7 +1050,7 @@ function expCalc() {
 
     cuts.push({ 이름: 이름,
       글: D + ' = ' + (c.length > 1 ? 단열 + 'T (' + c.join('+') + ')' : 단열 + 'T')
-          + ' + 모르타르 ' + 실모르타르 + ' + 수평 ' + 수평 + ' + 마루 ' + 마루 });
+          + ' + 모르타르 ' + 실모르타르 + ' + 수평몰탈 ' + 수평 });
   });
 
   var out = [];
@@ -1063,6 +1068,10 @@ function expCalc() {
 function expPreview() {
   var r = expCalc();
   el('expSum').textContent = r.out.length ? r.out.length + '품목 · ' + r.면적 + '㎡' : (S.expOpen ? '' : '접힘');
+  el('xstdSum').textContent = '모르타르 최소 ' + (Number(el('x_mortar').value)||0)
+                            + ' · 수평 ' + (Number(el('x_level').value)||0)
+                            + ' · 편차 ' + (Number(el('x_dev').value)||0)
+                            + ' · 폼본드 ' + (Number(el('x_foam').value)||0) + ' ›';
   if (!S.expOpen) return;
 
   el('expCut').innerHTML = r.cuts.length
