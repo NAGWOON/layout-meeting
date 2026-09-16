@@ -537,6 +537,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div id="tileOut" class="calcout"></div>
       <div class="btn2" onclick="applyTile()" style="margin-top:11px;text-align:center;padding:10px">산출값으로 채우기</div>
       <div class="note"><b>쭈꾸미는 나머지로 잡습니다</b> — 깊이에서 액방·도막·타일을 빼고 남는 만큼입니다.
+        <b>방수</b> 칩을 끄면 그 구간은 쭈꾸미만 잡습니다.
         자재는 모두 <b>설비·방수 발주</b>로 나갑니다. 타일 탭에서는 보기만 하시고, 담는 건 설비·방수 탭에서 하세요.</div>
     </div>
   </div>
@@ -1174,11 +1175,15 @@ function renderTile() {
       + '" oninput="setTile(' + i + ',\'a\',this.value)"><span class="cu">㎡</span>'
       + '<input type="number" min="0" placeholder="0" value="' + esc(x.d || '')
       + '" oninput="setTile(' + i + ',\'d\',this.value)"><span class="cu">mm</span>'
+      + '<span class="chip' + (x.k === 'tile' ? '' : ' on') + '" style="flex:none;padding:5px 9px;font-size:11px"'
+      + ' onclick="toggleTileK(' + i + ')">방수</span>'
       + (S.tile.length > 1 ? '<span class="del" onclick="delTile(' + i + ')">×</span>' : '')
       + '</div>';
   }).join('');
 }
 function setTile(i, k, v) { S.tile[i][k] = v; tilePreview(); }
+// 현관·주방처럼 방수를 안 하는 바닥이 있습니다. 그 구간은 액방·도막이 빠지고 쭈꾸미만 잡습니다.
+function toggleTileK(i) { S.tile[i].k = (S.tile[i].k === 'tile') ? '' : 'tile'; renderTile(); tilePreview(); }
 function addTile() { S.tile.push({ n:'', a:'', d:'' }); renderTile(); tilePreview(); }
 function delTile(i) { S.tile.splice(i, 1); renderTile(); tilePreview(); }
 
@@ -1190,34 +1195,43 @@ function tileCalc() {
       도막량 = Number(el('t_memkg').value)|| 0,
       타일 = Number(el('t_tile').value)  || 0;
 
-  var 면적 = 0, 액방부피 = 0, 쭈부피 = 0, cuts = [], warn = [];
+  var 면적 = 0, 방수면적 = 0, 액방부피 = 0, 쭈부피 = 0, cuts = [], warn = [];
 
   S.tile.forEach(function (x, i) {
     var A = Number(x.a) || 0, D = Number(x.d) || 0;
     if (!A || !D) return;
     var 이름 = (x.n || '').trim() || ('구간 ' + (i + 1));
-    var 쭈 = D - 액방 - 도막 - 타일;
+    var 방수 = (x.k !== 'tile');
+    var a1 = 방수 ? 액방 : 0, m1 = 방수 ? 도막 : 0;
+    var 쭈 = D - a1 - m1 - 타일;
 
     if (쭈 <= 0) { warn.push(이름 + ' — 깊이가 얕아 쭈꾸미 자리가 없습니다 (' + 쭈 + 'mm)'); return; }
     if (쭈 < 20) warn.push(이름 + ' — 쭈꾸미가 ' + 쭈 + 'mm 로 얇습니다');
 
     면적 += A;
-    액방부피 += A * 액방;
-    쭈부피   += A * 쭈;
-    cuts.push({ 이름: 이름,
-      글: D + ' = 액방 ' + 액방 + ' + 도막 ' + 도막 + ' + 쭈꾸미 ' + 쭈 + ' + 타일 ' + 타일 });
+    쭈부피 += A * 쭈;
+    if (방수) { 방수면적 += A; 액방부피 += A * 액방; }
+
+    cuts.push({ 이름: 이름, 깊이: D,
+      글: (방수 ? '액방 ' + 액방 + ' + 도막 ' + 도막 + ' + ' : '')
+          + '쭈꾸미 ' + 쭈 + ' + 타일 ' + 타일 });
   });
 
   // 액방 몰탈은 시멘트와 레미탈을 섞습니다. 부피로 나눈 뒤 각각 포수로 올립니다.
   var 액방포 = 액방부피 / TDRY;
   var 시멘포 = 액방포 * 시멘율 / 100;
-  var 레미포 = 액방포 * (100 - 시멘율) / 100 + 쭈부피 / TDRY;   // 쭈꾸미도 레미탈입니다
+
+  // 레미탈은 두 군데서 나옵니다 — 액방 배합과 쭈꾸미.
+  // 같은 제품이라 발주는 한 줄로 내고, 어디에 얼마인지는 밑줄로 보여줍니다.
+  var 방수레미 = Math.ceil(액방포 * (100 - 시멘율) / 100);
+  var 타일레미 = Math.ceil(쭈부피 / TDRY);
 
   var out = [];
   if (시멘포) out.push([TN.c, Math.ceil(시멘포)]);
-  if (레미포) out.push([TN.m, Math.ceil(레미포)]);
+  if (방수레미 + 타일레미) out.push([TN.m, 방수레미 + 타일레미,
+    '방수용 ' + 방수레미 + ' · 타일용 ' + 타일레미]);
   if (시멘포 && 방수액) out.push([TN.s, Math.ceil(시멘포 * 방수액 / TCAN)]);
-  if (면적 && 도막 && 도막량) out.push([TN.b, Math.ceil(면적 * 도막 * 도막량 / TMEMCAN)]);
+  if (방수면적 && 도막 && 도막량) out.push([TN.b, Math.ceil(방수면적 * 도막 * 도막량 / TMEMCAN)]);
 
   return { out: out, cuts: cuts, warn: warn, 면적: Math.round(면적 * 10) / 10 };
 }
@@ -1234,7 +1248,7 @@ function tilePreview() {
   el('tileCut').innerHTML = r.cuts.length
     ? r.cuts.map(function (c) {
         return '<div class="r"><span>' + esc(c.이름) + '</span>'
-             + '<span style="text-align:right">' + esc(c.글) + '</span></div>';
+             + '<span style="text-align:right">' + c.깊이 + ' = ' + esc(c.글) + '</span></div>';
       }).join('')
     : '<span style="color:var(--txt4)">면적과 깊이를 넣으면 여기에 단면이 나옵니다</span>';
 
@@ -1243,7 +1257,8 @@ function tilePreview() {
         var it = S.items.filter(function (i) { return i.name === o[0] && i.type === '설비·방수'; })[0];
         return '<div class="r"><span>' + esc(o[0]) + '</span>'
           + '<b>' + o[1] + ' <span style="font-size:11px;font-weight:400">'
-          + esc(it ? it.unit : '') + '</span></b></div>';
+          + esc(it ? it.unit : '') + '</span></b></div>'
+          + (o[2] ? '<div class="rng">' + esc(o[2]) + '</div>' : '');
       }).join('')
     : '<span style="color:var(--txt4)">아직 산출된 게 없습니다</span>')
     + (r.warn.length
