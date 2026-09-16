@@ -512,6 +512,35 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     </div>
   </div>
 
+
+  <div class="card hide" id="tileCard">
+    <div class="ch click open" id="tileHead" onclick="toggleTile()">
+      <span>🧮 타일 바닥 산출</span>
+      <span><em id="tileSum"></em> <span class="caret">›</span></span>
+    </div>
+    <div id="tileBody">
+      <div class="sect">📐 구간 <span>원바닥 ~ 타일 완성면</span></div>
+      <div id="tileRows"></div>
+      <div class="addrow" onclick="addTile()">＋ 구간 추가</div>
+
+      <div class="sect" id="tstdHead" onclick="toggleTstd()" style="cursor:pointer">⚙ 회사 기준 <span id="tstdSum"></span></div>
+      <div id="tstdBody" class="hide">
+        <div class="crow"><input type="number" id="t_liq"   value="20"  oninput="tilePreview()"><span class="cu">mm</span><span class="cl">액체방수 몰탈 두께</span></div>
+        <div class="crow"><input type="number" id="t_cem"   value="85"  oninput="tilePreview()"><span class="cu">%</span><span class="cl">액방 중 시멘트 비율 <b style="font-weight:400;color:var(--txt4)">8:2 ~ 9:1</b></span></div>
+        <div class="crow"><input type="number" id="t_sol"   value="4"   oninput="tilePreview()"><span class="cu">L</span><span class="cl">방수액 · 시멘트 1포당</span></div>
+        <div class="crow"><input type="number" id="t_mem"   value="5"   oninput="tilePreview()"><span class="cu">mm</span><span class="cl">도막방수 두께</span></div>
+        <div class="crow"><input type="number" id="t_memkg" value="1.3" step="0.1" oninput="tilePreview()"><span class="cu">kg</span><span class="cl">도막 도포량 · ㎡ · mm당</span></div>
+        <div class="crow"><input type="number" id="t_tile"  value="10"  oninput="tilePreview()"><span class="cu">mm</span><span class="cl">타일 마감</span></div>
+      </div>
+
+      <div id="tileCut" class="calcout"></div>
+      <div id="tileOut" class="calcout"></div>
+      <div class="btn2" onclick="applyTile()" style="margin-top:11px;text-align:center;padding:10px">산출값으로 채우기</div>
+      <div class="note"><b>쭈꾸미는 나머지로 잡습니다</b> — 깊이에서 액방·도막·타일을 빼고 남는 만큼입니다.
+        자재는 모두 <b>설비·방수 발주</b>로 나갑니다. 타일 탭에서는 보기만 하시고, 담는 건 설비·방수 탭에서 하세요.</div>
+    </div>
+  </div>
+
   </div><!-- /colB -->
 
   <div class="colC">
@@ -707,7 +736,8 @@ var S = {
   only: false, calcOpen: true, loss: 10, elev: null, unload: null,   // 산출부터 하는 게 순서입니다
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }],
-  exp:   [{ n: '', a: '', d: '' }], expOpen: true   // 확장부 바닥 (설비·방수)
+  exp:   [{ n: '', a: '', d: '' }], expOpen: true,   // 확장부 바닥 (설비·방수)
+  tile:  [{ n: '', a: '', d: '' }], tileOpen: true   // 타일 바닥 (설비·방수 · 타일)
 };
 var TYPES = ['목자재', '도어', '타일', '도기', '조명·스위치', '설비·방수'];
 
@@ -797,8 +827,8 @@ function boot() {
     renderTypes(); renderVendors(); renderShip();
     renderLoss(); renderWalls(); renderIns();
     el('calcHead').classList.toggle('open', S.calcOpen);
-    renderExp();
-    renderItems(); calcPreview(); expPreview(); draw(); bar(); side();
+    renderExp(); renderTile();
+    renderItems(); calcPreview(); expPreview(); tilePreview(); draw(); bar(); side();
     toast('준비됐습니다');
   }).catch(function () { toast('연결에 실패했습니다'); });
 }
@@ -836,6 +866,8 @@ function setType(t) {
   S.type = t; S.qty = {}; S.cut = {}; S.extra = [];
   el('calcCard').classList.toggle('hide', t !== '목자재');   // 계수는 목자재 기준입니다
   el('expCard').classList.toggle('hide', t !== '설비·방수');   // 확장부 단면은 설비 기준입니다
+  // 타일 바닥 몰탈은 설비 발주로 나가지만, 타일 작업을 보며 잡는 값이라 두 탭에서 봅니다
+  el('tileCard').classList.toggle('hide', t !== '설비·방수' && t !== '타일');
   renderTypes(); renderVendors(); renderItems(); draw(); bar(); side();
 }
 function renderVendors() {
@@ -1105,6 +1137,136 @@ function applyExp() {
   if (!n) return toast('산출된 게 없습니다 — 면적과 깊이를 먼저 넣으세요');
   renderItems(); draw(); bar(); side();
   toast(n + '품목을 채웠습니다' + (miss.length ? ' · ' + miss.length + '건은 목록에 없습니다' : ''));
+}
+
+
+// ═════ 타일 바닥 산출 (설비·방수 · 타일) ═════
+//
+//   원바닥 ─ 액방 20 ─ 도막 5 ─ 쭈꾸미(나머지) ─ 타일 ─ 완성면
+//
+// 쭈꾸미를 따로 재지 않습니다. 현장에서 잴 수 있는 건 전체 깊이뿐이고,
+// 나머지 층은 회사 기준이라 빼고 남는 만큼이 쭈꾸미입니다.
+//
+// 액방은 시멘트와 레미탈을 섞습니다 (8:2 ~ 9:1). 물 대신 방수액을 씁니다.
+var TDRY = 21;        // 40kg 한 포 ≈ 굳은부피 0.021㎥ — 확장부와 같은 계수
+var TCAN = 18;        // 방수액 한 통 18L
+var TMEMCAN = 20;     // 도막 한 통 20kg
+var TN = { c:'포틀랜드 시멘트', m:'레미탈 (드라이몰탈)',
+           s:'액체방수제', b:'우레탄 방수재 (중도)' };
+
+function toggleTile() {
+  S.tileOpen = !S.tileOpen;
+  el('tileBody').classList.toggle('hide', !S.tileOpen);
+  el('tileHead').classList.toggle('open', S.tileOpen);
+  tilePreview();
+}
+function toggleTstd() {
+  var b = el('tstdBody');
+  b.classList.toggle('hide');
+  el('tstdHead').classList.toggle('open', !b.classList.contains('hide'));
+}
+function renderTile() {
+  el('tileRows').innerHTML = S.tile.map(function (x, i) {
+    return '<div class="crow">'
+      + '<input class="xn" type="text" placeholder="구간 이름" value="' + esc(x.n || '')
+      + '" oninput="setTile(' + i + ',\'n\',this.value)">'
+      + '<input type="number" min="0" step="0.1" placeholder="0" value="' + esc(x.a || '')
+      + '" oninput="setTile(' + i + ',\'a\',this.value)"><span class="cu">㎡</span>'
+      + '<input type="number" min="0" placeholder="0" value="' + esc(x.d || '')
+      + '" oninput="setTile(' + i + ',\'d\',this.value)"><span class="cu">mm</span>'
+      + (S.tile.length > 1 ? '<span class="del" onclick="delTile(' + i + ')">×</span>' : '')
+      + '</div>';
+  }).join('');
+}
+function setTile(i, k, v) { S.tile[i][k] = v; tilePreview(); }
+function addTile() { S.tile.push({ n:'', a:'', d:'' }); renderTile(); tilePreview(); }
+function delTile(i) { S.tile.splice(i, 1); renderTile(); tilePreview(); }
+
+function tileCalc() {
+  var 액방 = Number(el('t_liq').value)   || 0,
+      시멘율 = Number(el('t_cem').value)  || 0,
+      방수액 = Number(el('t_sol').value)  || 0,
+      도막 = Number(el('t_mem').value)   || 0,
+      도막량 = Number(el('t_memkg').value)|| 0,
+      타일 = Number(el('t_tile').value)  || 0;
+
+  var 면적 = 0, 액방부피 = 0, 쭈부피 = 0, cuts = [], warn = [];
+
+  S.tile.forEach(function (x, i) {
+    var A = Number(x.a) || 0, D = Number(x.d) || 0;
+    if (!A || !D) return;
+    var 이름 = (x.n || '').trim() || ('구간 ' + (i + 1));
+    var 쭈 = D - 액방 - 도막 - 타일;
+
+    if (쭈 <= 0) { warn.push(이름 + ' — 깊이가 얕아 쭈꾸미 자리가 없습니다 (' + 쭈 + 'mm)'); return; }
+    if (쭈 < 20) warn.push(이름 + ' — 쭈꾸미가 ' + 쭈 + 'mm 로 얇습니다');
+
+    면적 += A;
+    액방부피 += A * 액방;
+    쭈부피   += A * 쭈;
+    cuts.push({ 이름: 이름,
+      글: D + ' = 액방 ' + 액방 + ' + 도막 ' + 도막 + ' + 쭈꾸미 ' + 쭈 + ' + 타일 ' + 타일 });
+  });
+
+  // 액방 몰탈은 시멘트와 레미탈을 섞습니다. 부피로 나눈 뒤 각각 포수로 올립니다.
+  var 액방포 = 액방부피 / TDRY;
+  var 시멘포 = 액방포 * 시멘율 / 100;
+  var 레미포 = 액방포 * (100 - 시멘율) / 100 + 쭈부피 / TDRY;   // 쭈꾸미도 레미탈입니다
+
+  var out = [];
+  if (시멘포) out.push([TN.c, Math.ceil(시멘포)]);
+  if (레미포) out.push([TN.m, Math.ceil(레미포)]);
+  if (시멘포 && 방수액) out.push([TN.s, Math.ceil(시멘포 * 방수액 / TCAN)]);
+  if (면적 && 도막 && 도막량) out.push([TN.b, Math.ceil(면적 * 도막 * 도막량 / TMEMCAN)]);
+
+  return { out: out, cuts: cuts, warn: warn, 면적: Math.round(면적 * 10) / 10 };
+}
+
+function tilePreview() {
+  var r = tileCalc();
+  el('tileSum').textContent = r.out.length ? r.out.length + '품목 · ' + r.면적 + '㎡' : (S.tileOpen ? '' : '접힘');
+  el('tstdSum').textContent = '액방 ' + (Number(el('t_liq').value)||0)
+                            + ' · 도막 ' + (Number(el('t_mem').value)||0)
+                            + ' · 타일 ' + (Number(el('t_tile').value)||0)
+                            + ' · 시멘트 ' + (Number(el('t_cem').value)||0) + '% ›';
+  if (!S.tileOpen) return;
+
+  el('tileCut').innerHTML = r.cuts.length
+    ? r.cuts.map(function (c) {
+        return '<div class="r"><span>' + esc(c.이름) + '</span>'
+             + '<span style="text-align:right">' + esc(c.글) + '</span></div>';
+      }).join('')
+    : '<span style="color:var(--txt4)">면적과 깊이를 넣으면 여기에 단면이 나옵니다</span>';
+
+  el('tileOut').innerHTML = (r.out.length
+    ? r.out.map(function (o) {
+        var it = S.items.filter(function (i) { return i.name === o[0] && i.type === '설비·방수'; })[0];
+        return '<div class="r"><span>' + esc(o[0]) + '</span>'
+          + '<b>' + o[1] + ' <span style="font-size:11px;font-weight:400">'
+          + esc(it ? it.unit : '') + '</span></b></div>';
+      }).join('')
+    : '<span style="color:var(--txt4)">아직 산출된 게 없습니다</span>')
+    + (r.warn.length
+        ? '<div class="rng over" style="margin-top:8px">⚠ ' + r.warn.map(esc).join('<br>⚠ ') + '</div>'
+        : '');
+}
+
+function applyTile() {
+  var r = tileCalc();
+  if (!r.out.length) return toast('산출된 게 없습니다 — 면적과 깊이를 먼저 넣으세요');
+  // 자재가 전부 설비·방수 품목입니다. 타일 탭에서 담으면 갈 곳이 없습니다.
+  // 탭을 바꿔서 담으면 이미 담아둔 수량이 지워지므로, 안내만 하고 그대로 둡니다.
+  if (S.type !== '설비·방수') return toast('이 자재는 설비·방수 발주입니다 — 설비·방수 탭에서 담아주세요');
+
+  var n = 0, miss = [];
+  r.out.forEach(function (o) {
+    var it = S.items.filter(function (i) { return i.name === o[0] && i.type === S.type; })[0];
+    // 확장부 산출로 이미 담긴 게 있으면 더합니다 (레미탈은 두 계산기에서 같이 나옵니다)
+    if (it) { S.qty[it.id] = (Number(S.qty[it.id]) || 0) + o[1]; n++; } else miss.push(o[0]);
+  });
+  if (!n) return toast('담을 품목을 찾지 못했습니다');
+  renderItems(); draw(); bar(); side();
+  toast(n + '품목을 더했습니다' + (miss.length ? ' · ' + miss.length + '건은 목록에 없습니다' : ''));
 }
 
 // ═════ 품목 ═════
