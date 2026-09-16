@@ -61,6 +61,10 @@
   .cal .mon .yr { font-size:11.5px; color:var(--ink3); margin-right:5px; letter-spacing:.2px; }
   .cal .grow { flex:1; }
   .cal .nav { display:flex; gap:3px; align-self:center; }
+  /* 화살표만 있으면 눌러도 되는 건지 모릅니다. 글자를 붙입니다.
+     폰에서는 자리가 없어 화살표만 남깁니다. */
+  .cal .nav .lbl { margin:0 2px; }
+  .cal.narrow .nav .lbl { display:none; }
   .cal .nav button {
     font-family:var(--sans); font-size:11px; color:var(--ink2); background:transparent;
     border:1px solid var(--line); border-radius:6px;
@@ -206,9 +210,9 @@ function 달력만들기(상자, 일정) {
     '<div class="head">'
   +   '<div class="mon js-mon"></div><div class="grow"></div>'
   +   '<div class="nav">'
-  +     '<button class="js-prev" type="button" aria-label="이전 달">‹</button>'
+  +     '<button class="js-prev" type="button" aria-label="지난 달">‹<span class="lbl">지난 달</span></button>'
   +     '<button class="js-today" type="button">오늘</button>'
-  +     '<button class="js-next" type="button" aria-label="다음 달">›</button>'
+  +     '<button class="js-next" type="button" aria-label="다음 달"><span class="lbl">다음 달</span>›</button>'
   +   '</div>'
   + '</div>'
   + '<div class="now js-now"></div>'
