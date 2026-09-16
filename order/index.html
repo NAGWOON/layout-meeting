@@ -503,6 +503,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
         <div class="crow"><input type="number" id="x_foam"   value="3"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">폼본드 여유</span></div>
         <div class="crow"><input type="number" id="x_yield" value="14" step="0.1" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">수평몰탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 25kg</b></span></div>
         <div class="crow"><input type="number" id="x_myield" value="21" step="0.5" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">레미탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 40kg</b></span></div>
+        <div class="crow"><input type="number" id="x_foamyield" value="5" step="0.5" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">폼본드 1개로 <b style="font-weight:400;color:var(--txt4)">붙이는 면적 · 750ml</b></span></div>
         <div class="crow"><input type="number" id="x_loss"   value="10" oninput="expPreview()"><span class="cu">%</span><span class="cl">단열재 재단여유</span></div>
       </div>
 
@@ -1019,7 +1020,7 @@ var XSIZE  = [50, 30, 20, 10], XSHEET = 1.62;   // 900×1800 = 1.62㎡
 // 레미탈·수평몰탈 1포가 덮는 양(㎡·mm)은 제품마다 다릅니다.
 // 코드에 박지 않고 기준값으로 빼뒀습니다 — 명세서 보고 실측으로 고치시면 됩니다.
 // 수평몰탈 25kg 으로 1mm 두께에 몇 ㎡ — 제품마다 다릅니다. 화면에서 고칠 수 있게 빼뒀습니다.
-var XFOAM   = 10;    // 폼본드 750ml 1개로 약 10㎡ (추정값 — 쓰면서 고칠 자리)
+// 폼본드 1개로 붙이는 면적도 기준값으로 빼뒀습니다 — 도포 방식에 따라 크게 달라집니다.
 var XN = { i:'아이소핑크 ', f:'우레탄 폼본드 (폼건용)', m:'레미탈 40kg',
            l:'수평몰탈 (셀프레벨링)', p:'수평몰탈 프라이머' };
 
@@ -1065,6 +1066,7 @@ function expCalc() {
       폼여유  = Number(el('x_foam').value)   || 0,
       포당   = Number(el('x_yield').value)  || 14,
       레미포당 = Number(el('x_myield').value) || 21,
+      폼당   = Number(el('x_foamyield').value) || 5,
       로스   = (Number(el('x_loss').value)  || 0) / 100;
 
   var 면적 = 0, 시트 = {}, 접착 = 0, 부피 = 0, cuts = [], warn = [];
@@ -1095,7 +1097,7 @@ function expCalc() {
   XSIZE.forEach(function (s) {
     if (시트[s]) out.push([XN.i + s + 'T', Math.ceil(시트[s] * (1 + 로스) / XSHEET)]);
   });
-  if (접착) out.push([XN.f, Math.ceil(접착 / XFOAM)]);
+  if (접착) out.push([XN.f, Math.ceil(접착 / 폼당), '붙이는 면적 ' + (Math.round(접착 * 10) / 10) + '㎡']);
   if (부피) out.push([XN.m, Math.ceil(부피 / 레미포당),
     '평균 ' + (Math.round(부피 / 면적 * 10) / 10) + 'mm · ' + (Math.round(면적 * 10) / 10) + '㎡']);
   // 설계두께가 아니라 평균두께로 뽑습니다. 바탕이 고르지 않으면 얇은 데와 두꺼운 데가 생기고,
