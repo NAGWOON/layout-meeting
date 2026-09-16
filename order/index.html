@@ -498,10 +498,11 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div class="sect" id="xstdHead" onclick="toggleXstd()" style="cursor:pointer">⚙ 회사 기준 <span id="xstdSum"></span></div>
       <div id="xstdBody" class="hide">
         <div class="crow"><input type="number" id="x_mortar" value="45" oninput="expPreview()"><span class="cu">mm</span><span class="cl">온돌 모르타르 <b style="font-weight:400;color:var(--txt4)">최소</b></span></div>
-        <div class="crow"><input type="number" id="x_level"  value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">수평몰탈 설계두께</span></div>
-        <div class="crow"><input type="number" id="x_dev"    value="5"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">바탕 편차</span></div>
+        <div class="crow"><input type="number" id="x_level"  value="20" oninput="expPreview()"><span class="cu">mm</span><span class="cl">수평몰탈 두께</span></div>
+        <div class="crow"><input type="number" id="x_dev"    value="0"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">바탕 편차 <b style="font-weight:400;color:var(--txt4)">더 볼 때만</b></span></div>
         <div class="crow"><input type="number" id="x_foam"   value="3"  oninput="expPreview()"><span class="cu">mm</span><span class="cl">폼본드 여유</span></div>
-        <div class="crow"><input type="number" id="x_yield" value="12.8" step="0.1" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">수평몰탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 두께 기준</b></span></div>
+        <div class="crow"><input type="number" id="x_yield" value="13.2" step="0.1" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">수평몰탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 25kg</b></span></div>
+        <div class="crow"><input type="number" id="x_myield" value="21" step="0.5" oninput="expPreview()"><span class="cu">㎡</span><span class="cl">레미탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 40kg</b></span></div>
         <div class="crow"><input type="number" id="x_loss"   value="10" oninput="expPreview()"><span class="cu">%</span><span class="cl">단열재 재단여유</span></div>
       </div>
 
@@ -530,6 +531,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
         <div class="crow"><input type="number" id="t_cem" value="0.35" step="0.05" oninput="tilePreview()"><span class="cu">포</span><span class="cl">시멘트 · 방수 ㎡당 <b style="font-weight:400;color:var(--txt4)">7~8㎡에 2~3포</b></span></div>
         <div class="crow"><input type="number" id="t_mem"   value="5"   oninput="tilePreview()"><span class="cu">mm</span><span class="cl">도막방수 두께 <b style="font-weight:400;color:var(--txt4)">높이만</b></span></div>
         <div class="crow"><input type="number" id="t_tile"  value="10"  oninput="tilePreview()"><span class="cu">mm</span><span class="cl">타일 마감</span></div>
+        <div class="crow"><input type="number" id="t_myield" value="21" step="0.5" oninput="tilePreview()"><span class="cu">㎡</span><span class="cl">레미탈 1포로 <b style="font-weight:400;color:var(--txt4)">1mm 기준 · 40kg</b></span></div>
       </div>
 
       <div id="tileCut" class="calcout"></div>
@@ -1014,7 +1016,8 @@ function applyCalc() {
 // 수평몰탈만 여유율이 아니라 바탕 편차로 잡습니다.
 // 설계 5mm 라도 바탕이 ±5mm 면 실제 평균은 7.5mm 라서, 5mm 로 뽑으면 현장에서 모자랍니다.
 var XSIZE  = [50, 30, 20, 10], XSHEET = 1.62;   // 900×1800 = 1.62㎡
-var XMORTAR = 21;    // 레미탈 40kg ≈ 굳은부피 0.021㎥ → 면적(㎡)×두께(mm)/21 = 포
+// 레미탈·수평몰탈 1포가 덮는 양(㎡·mm)은 제품마다 다릅니다.
+// 코드에 박지 않고 기준값으로 빼뒀습니다 — 명세서 보고 실측으로 고치시면 됩니다.
 // 수평몰탈 25kg 으로 1mm 두께에 몇 ㎡ — 제품마다 다릅니다. 화면에서 고칠 수 있게 빼뒀습니다.
 var XFOAM   = 10;    // 폼본드 750ml 1개로 약 10㎡ (추정값 — 쓰면서 고칠 자리)
 var XN = { i:'아이소핑크 ', f:'우레탄 폼본드 (폼건용)', m:'레미탈 (드라이몰탈)',
@@ -1060,7 +1063,8 @@ function expCalc() {
       수평   = Number(el('x_level').value)  || 0,
       편차   = Number(el('x_dev').value)    || 0,
       폼여유  = Number(el('x_foam').value)   || 0,
-      포당   = Number(el('x_yield').value)  || 12.8,
+      포당   = Number(el('x_yield').value)  || 13.2,
+      레미포당 = Number(el('x_myield').value) || 21,
       로스   = (Number(el('x_loss').value)  || 0) / 100;
 
   var 면적 = 0, 시트 = {}, 접착 = 0, 부피 = 0, cuts = [], warn = [];
@@ -1092,7 +1096,8 @@ function expCalc() {
     if (시트[s]) out.push([XN.i + s + 'T', Math.ceil(시트[s] * (1 + 로스) / XSHEET)]);
   });
   if (접착) out.push([XN.f, Math.ceil(접착 / XFOAM)]);
-  if (부피) out.push([XN.m, Math.ceil(부피 / XMORTAR)]);
+  if (부피) out.push([XN.m, Math.ceil(부피 / 레미포당),
+    '평균 ' + (Math.round(부피 / 면적 * 10) / 10) + 'mm · ' + (Math.round(면적 * 10) / 10) + '㎡']);
   // 설계두께가 아니라 평균두께로 뽑습니다. 바탕이 고르지 않으면 얇은 데와 두꺼운 데가 생기고,
   // 설계값으로만 뽑으면 현장에서 모자랍니다 (2026-09-16 · 미장팀 실측과 대조).
   var 평균 = 수평 + 편차 / 2;
@@ -1155,7 +1160,8 @@ function applyExp() {
 // 나머지 층은 회사 기준이라 빼고 남는 만큼이 쭈꾸미입니다.
 //
 // 액방은 시멘트와 레미탈을 섞습니다 (8:2 ~ 9:1). 물 대신 방수액을 씁니다.
-var TDRY = 21;        // 40kg 한 포 ≈ 굳은부피 0.021㎥ — 확장부와 같은 계수
+// 레미탈 1포가 덮는 양은 확장부 카드와 같은 뜻이지만, 따로 두었습니다 —
+// 액방·쭈꾸미는 배합이 달라 나중에 다르게 교정하실 수 있습니다.
 var TN = { c:'포틀랜드 시멘트', m:'레미탈 (드라이몰탈)', s:'액체방수제' };
 
 function toggleTile() {
@@ -1194,7 +1200,8 @@ function tileCalc() {
   var 액방 = Number(el('t_liq').value)  || 0,
       시멘계수 = Number(el('t_cem').value) || 0,
       도막 = Number(el('t_mem').value)  || 0,
-      타일 = Number(el('t_tile').value) || 0;
+      타일 = Number(el('t_tile').value) || 0,
+      레미포당 = Number(el('t_myield').value) || 21;
 
   var 면적 = 0, 방수면적 = 0, 액방부피 = 0, 쭈부피 = 0, cuts = [], warn = [];
 
@@ -1223,9 +1230,9 @@ function tileCalc() {
   var 시멘포 = Math.ceil(방수면적 * 시멘계수);
 
   // 액방층에서 시멘트가 차지하고 남는 부피는 레미탈입니다.
-  var 액방포 = 액방부피 / TDRY;
+  var 액방포 = 액방부피 / 레미포당;
   var 방수레미 = Math.max(0, Math.ceil(액방포 - 시멘포));
-  var 타일레미 = Math.ceil(쭈부피 / TDRY);
+  var 타일레미 = Math.ceil(쭈부피 / 레미포당);
 
   var out = [];
   if (시멘포) out.push([TN.c, 시멘포]);
