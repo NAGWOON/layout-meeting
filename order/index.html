@@ -757,6 +757,8 @@ function boot() {
     });
     renderHistory();
     var s = el('siteSel');
+    // 다시 그립니다. 덧붙이기만 하면 로그아웃 후 다시 들어올 때 현장이 두 번 생깁니다.
+    s.innerHTML = '<option value="">현장을 고르세요</option>';
     S.sites.forEach(function (x) {
       var o = document.createElement('option');
       o.value = x.id; o.textContent = x.name.replace(/\s*PROJECT\s*$/, ''); s.appendChild(o);
