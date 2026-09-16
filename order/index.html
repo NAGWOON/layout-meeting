@@ -526,7 +526,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div class="sect" id="tstdHead" onclick="toggleTstd()" style="cursor:pointer">⚙ 회사 기준 <span id="tstdSum"></span></div>
       <div id="tstdBody" class="hide">
         <div class="crow"><input type="number" id="t_liq"   value="20"  oninput="tilePreview()"><span class="cu">mm</span><span class="cl">액체방수 몰탈 두께</span></div>
-        <div class="crow"><input type="number" id="t_cem"   value="85"  oninput="tilePreview()"><span class="cu">%</span><span class="cl">액방 중 시멘트 비율 <b style="font-weight:400;color:var(--txt4)">8:2 ~ 9:1</b></span></div>
+        <div class="crow"><input type="number" id="t_cem" value="0.35" step="0.05" oninput="tilePreview()"><span class="cu">포</span><span class="cl">시멘트 · 방수 ㎡당 <b style="font-weight:400;color:var(--txt4)">7~8㎡에 2~3포</b></span></div>
         <div class="crow"><input type="number" id="t_mem"   value="5"   oninput="tilePreview()"><span class="cu">mm</span><span class="cl">도막방수 두께 <b style="font-weight:400;color:var(--txt4)">높이만</b></span></div>
         <div class="crow"><input type="number" id="t_tile"  value="10"  oninput="tilePreview()"><span class="cu">mm</span><span class="cl">타일 마감</span></div>
       </div>
@@ -1185,7 +1185,7 @@ function delTile(i) { S.tile.splice(i, 1); renderTile(); tilePreview(); }
 
 function tileCalc() {
   var 액방 = Number(el('t_liq').value)  || 0,
-      시멘율 = Number(el('t_cem').value) || 0,
+      시멘계수 = Number(el('t_cem').value) || 0,
       도막 = Number(el('t_mem').value)  || 0,
       타일 = Number(el('t_tile').value) || 0;
 
@@ -1211,17 +1211,17 @@ function tileCalc() {
           + '쭈꾸미 ' + 쭈 + ' + 타일 ' + 타일 });
   });
 
-  // 액방 몰탈은 시멘트와 레미탈을 섞습니다. 부피로 나눈 뒤 각각 포수로 올립니다.
-  var 액방포 = 액방부피 / TDRY;
-  var 시멘포 = 액방포 * 시멘율 / 100;
+  // 시멘트는 액방 도포에만 씁니다. 두께에서 역산하지 않고 면적당 실측 계수로 잡습니다 —
+  // 액방층 20mm 를 통째로 배합으로 보면 시멘트가 두 배 넘게 나옵니다 (2026-09-16).
+  var 시멘포 = Math.ceil(방수면적 * 시멘계수);
 
-  // 레미탈은 두 군데서 나옵니다 — 액방 배합과 쭈꾸미.
-  // 같은 제품이라 발주는 한 줄로 내고, 어디에 얼마인지는 밑줄로 보여줍니다.
-  var 방수레미 = Math.ceil(액방포 * (100 - 시멘율) / 100);
+  // 액방층에서 시멘트가 차지하고 남는 부피는 레미탈입니다.
+  var 액방포 = 액방부피 / TDRY;
+  var 방수레미 = Math.max(0, Math.ceil(액방포 - 시멘포));
   var 타일레미 = Math.ceil(쭈부피 / TDRY);
 
   var out = [];
-  if (시멘포) out.push([TN.c, Math.ceil(시멘포)]);
+  if (시멘포) out.push([TN.c, 시멘포]);
   // 한쪽이 0이면 굳이 나눠 적지 않습니다 — 「방수용 0」은 읽을 게 없는 줄입니다.
   if (방수레미 + 타일레미) out.push([TN.m, 방수레미 + 타일레미,
     (방수레미 && 타일레미) ? ('방수용 ' + 방수레미 + ' · 타일용 ' + 타일레미) : '']);
@@ -1238,7 +1238,7 @@ function tilePreview() {
   el('tstdSum').textContent = '액방 ' + (Number(el('t_liq').value)||0)
                             + ' · 도막 ' + (Number(el('t_mem').value)||0)
                             + ' · 타일 ' + (Number(el('t_tile').value)||0)
-                            + ' · 시멘트 ' + (Number(el('t_cem').value)||0) + '% ›';
+                            + ' · 시멘트 ' + (Number(el('t_cem').value)||0) + '포/㎡ ›';
   // 도막방수는 별도 발주입니다 — 여기서는 높이만 씁니다.
   if (!S.tileOpen) return;
 
