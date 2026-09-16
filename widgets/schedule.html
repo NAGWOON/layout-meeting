@@ -84,6 +84,11 @@
     background:var(--ink); margin-right:6px; vertical-align:2px;
   }
   .cal .now .sep { color:var(--ink4); margin:0 7px; }
+  /* 불러오는 동안 — 격자는 이미 보이고 이 줄만 숨 쉽니다 */
+  .cal .now .waiting { color:var(--ink3); }
+  .cal .now .dot.wait { background:var(--ink3); animation:calpulse 1.4s ease-in-out infinite; }
+  @keyframes calpulse { 0%,100% { opacity:.25 } 50% { opacity:1 } }
+  @media (prefers-reduced-motion: reduce) { .cal .now .dot.wait { animation:none } }
 
   .cal .dow { display:grid; grid-template-columns:repeat(7,1fr); }
   .cal .dow span {
@@ -179,8 +184,14 @@
  * 달력 한 개를 상자 안에 그립니다. 한 페이지에 여러 개 놓아도 서로 안 섞입니다.
  *   달력만들기(상자, 일정목록)
  * 일정 한 건 = { n:이름, s:시작 YYYY-MM-DD, e:종료, p:공정, g:구분, d:지연이면 1 }
+ *
+ * 옵션.대기 = true 면 「틀만」 그립니다 — 이번 달 격자와 날짜까지만.
+ * 서버가 1.7초쯤 걸리는데 그동안 글자만 띄워두면 화면이 멈춘 것처럼 보입니다.
+ * 격자는 자료 없이도 즉시 그릴 수 있으니 먼저 띄우고 막대만 나중에 채웁니다.
  */
-function 달력만들기(상자, 일정) {
+function 달력만들기(상자, 일정, 옵션) {
+  옵션 = 옵션 || {};
+  var 대기 = !!옵션.대기;
   var 오늘 = new Date(); 오늘.setHours(0,0,0,0);
   var 오늘str = ymd(오늘);
   var 공사아님 = { '행정':1, '미팅':1, '검수':1 };
@@ -230,6 +241,12 @@ function 달력만들기(상자, 일정) {
   }
 
   function 윗줄(){
+    if (대기) {
+      상자.querySelector('.js-now').innerHTML =
+        '<span class="dot wait"></span><span class="waiting">'
+        + (옵션.문구 || '일정을 불러오는 중입니다') + '</span>';
+      return;
+    }
     var 진행 = 일정.filter(function(x){ return 상태(x)==='live'; });
     var 다음 = 일정.filter(function(x){ return x.s > 오늘str; })
                    .sort(function(a,b){ return a.s<b.s?-1:1; });
@@ -247,6 +264,7 @@ function 달력만들기(상자, 일정) {
   }
 
   function 첫달(){
+    if (!일정.length) return new Date(오늘.getFullYear(), 오늘.getMonth(), 1);
     var 끝 = 일정.reduce(function(m,x){ return x.e>m ? x.e : m; }, 일정[0].e);
     if (오늘str <= 끝) return new Date(오늘.getFullYear(), 오늘.getMonth(), 1);
     var d = 날짜(일정[0].s); return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -260,12 +278,13 @@ function 달력만들기(상자, 일정) {
     var 이달=일정.filter(function(x){ return x.e>=달시작 && x.s<=달끝; });
 
     몸통.innerHTML='';
-    if(!이달.length){
+    // 대기 중에 「일정이 없습니다」를 띄우면 거짓말이 됩니다. 격자만 그립니다.
+    if(!대기 && !이달.length){
       몸통.innerHTML='<div class="note"><b>이 달에는 예정된 일정이 없습니다</b>‹ › 로 다른 달을 보실 수 있습니다</div>';
       return;
     }
     몸통.appendChild(달력(y,m));
-    몸통.appendChild(목록(이달));
+    if(!대기) 몸통.appendChild(목록(이달));
   }
 
   function 달력(y,m){
@@ -372,7 +391,7 @@ function 달력만들기(상자, 일정) {
   상자.querySelector('.js-today').onclick = function(){ 보는달=new Date(오늘.getFullYear(),오늘.getMonth(),1); 그리기(); };
   window.addEventListener('resize', 그리기);
 
-  if(!일정.length){
+  if(!대기 && !일정.length){
     상자.querySelector('.js-now').textContent='';
     몸통.innerHTML='<div class="note"><b>등록된 일정이 없습니다</b>일정이 잡히면 이곳에 표시됩니다</div>';
     return;
@@ -401,9 +420,11 @@ function 알림상자(상자, 제목, 설명) {
   var API = q.get('api') || '';
   if (!SITE || !API) { 알림상자(상자, '주소가 덜 채워졌습니다', 'site 와 api 값이 필요합니다'); return; }
 
-  알림상자(상자, '공정표를 불러오는 중입니다', '잠시만 기다려주세요');
+  // 격자를 먼저 띄웁니다. 서버는 1.7초쯤 걸리는데 그동안 글자만 보이면
+  // 화면이 멈춘 것처럼 읽힙니다. 이번 달 날짜는 자료 없이도 그릴 수 있습니다.
+  달력만들기(상자, [], { 대기: true });
   var 늦음 = setTimeout(function () {
-    알림상자(상자, '불러오는 데 시간이 걸리고 있습니다', '잠시 후 새로고침해 주세요');
+    달력만들기(상자, [], { 대기: true, 문구: '불러오는 데 시간이 걸리고 있습니다 — 잠시 후 새로고침해 주세요' });
   }, 9000);
 
   fetch(API + (API.indexOf('?') < 0 ? '?' : '&') + 'cal=' + SITE)
