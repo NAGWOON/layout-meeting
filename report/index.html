@@ -364,8 +364,9 @@
   .ohd .oi { font-size:20px; flex:none; }
   .ohd .ot { flex:1; min-width:0; line-height:1.45; }
   .ohd .ot b { display:block; font-size:14.5px; font-weight:700; letter-spacing:-.2px; }
-  .ohd .ot i { display:block; font-style:normal; font-size:11.5px; color:var(--txt3);
-    margin-top:4px; line-height:1.55; }
+  .ohd .ot i { display:block; font-style:normal; font-size:12px; color:var(--txt2);
+    margin-top:5px; line-height:1.5; }
+  .ohd .ot i.sub { font-size:11.5px; color:var(--txt3); margin-top:2px; }
   .ohd .oc { font-size:12px; color:var(--txt2); flex:none; white-space:nowrap; }
   .ohd .oc b { color:var(--warn); font-weight:800; }
   .ohd .og { color:var(--txt4); flex:none; font-size:16px; }
@@ -539,6 +540,7 @@
       <div class="site" id="oSite">현장</div>
     </div>
     <div class="body">
+      <div class="lab">발주 내역</div>
       <div id="oList"></div>
     </div>
   </div>
@@ -781,7 +783,8 @@ function renderOrders() {
       + '<div class="ohd" onclick="toggleOrder(\'' + o.id + '\')">'
       + '<div class="oi">' + (끝남 ? '✅' : '📦') + '</div>'
       + '<div class="ot"><b>' + esc(o.name || o.no || '발주') + '</b>'
-      + '<i>' + [o.vendor, o.due ? '입고예정 ' + o.due : '', o.no].filter(String).map(esc).join('  ·  ') + '</i></div>'
+      + '<i>' + esc(o.vendor || '발주처 미지정') + '</i>'
+      + '<i class="sub">' + [o.due ? '입고예정 ' + o.due : '', o.no].filter(String).map(esc).join('  ·  ') + '</i></div>'
       + '<div class="oc">' + (남음 === null ? (o.count || 0) + '품목'
           : (남음 ? '<b>' + 남음 + '</b> 남음' : '완료')) + '</div>'
       + '<div class="og">' + (펼침 ? '⌄' : '›') + '</div></div>';
