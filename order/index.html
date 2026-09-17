@@ -183,6 +183,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .shotrow label{ cursor:pointer; }
 .pr.unsure{ background:rgba(192,86,29,.07); }
 .pr.unsure .src::after{ content:' ⚠'; color:var(--warn); }
+.it .nm em.tb{ font-style:normal; font-size:9.5px; font-weight:700; color:var(--accent);
+  border:1px solid var(--accent); border-radius:5px; padding:1px 5px; margin-left:6px;
+  vertical-align:1px; opacity:.75; }
 .it .nm i.ds{ display:block; font-size:11px; color:var(--txt3); line-height:1.45;
   margin-top:1px; white-space:normal; }
 .stabs{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:11px; }
@@ -582,7 +585,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="srch"><input id="search" placeholder="품목 검색" oninput="renderItems()"></div>
     <div class="tools">
       <div class="btn2" onclick="applyBase()">초도 세트</div>
-      <div class="btn2" id="onlyBtn" onclick="toggleOnly()">담은 것만</div>
+      <div class="btn2" id="onlyBtn" onclick="toggleOnly()">담은 것만 <b style="font-weight:400;opacity:.6">전체 탭</b></div>
       <div class="btn2" onclick="openPaste()">📋 붙여넣기</div>
       <div class="btn2" onclick="openAdd()">＋ 품목</div>
       <div class="btn2" onclick="openSplit()">✂ 나누기</div>
@@ -1396,7 +1399,9 @@ function 품목찾기(이름, 제유형) {
 function pool() { return S.items.filter(function (i) { return i.type === S.type; }); }
 function renderItems() {
   var q = el('search').value.trim().toLowerCase(), html = '', group = null;
-  pool().forEach(function (i) {
+  // 「담은 것만」은 유형을 넘어 보여줍니다. 목자재 산출로 담은 단열재를 설비 탭에서도
+  // 고칠 수 있어야 합니다 — 안 그러면 담아놓고 수량을 만질 자리가 없습니다.
+  (S.only ? S.items : pool()).forEach(function (i) {
     if (S.only && !S.qty[i.id]) return;
     if (q && (i.name + ' ' + (i.spec || '')).toLowerCase().indexOf(q) < 0) return;
     if (i.group !== group) { group = i.group; html += '<div class="gh">' + esc(group || '기타') + '</div>'; }
@@ -1405,6 +1410,7 @@ function renderItems() {
     if (rg) sub += (sub ? '  ·  ' : '') + '지난 현장 ' + rg.min + '–' + rg.max;
     html += '<div class="it' + (v ? '' : ' dim') + '" data-row="' + i.id + '">'
       + '<div class="nm"><b>' + esc(i.name) + '</b>'
+      + (i.type !== S.type ? '<em class="tb">' + esc(i.type) + '</em>' : '')
       + (sub ? '<i>' + esc(sub) + '</i>' : '')
       + (i.desc ? '<i class="ds">' + esc(i.desc) + '</i>' : '') + '</div>'
       + '<input class="cut' + (v ? '' : ' hide') + '" list="cutlist" placeholder="재단" value="'
@@ -1461,6 +1467,8 @@ function blurExtra(i) {
   if (S.extra[i] && S.extra[i].qty > 0) return;
   S.extra.splice(i, 1); renderItems(); draw(); bar(); side();
 }
+// 「다른 탭에 담겨 있습니다」를 누르면 바로 담은 것만 보기로 넘깁니다
+function showAllPicked() { if (!S.only) toggleOnly(); }
 function toggleOnly() {
   S.only = !S.only;
   el('onlyBtn').classList.toggle('on', S.only);
@@ -2404,9 +2412,10 @@ function side() {
   if (딴탭.length) {
     var 유형 = {};
     딴탭.forEach(function (x) { 유형[x.type] = (유형[x.type] || 0) + 1; });
-    el('sumBox').innerHTML += '<div class="asof" style="margin-top:7px;color:var(--accent)">'
+    el('sumBox').innerHTML += '<div class="asof" style="margin-top:7px;color:var(--accent);cursor:pointer"'
+      + ' onclick="showAllPicked()">'
       + Object.keys(유형).map(function (k) { return esc(k) + ' ' + 유형[k] + '품목'; }).join(' · ')
-      + ' 이 다른 탭에 담겨 있습니다</div>';
+      + ' 이 다른 탭에 담겨 있습니다 — 눌러서 다 보기</div>';
   }
 
   var d = S.detail;
