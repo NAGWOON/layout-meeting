@@ -1041,6 +1041,8 @@ var WALL = {
 };
 var CEIL = { d:0.0757, g:0.617 };
 var INS = {
+  '아이소핑크 10T (특호)':  { w:1.481, a:0.617 },
+  '아이소핑크 20T (특호)':  { w:1.481, a:0.617 },
   '아이소핑크 30T (특호)':  { w:1.481, a:0.617 },
   '아이소핑크 50T (특호)':  { w:1.481, a:0.617 },
   '아이소핑크 100T (특호)': { w:1.481, a:0.617 },
@@ -1161,7 +1163,7 @@ var XSIZE  = [50, 30, 20, 10], XSHEET = 1.62;   // 900×1800 = 1.62㎡
 // 코드에 박지 않고 기준값으로 빼뒀습니다 — 명세서 보고 실측으로 고치시면 됩니다.
 // 수평몰탈 25kg 으로 1mm 두께에 몇 ㎡ — 제품마다 다릅니다. 화면에서 고칠 수 있게 빼뒀습니다.
 // 폼본드 1개로 붙이는 면적도 기준값으로 빼뒀습니다 — 도포 방식에 따라 크게 달라집니다.
-var XN = { i:'아이소핑크 ', f:'우레탄 폼본드 (폼건용)', m:'레미탈 40kg',
+var XN = { i:'아이소핑크 ',  iz:' (특호)', f:'우레탄 폼본드 (폼건용)', m:'레미탈 40kg',
            l:'수평몰탈 (셀프레벨링)', p:'프라이머 AC2000K 4L' };
 
 function toggleXstd() {
@@ -1235,7 +1237,7 @@ function expCalc() {
 
   var out = [];
   XSIZE.forEach(function (s) {
-    if (시트[s]) out.push([XN.i + s + 'T', Math.ceil(시트[s] * (1 + 로스) / XSHEET)]);
+    if (시트[s]) out.push([XN.i + s + 'T' + XN.iz, Math.ceil(시트[s] * (1 + 로스) / XSHEET)]);
   });
   if (접착) out.push([XN.f, Math.ceil(접착 / 폼당), '붙이는 면적 ' + (Math.round(접착 * 10) / 10) + '㎡']);
   if (부피) out.push([XN.m, Math.ceil(부피 / 레미포당),
@@ -2099,6 +2101,23 @@ function setVenOf(n, v) {
   S.venT2 = setTimeout(function () { draw(); renderSheetTabs(); renderShip(); }, 300);
 }
 
+// 같은 물건이 두 줄로 나가면 업체가 헷갈립니다. 벽 단열과 바닥 단열을 따로 뽑아도
+// 목재상에는 「아이소핑크 50T (특호) 19장」 한 줄로 가야 합니다.
+function 합치기(lines) {
+  var 순서 = [], 통 = {};
+  lines.forEach(function (x) {
+    var k = x.name + '|' + (x.spec || '') + '|' + (x.cut || '') + '|' + (x.unit || '');
+    if (!통[k]) {
+      통[k] = { name:x.name, spec:x.spec, cut:x.cut, unit:x.unit,
+                group:x.group, price:x.price, type:x.type, qty:0, calc:null };
+      순서.push(k);
+    }
+    통[k].qty += Number(x.qty) || 0;
+    if (x.calc != null) 통[k].calc = (Number(통[k].calc) || 0) + Number(x.calc);
+  });
+  return 순서.map(function (k) { return 통[k]; });
+}
+
 // 발주서 화면에서 손대는 것 셋 — 어느 경우에나 같은 자리에 있어야 찾습니다
 function 도구줄() {
   return '<div class="stab" onclick="openNote()">📌 특기사항'
@@ -2192,7 +2211,7 @@ function bar() {
       + '<div class="btn pri' + (all.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
 }
 function draw() {
-  var d = S.detail, lines = pickedOf(S.cur), due = el('dueIn').value;
+  var d = S.detail, lines = 합치기(pickedOf(S.cur)), due = el('dueIn').value;
   el('cntTxt').textContent = picked().length + '건';
   renderSheetTabs();
 
@@ -2646,7 +2665,7 @@ function footLines() {
 }
 
 function textVersion() {
-  var d = S.detail, lines = picked(), due = el('dueIn').value;
+  var d = S.detail, lines = 합치기(pickedOf(S.cur)), due = el('dueIn').value;
   var t = '[발주서] ' + CO.name + (S.orderNo ? '  ' + S.orderNo : '') + '\n';
   t += CO.en + ' · 사업자 ' + CO.biz + '\n──────────────\n';
   t += '수신 : ' + (venOf(S.cur) || '—') + '\n';
@@ -2685,7 +2704,7 @@ function saveImage() {
 // ═════ 제출 ═════
 function submit() {
   if (S.busy) return;
-  var lines = pickedOf(S.cur);
+  var lines = 합치기(pickedOf(S.cur));
   if (!S.site) return toast('현장을 먼저 고르세요');
   if (!lines.length) return toast('이 장에 품목이 없습니다');
   if (S.done[S.cur]) return toast('이미 등록한 장입니다');
