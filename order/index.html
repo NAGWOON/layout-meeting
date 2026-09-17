@@ -786,7 +786,7 @@ var S = {
   only: false, calcOpen: true, loss: 10, elev: null, unload: null,   // 산출부터 하는 게 순서입니다
   walls: [{ m: '', kind: '석고 1ply · @300' }],
   ins:   [{ v: '', mode: '벽', mat: '아이소핑크 30T (특호)' }],
-  sheetNo: {}, ven: {}, cur: 1, done: {}, shipBy: {},   // 발주서 분리 — 품목→장, 장→발주처·배송·발주번호
+  sheetNo: {}, ven: {}, cur: 1, done: {}, shipBy: {}, typeBy: {},   // 발주서 분리 — 품목→장, 장→발주처·배송·발주번호
   calcQty: {},   // 「채우기」가 넣은 값. 대표님이 고친 값과 달라지면 그게 계수를 고칠 재료입니다
   exp:   [{ n: '', a: '', d: '' }], expOpen: true,   // 확장부 바닥 (설비·방수)
   tile:  [{ n: '', a: '', d: '' }], tileOpen: true   // 타일 바닥 (설비·방수 · 타일)
@@ -1463,7 +1463,7 @@ function applyBase() {
 }
 function clearQty() {
   S.qty = {}; S.cut = {}; S.extra = [];
-  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1; S.calcQty = {}; S.shipBy = {};
+  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1; S.calcQty = {}; S.shipBy = {}; S.typeBy = {};
   renderItems(); draw(); bar(); side(); toast('비웠습니다');
 }
 function loadPast() {
@@ -1477,7 +1477,7 @@ function loadPast() {
       if (!(x.qty > 0)) return;
       var id2 = byName[x.name];
       if (id2) { S.qty[id2] = x.qty; if (x.cut) S.cut[id2] = x.cut; hit++; }
-      else { S.extra.push({ name:x.name, spec:x.spec, cut:x.cut||'', unit:x.unit, qty:x.qty, group:'이번 발주에만' }); miss++; }
+      else { S.extra.push({ name:x.name, spec:x.spec, cut:x.cut||'', unit:x.unit, qty:x.qty, group:'이번 발주에만', type: S.type }); miss++; }
     });
     renderItems(); draw(); bar(); side();
     toast(hit + '품목 불러왔습니다' + (miss ? ' · ' + miss + '건은 임시 품목으로' : ''));
@@ -1501,7 +1501,7 @@ function doAdd() {
       group = el('aGroup').value, qty = Number(el('aQty').value) || 1;
 
   if (!el('aSave').checked) {                    // 이번 발주서에만
-    S.extra.push({ name:name, spec:spec, unit:unit, qty:qty, group:'이번 발주에만' });
+    S.extra.push({ name:name, spec:spec, unit:unit, qty:qty, group:'이번 발주에만', type: S.type });
     closeAdd(); renderItems(); draw(); bar(); side(); toast('임시 품목으로 담았습니다');
     return;
   }
@@ -1873,7 +1873,7 @@ function applyPaste() {
       var 있음 = S.extra.filter(function (x) { return x.name === r.src; })[0];
       if (있음) 있음.qty = (Number(있음.qty) || 0) + r.qty;
       else S.extra.push({ name: r.src, spec: '', cut: '', unit: r.unit || '개',
-                          qty: r.qty, group: '이번 발주에만' });
+                          qty: r.qty, group: '이번 발주에만', type: S.type });
       return;
     }
     // 팀장이 짚어준 건 「추가로 더」입니다. 같은 품목이면 더합니다.
@@ -1916,7 +1916,9 @@ function pickedOf(n) {
   return picked().filter(function (x) { return sheetOf(x) === n; });
 }
 // 한 장에 유형이 섞이면 가장 많은 쪽으로 찍습니다. 실제 내역은 본문에 그대로 남습니다.
+// 다른 탭에서 붙여넣으면 어긋날 수 있어 발주서에서 직접 고칠 수 있게 해뒀습니다.
 function typeOf(n) {
+  if (S.typeBy[n]) return S.typeBy[n];
   var c = {}, best = S.type, max = 0;
   pickedOf(n).forEach(function (x) {
     var t = x.type || S.type;
@@ -1988,6 +1990,10 @@ function renderSheetTabs() {
   }).join('')
     + '<input class="svin" id="venIn" placeholder="이 장의 거래처 (비워도 됩니다)" value="'
     + esc(S.ven[S.cur] || '') + '" oninput="setVen(this.value)">'
+    + '<select class="svin" style="flex:0 0 116px" onchange="setSheetType(this.value)">'
+    + TYPES.map(function (t) {
+        return '<option' + (t === typeOf(S.cur) ? ' selected' : '') + '>' + esc(t) + '</option>';
+      }).join('') + '</select>'
     + '<div class="stab" onclick="openSplit()">✂</div>';
 }
 function setVen(v) {
@@ -1996,6 +2002,7 @@ function setVen(v) {
   clearTimeout(S.venT);
   S.venT = setTimeout(function () { draw(); renderSheetTabs(); }, 400);
 }
+function setSheetType(t) { S.typeBy[S.cur] = t; draw(); renderSheetTabs(); }
 function goSheetNo(n) {
   S.cur = n;
   renderShip(); draw(); bar();
