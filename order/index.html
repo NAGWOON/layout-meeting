@@ -350,15 +350,19 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .modal h3{ font-size:14px; font-weight:800; margin-bottom:13px; }
 .modal.wide{ max-width:520px; }
 /* 카톡에서 읽어낸 줄 */
-.pr{ display:flex; align-items:center; gap:7px; padding:6px 0; border-bottom:1px solid var(--soft); }
+/* 견적서 품명은 그 자체가 물건입니다 — 「9구」가 잘리면 다른 물건이 됩니다.
+   한 줄에 욱여넣지 않고 품명에 한 단을 통째로 내줍니다. */
+.pr{ display:flex; flex-wrap:wrap; align-items:center; gap:7px 8px; padding:10px 0;
+  border-bottom:1px solid var(--soft); }
 .pr:last-of-type{ border-bottom:0; }
-.pr .src{ flex:0 0 108px; font-size:11px; color:var(--txt4); overflow:hidden;
-  text-overflow:ellipsis; white-space:nowrap; }
-.pr select{ flex:1; min-width:0; font-size:12px; padding:5px 8px; }
-.pr input{ width:56px; flex:none; text-align:right; font-size:13px; padding:5px 7px;
+.pr .src{ flex:1 1 100%; font-size:12.5px; color:var(--txt); line-height:1.45;
+  white-space:normal; word-break:break-all; }
+.pr select{ flex:1 1 150px; min-width:0; font-size:12px; padding:6px 8px; }
+.pr input{ width:62px; flex:none; text-align:right; font-size:14px; padding:6px 8px;
   font-family:var(--didone); }
-.pr .u{ width:20px; flex:none; font-size:11px; color:var(--txt4); }
+.pr .u{ min-width:26px; flex:none; font-size:11.5px; color:var(--txt3); }
 .pr.miss select{ border-color:var(--warn); }
+.pr.unsure .src{ color:var(--warn); }
 .psum{ font-size:11.5px; color:var(--txt3); margin:11px 0 4px; }
 .psum b{ color:var(--txt); }
 
