@@ -357,25 +357,30 @@
   .additem { text-align:center; font-size:11.5px; color:var(--txt4); border:1px dashed var(--dash);
     border-radius:11px; padding:9px; cursor:pointer; }
   /* 발주 검수 — 기본은 접어둡니다. 발주가 여러 건이면 다 펴져 있으면 못 읽습니다. */
-  .ocard { border:1px solid var(--line); border-radius:14px; margin-bottom:10px;
+  .ocard { border:1px solid var(--line); border-radius:16px; margin-bottom:12px;
     background:var(--card); overflow:hidden; }
   .ocard.done { opacity:.62; }
-  .ohd { display:flex; align-items:center; gap:11px; padding:14px 15px; cursor:pointer; }
-  .ohd .oi { font-size:19px; flex:none; }
-  .ohd .ot { flex:1; min-width:0; line-height:1.4; }
-  .ohd .ot b { display:block; font-size:14px; font-weight:700; letter-spacing:-.2px; }
+  .ohd { display:flex; align-items:center; gap:12px; padding:16px 16px 15px; cursor:pointer; }
+  .ohd .oi { font-size:20px; flex:none; }
+  .ohd .ot { flex:1; min-width:0; line-height:1.45; }
+  .ohd .ot b { display:block; font-size:14.5px; font-weight:700; letter-spacing:-.2px; }
   .ohd .ot i { display:block; font-style:normal; font-size:11.5px; color:var(--txt3);
-    margin-top:3px; }
+    margin-top:4px; line-height:1.55; }
   .ohd .oc { font-size:12px; color:var(--txt2); flex:none; white-space:nowrap; }
   .ohd .oc b { color:var(--warn); font-weight:800; }
   .ohd .og { color:var(--txt4); flex:none; font-size:16px; }
-  .obody { padding:4px 15px 15px; border-top:1px solid var(--line); }
-  .oitem { display:flex; align-items:flex-start; gap:12px; padding:13px 2px; cursor:pointer;
-    border-bottom:1px solid var(--soft); font-size:14px; line-height:1.5; }
+  .obody { padding:6px 16px 16px; border-top:1px solid var(--line); }
+
+  /* 현장에서 장갑 낀 손으로 누릅니다. 줄 간격을 넉넉히 두고 이름은 단어째 접습니다. */
+  .oitem { display:flex; align-items:flex-start; gap:13px; padding:15px 2px; cursor:pointer;
+    border-bottom:1px solid var(--soft); font-size:14.5px; line-height:1.6; }
   .oitem:last-of-type { border-bottom:0; }
-  .oitem input { width:23px; height:23px; flex:none; margin:1px 0 0; accent-color:var(--accent); }
-  .oitem span { flex:1; min-width:0; word-break:break-all; }
+  .oitem input { width:24px; height:24px; flex:none; margin:2px 0 0; accent-color:var(--accent); }
+  .oitem span { flex:1; min-width:0; overflow-wrap:anywhere; word-break:normal; }
+  .oitem b { flex:none; font-weight:700; font-size:13.5px; color:var(--txt2);
+    white-space:nowrap; padding-top:1px; }
   .oitem.on span { color:var(--txt4); text-decoration:line-through; }
+  .oitem.on b { color:var(--txt4); }
 </style>
 </head>
 <body>
@@ -786,10 +791,15 @@ function renderOrders() {
 
     return 머리 + '<div class="obody">'
       + o.items.map(function (x) {
+          // 본문에는 「이름 · 규격 · 수량단위」로 한 줄에 적혀 있습니다.
+          // 이름이 길면 수량이 글 속에 묻히므로 마지막 토막을 떼어 오른쪽에 세웁니다.
+          var t = x.text, 수량 = '', k = t.lastIndexOf(' · ');
+          if (k > 0 && /[0-9]/.test(t.slice(k + 3))) { 수량 = t.slice(k + 3).trim(); t = t.slice(0, k); }
           return '<label class="oitem' + (x.checked ? ' on' : '') + '">'
             + '<input type="checkbox"' + (x.checked ? ' checked' : '')
             + ' onchange="checkItem(\'' + o.id + '\',\'' + x.id + '\',this.checked)">'
-            + '<span>' + esc(x.text) + '</span></label>';
+            + '<span>' + esc(t) + '</span>'
+            + (수량 ? '<b>' + esc(수량) + '</b>' : '') + '</label>';
         }).join('')
       + '<div class="hint" style="margin-top:9px">받으신 것부터 체크하세요. 다 체크되면 사무실에 알림이 갑니다.</div>'
       + '</div></div>';
