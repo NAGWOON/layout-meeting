@@ -824,9 +824,14 @@ function renderOrders() {
 
 // 현장명은 화면 맨 위에 이미 있습니다. 카드에 또 적으면 좁은 폰에서 제목이 두 줄이 됩니다.
 function 짧은제목(o) {
+  // 제목이 「유형 · 업체 · 현장」입니다. 현장은 이미 화면 위에 있고
+  // 업체는 바로 아랫줄에 따로 찍히므로, 카드 제목에는 유형만 남깁니다.
   var t = o.name || o.no || '발주';
-  var 현장 = (state.site && state.site.name || '').replace(/\s*PROJECT\s*$/, '').trim();
-  if (현장) t = t.replace(' · ' + 현장, '').replace(현장 + ' · ', '');
+  var 뺄것 = [(state.site && state.site.name || '').replace(/\s*PROJECT\s*$/, ''), o.vendor || ''];
+  뺄것.forEach(function (w) {
+    w = (w || '').trim(); if (!w) return;
+    t = t.replace(' · ' + w, '').replace(w + ' · ', '');
+  });
   return t.trim() || (o.no || '발주');
 }
 function toggleOrder(id) {
