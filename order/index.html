@@ -349,7 +349,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
   display:flex; align-items:center; justify-content:center; padding:18px; }
 .modal{ width:100%; max-width:380px; background:var(--card); border:1px solid var(--cardbd);
-  border-radius:18px; box-shadow:var(--cardsh); backdrop-filter:blur(20px); padding:17px 18px; }
+  border-radius:18px; box-shadow:var(--cardsh); backdrop-filter:blur(20px); padding:17px 18px;
+  /* 줄이 많으면 창이 화면보다 길어져 버튼이 밖으로 나갑니다 — 안에서 굴리게 합니다 */
+  max-height:calc(100vh - 36px); overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .modal h3{ font-size:14px; font-weight:800; margin-bottom:13px; }
 .modal.wide{ max-width:520px; }
 /* 카톡에서 읽어낸 줄 */
