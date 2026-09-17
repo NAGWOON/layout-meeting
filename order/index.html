@@ -16,6 +16,9 @@
 :root{
   --sans:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
   --didone:"Bodoni Moda",Didot,Georgia,"Times New Roman",serif;
+  /* 수량·금액은 읽는 숫자입니다. 세리프로 두면 예쁘지만 현장에서 안 읽힙니다.
+     장식은 D 마크와 영문 사명에만 남겼습니다. */
+  --num:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Segoe UI",sans-serif;
   --bg: radial-gradient(70% 50% at 12% 58%, rgba(228,196,148,.55) 0%, rgba(0,0,0,0) 62%),
         radial-gradient(55% 40% at 88% 78%, rgba(212,188,158,.40) 0%, rgba(0,0,0,0) 66%),
         radial-gradient(75% 45% at 80% 12%, rgba(176,200,228,.55) 0%, rgba(0,0,0,0) 64%),
@@ -102,7 +105,7 @@ body{ font-family:var(--sans); color:var(--txt); min-height:100vh;
 .why > summary::after{ content:" ›"; }
 .why[open] > summary::after{ content:" ⌄"; }
 .hide{ display:none !important; }
-.num{ font-family:var(--didone); font-variant-numeric:tabular-nums; }
+.num{ font-family:var(--num); font-variant-numeric:tabular-nums; }
 
 /* 헤더 */
 .hd{ border-radius:20px; padding:13px 16px; color:#fff; position:relative; overflow:hidden;
@@ -166,7 +169,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .sect:first-of-type{ border-top:0; padding-top:0; margin-top:2px; }
 .sect span{ font-weight:600; font-size:10.5px; color:var(--txt4); }
 .crow{ display:flex; align-items:center; gap:7px; margin-bottom:7px; }
-.crow input{ width:72px; text-align:right; font-family:var(--didone); font-size:15px; flex:none; }
+.crow input{ width:72px; text-align:right; font-family:var(--num); font-variant-numeric:tabular-nums; font-size:15px; flex:none; }
 .crow select{ flex:1; min-width:0; font-size:12.5px; padding:7px 9px; }
 .crow .cu{ width:20px; font-size:11px; color:var(--txt4); flex:none; }
 .crow .cl{ font-size:12.5px; color:var(--txt2); flex:1; }
@@ -196,7 +199,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .srow .snm i{ font-style:normal; color:var(--txt3); font-size:11.5px; }
 .calcout{ margin-top:12px; padding:11px 12px; border-radius:12px; background:var(--soft); font-size:12.5px; }
 .calcout .r{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
-.calcout .r b{ font-family:var(--didone); font-size:15px; font-weight:600; }
+.calcout .r b{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:15px; font-weight:600; }
 .calcout .r span{ color:var(--txt3); }
 .calcout .rng{ font-size:10.5px; color:var(--txt4); margin:-1px 0 5px; }
 .calcout .over b,.calcout .over{ color:var(--warn); }
@@ -218,7 +221,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .it .nm{ flex:1; min-width:0; font-size:13px; line-height:1.35; }
 .it .nm b{ font-weight:600; display:block; }
 .it .nm i{ font-style:normal; font-size:10.5px; color:var(--txt4); }
-.it .q{ width:60px; text-align:right; font-family:var(--didone); font-size:15px; font-weight:500;
+.it .q{ width:60px; text-align:right; font-family:var(--num); font-variant-numeric:tabular-nums; font-size:15.5px; font-weight:700;
   padding:5px 8px; flex:none; }
 .it .q.has{ border-color:var(--accent); color:var(--accent); }
 .it .u{ width:22px; font-size:11px; color:var(--txt4); flex:none; }
@@ -231,7 +234,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   border-top:1px solid var(--line); }
 .bar .in{ margin:0 auto; display:flex; align-items:center; gap:12px; }
 .bar .cnt{ flex:1; font-size:12.5px; color:var(--txt2); line-height:1.4; }
-.bar .cnt b{ font-family:var(--didone); font-size:17px; font-weight:600; color:var(--txt); }
+.bar .cnt b{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:17px; font-weight:600; color:var(--txt); }
 .bar .cnt span{ display:block; font-size:11px; color:var(--txt4); }
 .btn{ padding:12px 20px; border-radius:13px; font-size:13.5px; font-weight:800; cursor:pointer;
   border:1px solid var(--fieldbd); background:var(--field); color:var(--txt); text-align:center; }
@@ -303,10 +306,10 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   padding:4px 0; border-bottom:1px solid var(--soft); }
 .sr:last-child{ border-bottom:0; }
 .sr span{ color:var(--txt2); }
-.sr b{ font-family:var(--didone); font-size:14px; font-weight:600; }
+.sr b{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:14px; font-weight:600; }
 .stot{ display:flex; justify-content:space-between; align-items:baseline; margin-top:9px;
   padding-top:9px; border-top:1px solid var(--line); }
-.stot b{ font-family:var(--didone); font-size:17px; font-weight:600; }
+.stot b{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:17px; font-weight:600; }
 .sinfo{ font-size:12px; line-height:1.7; color:var(--txt2); }
 .sinfo dt{ font-size:10.5px; color:var(--txt4); font-weight:700; margin-top:8px; }
 .sinfo dt:first-child{ margin-top:0; }
@@ -323,13 +326,13 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .elev{ display:flex; gap:5px; align-items:center; margin-top:4px; }
 .elev span{ font-size:10.5px; color:var(--txt4); width:26px; flex:none; }
 .elev input{ flex:1; min-width:0; font-size:12px; padding:6px 7px; text-align:center;
-  font-family:var(--didone); }
+  font-family:var(--num); font-variant-numeric:tabular-nums; }
 .lrow{ display:flex; justify-content:space-between; gap:8px; font-size:12px;
   padding:5px 0; border-bottom:1px solid var(--soft); }
 .lrow:last-child{ border-bottom:0; }
 .lrow.bad{ color:var(--warn); }
 .lrow.bad b{ font-weight:700; }
-.lrow .len{ font-family:var(--didone); font-size:13px; }
+.lrow .len{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:13px; }
 .cutbox{ background:var(--soft); border-left:2px solid var(--accent); border-radius:0 8px 8px 0;
   padding:9px 11px; font-size:12px; line-height:1.6; color:var(--txt); font-weight:600; }
 .lfix{ font-size:11px; color:var(--accent); font-weight:700; cursor:pointer;
@@ -359,7 +362,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   white-space:normal; word-break:break-all; }
 .pr select{ flex:1 1 150px; min-width:0; font-size:12px; padding:6px 8px; }
 .pr input{ width:62px; flex:none; text-align:right; font-size:14px; padding:6px 8px;
-  font-family:var(--didone); }
+  font-family:var(--num); font-variant-numeric:tabular-nums; }
 .pr .u{ min-width:26px; flex:none; font-size:11.5px; color:var(--txt3); }
 .pr.miss select{ border-color:var(--warn); }
 .pr.unsure .src{ color:var(--warn); }
@@ -378,9 +381,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .settbl th.x, .settbl td.x{ width:24px; text-align:center; }
 .settbl select{ width:100%; font-size:12px; padding:5px 7px; }
 .settbl input{ width:100%; text-align:right; font-size:12.5px; padding:5px 7px;
-  font-family:var(--didone); }
-.settbl .was{ font-family:var(--didone); font-size:13px; color:var(--txt3); }
-.settbl .gap{ font-family:var(--didone); font-size:12.5px; }
+  font-family:var(--num); font-variant-numeric:tabular-nums; }
+.settbl .was{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:13px; color:var(--txt3); }
+.settbl .gap{ font-family:var(--num); font-variant-numeric:tabular-nums; font-size:12.5px; }
 .settbl .gap.up{ color:var(--warn); font-weight:700; }
 .settbl .gap.dn{ color:var(--txt4); }
 .settbl .rm{ color:var(--txt4); cursor:pointer; font-size:14px; }
