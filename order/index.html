@@ -175,6 +175,10 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   font-family:var(--sans); font-size:12.5px; }
 .addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:3px 0 1px; }
 .btn2.pri{ border-color:var(--accent); color:var(--accent); background:rgba(47,111,237,.09); font-weight:700; }
+.shotrow{ display:flex; gap:7px; }
+.shotrow label{ cursor:pointer; }
+.pr.unsure{ background:rgba(192,86,29,.07); }
+.pr.unsure .src::after{ content:' ⚠'; color:var(--warn); }
 .it .nm i.ds{ display:block; font-size:11px; color:var(--txt3); line-height:1.45;
   margin-top:1px; white-space:normal; }
 .stabs{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:11px; }
@@ -735,7 +739,13 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 <div class="mask hide" id="pasteMask">
   <div class="modal wide">
     <h3>📋 붙여넣기 <em style="font-weight:400;color:var(--txt4);font-size:11.5px">카톡 · 견적서 · 주문서 그대로</em></h3>
-    <textarea id="pasteIn" rows="4" placeholder="예) 다루끼 5단, 일반석고 20장&#10;우레탄폼 2개랑 실리콘 10개요"
+    <div class="shotrow">
+      <label class="btn2 pri" style="flex:1;text-align:center;padding:11px">📷 견적서 사진에서 읽기
+        <input type="file" accept="image/*" style="display:none" onchange="readShot(this)"></label>
+    </div>
+    <div class="note" style="margin:7px 0 10px">카톡으로 받은 견적서는 글자 복사가 안 되니 사진으로 읽습니다.
+      읽은 뒤 <b>규격이 맞는지 한 번 훑어주세요</b> — 「9구」를 「6구」로 볼 수 있습니다.</div>
+    <textarea id="pasteIn" rows="4" placeholder="또는 여기에 붙여넣기 &#10;예) 다루끼 5단, 일반석고 20장 / 견적서 표 그대로"
       style="width:100%;font-size:13px" oninput="readPaste()"></textarea>
     <div id="pasteOut"></div>
     <div class="mrow">
@@ -1705,9 +1715,64 @@ function pasteMatch(raw, unit) {
 }
 
 var P = { rows: [] };
+
+// 견적서 사진 읽기 — 카톡으로 온 견적서는 글자 복사가 안 됩니다.
+//
+// 읽은 결과를 바로 담지 않고 붙여넣기와 같은 확인 화면으로 떨어뜨립니다.
+// 규격 한 글자가 다른 물건이라 (「9구」와 「6구」) 눈으로 한 번 훑으셔야 합니다.
+function readShot(input) {
+  var f = input.files && input.files[0];
+  input.value = '';                      // 같은 사진을 다시 고를 수 있게
+  if (!f) return;
+  if (f.size > 12 * 1024 * 1024) return toast('사진이 너무 큽니다 — 다시 찍어주세요');
+
+  el('pasteOut').innerHTML = '<div class="note" style="margin:10px 0 0">사진을 읽는 중입니다… 10초쯤 걸립니다.</div>';
+
+  줄여서읽기(f, 1600).then(function (b) {
+    return api('readQuoteImage', { image: b.data, mime: b.mime });
+  }).then(function (r) {
+    if (!r || !r.ok) return void (el('pasteOut').innerHTML =
+      '<div class="note" style="margin:10px 0 0;color:var(--warn)">읽지 못했습니다 — '
+      + esc((r && r.error) || '다시 시도해주세요') + '</div>');
+    if (!r.items.length) return void (el('pasteOut').innerHTML =
+      '<div class="note" style="margin:10px 0 0;color:var(--warn)">품목을 찾지 못했습니다. 표가 잘 보이게 다시 찍어주세요.</div>');
+
+    P.표 = true;
+    P.tail = '';
+    P.rows = r.items.map(function (x) {
+      var it = pasteMatch(x.name, x.unit);
+      return { src: x.name, qty: x.qty, unit: 단위정리(x.unit),
+               id: it ? it.id : '__new', unsure: !!x.unsure };
+    });
+    renderPaste();
+  }).catch(function (e) {
+    el('pasteOut').innerHTML = '<div class="note" style="margin:10px 0 0;color:var(--warn)">'
+      + '읽지 못했습니다 — ' + esc((e && e.message) || '연결 실패') + '</div>';
+  });
+}
+
+// 원본 그대로 보내면 요청이 커져 자주 끊깁니다. 글자만 읽으면 되니 긴 변을 줄입니다.
+function 줄여서읽기(file, 최대) {
+  return new Promise(function (풀림, 깨짐) {
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var w = img.width, h = img.height, r = Math.min(1, 최대 / Math.max(w, h));
+      var c = document.createElement('canvas');
+      c.width = Math.round(w * r); c.height = Math.round(h * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      try {
+        풀림({ data: c.toDataURL('image/jpeg', 0.9).split(',')[1], mime: 'image/jpeg' });
+      } catch (e) { 깨짐(new Error('사진을 열지 못했습니다')); }
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); 깨짐(new Error('사진을 열지 못했습니다')); };
+    img.src = url;
+  });
+}
+
 function openPaste() {
   if (!S.site) return toast('현장을 먼저 고르세요');
-  el('pasteIn').value = ''; P.rows = [];
+  el('pasteIn').value = ''; P.rows = []; P.표 = false;
   el('pasteOut').innerHTML = '<div class="note" style="margin:10px 0 0">카톡이든 견적서 표든 그대로 넣으세요. 목록에 없는 품목도 적힌 대로 담깁니다.</div>';
   el('pasteMask').classList.remove('hide');
   setTimeout(function () { el('pasteIn').focus(); }, 60);
@@ -1745,7 +1810,7 @@ function renderPaste() {
   if (miss) html += '<div class="btn2" style="text-align:center;padding:9px;margin-bottom:9px"'
     + ' onclick="pasteAllNew()">＋ ' + miss + '줄을 적힌 그대로 담기</div>';
   P.rows.forEach(function (r, i) {
-    html += '<div class="pr' + (r.id ? '' : ' miss') + '">'
+    html += '<div class="pr' + (r.id ? '' : ' miss') + (r.unsure ? ' unsure' : '') + '">'
       + '<div class="src" title="' + esc(r.src) + '">' + esc(r.src) + '</div>'
       + '<select onchange="setPasteItem(' + i + ',this.value)">'
       + '<option value="">— 품목을 고르세요 —</option>'
