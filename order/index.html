@@ -246,62 +246,79 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 
 /* 발주서 */
 .sheetwrap{ overflow-x:auto; }
-.sheet{ width:720px; min-height:1018px; background:#fff; color:#111; font-size:12.5px;
-  line-height:1.55; border:1px solid #999; display:flex; flex-direction:column; }
-.sheet .stbl{ flex:none; }
+/* ═══ 발주서 ═══
+   업체가 받아 보는 문서입니다. 화면이 아니라 종이처럼 읽히게 여백을 넓게 두고,
+   테두리로 가두지 않습니다. 색은 남색 하나만 — 여러 색을 쓰면 전단지가 됩니다. */
+.sheet{ width:720px; min-height:1018px; background:#fff; color:#1a1a1e; font-size:12.5px;
+  line-height:1.6; display:flex; flex-direction:column; }
 .sheet .grow{ flex:1; }
-/* 머리 — 발신자는 왼쪽, 문서 종류와 번호는 오른쪽. 거래명세서를 읽던 순서 그대로입니다 */
-.sheet .sh{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px;
-  padding:20px 20px 14px; }
-.sheet .sh .from{ display:flex; align-items:center; gap:11px; }
-.slogo{ width:36px; height:36px; border-radius:8px; background:#111; color:#fff; flex:none;
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--didone); font-size:22px; font-weight:600; line-height:1; }
-.sheet .sh .from b{ display:block; font-size:14.5px; font-weight:800; letter-spacing:-.01em; }
-.sheet .sh .from .en{ font-family:var(--didone); font-size:9px; letter-spacing:.2em;
-  color:#9a9aa4; display:block; margin-top:1px; }
-.sheet .sh .doc{ text-align:right; }
-.sheet .sh h2{ font-size:20px; font-weight:800; letter-spacing:.34em; line-height:1.1;
-  padding-left:.34em; }
-.sheet .sh .no{ font-size:11px; color:#111; letter-spacing:.08em; margin-top:5px;
-  font-family:ui-monospace,monospace; font-weight:600; }
-/* 회사 세부는 한 줄 띠로 눌러둡니다 — 거래처가 볼 것은 아래 표입니다 */
-.sheet .biz{ padding:6px 20px 7px; border-top:1px solid #e4e4ea; border-bottom:2px solid #111;
-  font-size:10px; color:#767680; letter-spacing:.01em; display:flex; flex-wrap:wrap; gap:0 9px; }
-.sheet .biz i{ font-style:normal; color:#c8c8d0; }
+.sheet .pad{ padding:0 44px; }
 
-.meta{ display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid #999; }
-.meta .r{ display:flex; border-bottom:1px solid #e4e4ea; min-height:32px; align-items:center; }
-.meta .r:nth-child(odd){ border-right:1px solid #e4e4ea; }
-.meta .r dt{ flex:0 0 72px; padding:6px 10px; font-size:10.5px; color:#777; background:#fafafc;
-  align-self:stretch; display:flex; align-items:center; }
-.meta .r dd{ padding:6px 10px; flex:1; }
-/* 거래처가 가장 먼저 확인하는 두 칸 */
-.meta .r.key dd{ font-weight:800; font-size:13.5px; }
-.meta .r.key dt{ color:#111; font-weight:700; }
-.stbl{ width:100%; border-collapse:collapse; font-size:12.5px; }
-.stbl th{ padding:7px 10px; font-size:10px; letter-spacing:.1em; color:#555; font-weight:700;
-  border-bottom:1.5px solid #999; background:#fafafc; }
-.stbl td{ padding:5.5px 10px; border-bottom:1px solid #eee; }
-.stbl .cat td{ background:#f4f4f7; font-size:11px; font-weight:800; letter-spacing:.05em;
-  border-top:1px solid #ddd; border-bottom:1px solid #ddd; }
-.stbl .no{ width:32px; text-align:center; color:#a0a0aa; font-family:ui-monospace,monospace; font-size:10px; }
-/* 품명이 이 표의 주인공입니다 */
-.stbl .nm{ font-weight:600; color:#111; }
-.stbl .nm .dim{ font-weight:400; color:#9a9aa4; font-size:11.5px; }
-.stbl .sp{ width:1%; color:#8a8a94; font-family:ui-monospace,monospace; font-size:10.5px; white-space:nowrap; }
+.sheet .nhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+  padding:42px 44px 0; }
+.sheet .nhead .me .nm{ font-size:15px; font-weight:800; letter-spacing:-.02em; }
+.sheet .nhead .me .en{ font-family:var(--didone); font-size:9px; letter-spacing:.26em;
+  color:#a8a8b2; margin-top:3px; }
+.sheet .nhead .me .biz{ font-size:10.5px; color:#8a8a94; line-height:1.75; margin-top:11px; }
+.sheet .nhead .ttl{ text-align:right; }
+.sheet .nhead .ttl h2{ margin:0; font-size:27px; font-weight:800; letter-spacing:.3em;
+  padding-left:.3em; line-height:1; color:#12233a; }
+.sheet .nhead .ttl .no{ margin-top:9px; font-size:10.5px; letter-spacing:.12em; color:#6a6a74;
+  font-family:ui-monospace,monospace; font-weight:600; }
+.sheet .nhead .ttl .dt{ font-size:10.5px; color:#a0a0aa; margin-top:3px; }
+
+/* 발주서에서 제일 먼저 읽는 줄입니다 */
+.sheet .nto{ margin:26px 44px 0; padding-bottom:11px; border-bottom:2px solid #1f3a5f; }
+.sheet .nto .who{ font-size:21px; font-weight:800; letter-spacing:-.03em; }
+.sheet .nto .who span{ font-size:13px; font-weight:500; color:#8a8a94; margin-left:7px;
+  letter-spacing:0; }
+.sheet .nto .sub{ font-size:11.5px; color:#6a6a74; margin-top:4px; }
+
+.sheet .ngrid{ display:grid; grid-template-columns:repeat(4,1fr); margin:0 44px;
+  border-bottom:1px solid #e6e6ec; }
+.sheet .ngrid div{ padding:14px 0 15px; }
+.sheet .ngrid dt{ font-size:9.5px; letter-spacing:.1em; color:#a0a0aa; font-weight:700;
+  margin:0 0 4px; }
+.sheet .ngrid dd{ margin:0; font-size:13px; font-weight:700; color:#1a1a1e; }
+.sheet .ngrid dd.big{ font-size:15px; }
+.sheet .ngrid .addr{ grid-column:1 / -1; padding-top:0; }
+.sheet .ngrid .addr dd{ font-size:12px; font-weight:500; color:#4a4a54; }
+
+.stbl{ width:100%; border-collapse:collapse; font-size:12.5px; margin-top:4px; }
+.stbl th{ padding:11px 0 8px; font-size:9.5px; letter-spacing:.12em; color:#8a94a4;
+  font-weight:700; border-bottom:1px solid #1f3a5f; text-align:left; }
+.stbl th.c{ text-align:center } .stbl th.r{ text-align:right }
+.stbl td{ padding:9px 0; border-bottom:1px solid #f0f0f4; vertical-align:baseline; }
+/* 분류는 띠로 — 줄이 스무 개가 되면 작은 글씨는 묻힙니다 */
+.stbl tr.cat td{ padding:0; border-bottom:0; }
+.stbl tr.cat span{ display:block; margin:18px 0 2px; padding:5px 11px; border-radius:5px;
+  background:#eef2f8; color:#1f3a5f; font-size:10px; font-weight:800; letter-spacing:.14em; }
+.stbl .no{ width:34px; color:#c0c0c8; font-family:ui-monospace,monospace; font-size:10px; }
+.stbl .nm{ font-weight:700; color:#12233a; letter-spacing:-.01em; font-size:13px; }
+.stbl .nm i{ display:block; font-style:normal; font-size:10.5px; color:#9a9aa4; font-weight:400;
+  font-family:ui-monospace,monospace; margin-top:1px; }
+.stbl .nm .dim{ font-weight:400; color:#9a9aa4; }
 /* 재단은 지시입니다 — 놓치면 원장이 그대로 옵니다 */
-.stbl .ct{ width:70px; text-align:center; }
-.stbl .ct em{ font-style:normal; display:inline-block; padding:1px 7px; border-radius:3px;
-  background:#111; color:#fff; font-size:10px; font-weight:700; letter-spacing:.02em; }
-.stbl .un{ width:34px; text-align:center; color:#8a8a94; font-size:10.5px; }
-.stbl .qt{ width:58px; text-align:right; font-weight:800; font-size:15.5px;
-  font-variant-numeric:tabular-nums; color:#111; }
-.sfoot{ flex:none; padding:12px 15px; border-top:1px solid #999; background:#fafafc; font-size:11.5px;
-  color:#555; line-height:1.85; }
-.sfoot b{ display:block; color:#111; font-size:10.5px; letter-spacing:.08em; margin-bottom:3px; }
+.stbl .ct{ width:86px; text-align:center; }
+.stbl .ct em{ font-style:normal; display:inline-block; padding:2px 8px; border-radius:99px;
+  background:#1a1a1e; color:#fff; font-size:9.5px; font-weight:700; }
+.stbl .un{ width:40px; text-align:center; color:#9a9aa4; font-size:10.5px; }
+.stbl .qt{ width:66px; text-align:right; font-weight:800; font-size:16px;
+  font-variant-numeric:tabular-nums; color:#12233a; }
+
+.sheet .ntot{ display:flex; justify-content:space-between; align-items:baseline;
+  border-top:2px solid #1f3a5f; padding:12px 0 0; margin-top:-1px; }
+.sheet .ntot .l{ font-size:9.5px; letter-spacing:.12em; color:#a0a0aa; font-weight:700; }
+.sheet .ntot .v{ font-size:14px; font-weight:800; color:#1f3a5f; }
+
+.sfoot{ margin:26px 44px 0; padding:15px 17px; background:#f7f7fa; border-radius:8px; }
+.sfoot b{ display:block; font-size:9.5px; letter-spacing:.12em; color:#a0a0aa; font-weight:700;
+  margin-bottom:6px; }
+.sfoot p{ margin:0; font-size:11.5px; color:#5a5a64; line-height:1.9; }
 /* 지켜주셔야 하는 줄만 검게 남깁니다. 다 굵으면 아무것도 안 굵은 것과 같습니다 */
-.sfoot .key{ color:#111; font-weight:700; }
+.sfoot .key{ color:#1a1a1e; font-weight:700; }
+.sheet .nfoot{ margin:22px 44px 0; padding:14px 0 34px; border-top:1px solid #e6e6ec;
+  display:flex; justify-content:space-between; font-size:10px; color:#a8a8b2; }
 
 /* 사이드바 */
 .side .card{ padding:13px 14px; }
@@ -2080,15 +2097,19 @@ function draw() {
 
   // 재단이 하나도 없으면 빈 열을 세워둘 이유가 없습니다
   var hasCut = lines.some(function (x) { return x.cut; });
-  var cols = hasCut ? 6 : 5;
+  var cols = hasCut ? 5 : 4;
 
-  var rows = '', group = null, n = 0;
+  var rows = '', group = null, n = 0, 총수량 = 0;
   lines.forEach(function (x) {
-    if (x.group !== group) { group = x.group; rows += '<tr class="cat"><td colspan="' + cols + '">' + esc(group || '기타') + '</td></tr>'; }
-    n++;
+    if (x.group !== group) {
+      group = x.group;
+      rows += '<tr class="cat"><td colspan="' + cols + '"><span>' + esc(group || '기타') + '</span></td></tr>';
+    }
+    n++; 총수량 += Number(x.qty) || 0;
+    // 규격은 품명 아래로 내립니다 — 칸을 하나 줄이면 품명이 그만큼 넓어집니다
     rows += '<tr><td class="no">' + (n < 10 ? '0' + n : n) + '</td>'
-      + '<td class="nm">' + nmHtml(x.name) + '</td>'
-      + '<td class="sp">' + esc(x.spec || '') + '</td>'
+      + '<td class="nm">' + nmHtml(x.name)
+      + (x.spec ? '<i>' + esc(x.spec) + '</i>' : '') + '</td>'
       + (hasCut ? '<td class="ct">' + (x.cut ? '<em>' + esc(x.cut) + '</em>' : '') + '</td>' : '')
       + '<td class="un">' + esc(x.unit || '') + '</td>'
       + '<td class="qt">' + x.qty + '</td></tr>';
@@ -2102,32 +2123,50 @@ function draw() {
   });
 
   var biz = [];
-  if (CO.biz) biz.push('사업자 ' + CO.biz);
-  biz.push('담당 ' + esc(localStorage.getItem(LS_OWNER) || ''));
-  if (CO.tel) biz.push(CO.tel);
+  if (CO.biz) biz.push('사업자등록번호 ' + CO.biz);
+  biz.push('담당 ' + esc(localStorage.getItem(LS_OWNER) || '') + (CO.tel ? ' · ' + CO.tel : ''));
   if (CO.mail) biz.push(CO.mail);
 
+  // 회차는 그 거래처와의 계약입니다. 택배·직접수령에는 해당이 없습니다.
+  var 배송 = shipOf(S.cur), 처 = (venOf(S.cur) || '').trim();
+  var 셈 = (d && d.byVendor && 처 && d.byVendor[처]) || null;
+  var 회차 = (셈 && 배송 !== '택배' && 배송 !== '직접 수령') ? (셈.ship + 1) + '회차' : '—';
+  var 오늘 = ymd(new Date());
+
   el('sheet').innerHTML =
-    '<div class="sh">'
-    + '<div class="from"><div class="slogo">D</div>'
-    + '<div><b>' + CO.name + '</b>'
-    + (CO.en ? '<span class="en">' + CO.en + '</span>' : '') + '</div></div>'
-    + '<div class="doc"><h2>발 주 서</h2>'
-    + '<div class="no">' + esc(S.orderNo || '') + '</div></div></div>'
-    + '<div class="biz">' + biz.join('<i>·</i>') + '</div>'
-    + '<div class="meta">'
-    + row2('수　신', (venOf(S.cur) || '—') + ' 귀중', true)
-    + row2('발주일', ymd(new Date()))
-    + row2('현　장', d ? esc(d.name.replace(/\s*PROJECT\s*$/, '')) : '—')
-    + row2('납품요청', due ? due + dow(due) : '—', true)
-    + row2('주　소', d && d.address ? esc(d.address) : '—')
-    + row2('배송구분', shipOf(S.cur)) + '</div>'
-    + '<table class="stbl"><thead><tr><th class="no">No</th><th style="text-align:left">품　명</th>'
-    + '<th style="text-align:left">규　격</th>' + (hasCut ? '<th class="ct">재단</th>' : '')
-    + '<th class="un">단위</th><th class="qt">수량</th></tr></thead>'
+    '<div class="nhead">'
+    + '<div class="me"><div class="nm">' + CO.name + '</div>'
+    + (CO.en ? '<div class="en">' + CO.en + '</div>' : '')
+    + '<div class="biz">' + biz.join('<br>') + '</div></div>'
+    + '<div class="ttl"><h2>발 주 서</h2>'
+    + '<div class="no">' + esc(S.orderNo || '') + '</div>'
+    + '<div class="dt">' + 오늘.replace(/-/g, '. ') + '</div></div></div>'
+
+    + '<div class="nto"><div class="who">' + esc(venOf(S.cur) || '—')
+    + ' <span>귀중</span></div>'
+    + '<div class="sub">아래와 같이 발주합니다.</div></div>'
+
+    + '<dl class="ngrid">'
+    + '<div><dt>현　장</dt><dd>' + (d ? esc(d.name.replace(/\s*PROJECT\s*$/, '')) : '—') + '</dd></div>'
+    + '<div><dt>납품요청</dt><dd class="big">' + (due ? due.slice(5).replace('-', '. ') + dow(due) : '—') + '</dd></div>'
+    + '<div><dt>배송구분</dt><dd>' + esc(배송) + '</dd></div>'
+    + '<div><dt>회　차</dt><dd>' + 회차 + '</dd></div>'
+    + '<div class="addr"><dt>현장주소</dt><dd>' + (d && d.address ? esc(d.address) : '—') + '</dd></div>'
+    + '</dl>'
+
+    + '<div class="pad">'
+    + '<table class="stbl"><thead><tr><th class="no">NO</th><th>품　명</th>'
+    + (hasCut ? '<th class="c">재단</th>' : '')
+    + '<th class="c">단위</th><th class="r">수량</th></tr></thead>'
     + '<tbody>' + rows + '</tbody></table>'
+    + '<div class="ntot"><span class="l">TOTAL</span>'
+    + '<span class="v">' + n + ' 품목 · ' + 총수량.toLocaleString('ko-KR') + ' EA</span></div>'
+    + '</div>'
+
+    + '<div class="sfoot"><b>특기사항</b><p>' + (foot.length ? foot.join('<br>') : '—') + '</p></div>'
     + '<div class="grow"></div>'
-    + '<div class="sfoot"><b>특기사항</b>' + foot.join('<br>') + '</div>';
+    + '<div class="nfoot"><span>' + (CO.en || CO.name) + '</span>'
+    + '<span>' + esc(S.orderNo || '') + '</span></div>';
 }
 
 // ═════ 엘리베이터 양중 점검 ═════
@@ -2474,10 +2513,6 @@ function nmHtml(name) {
   if (!m || m[1].length < 7) return esc(name);
   return esc(m[1]) + ' <span class="dim">' + esc(m[2]) + '</span>';
 }
-function row2(k, v, key) {
-  return '<div class="r' + (key ? ' key' : '') + '"><dt>' + k + '</dt><dd>' + v + '</dd></div>';
-}
-
 // ═════ 출력 ═════
 // 발주서 · 텍스트 · 노션이 같은 문장을 쓰도록 한 곳에서 만듭니다
 function footLines() {
