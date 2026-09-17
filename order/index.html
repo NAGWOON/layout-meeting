@@ -1625,6 +1625,31 @@ function isSpecTok(t) { return /\d/.test(t); }
 
 // 카톡 한 덩어리를 「이름 + 수량」 조각들로 자릅니다.
 // 수량이 나오는 자리에서 끊으면 「다루끼 5단 석고 20장」 같은 한 줄도 갈립니다.
+
+// 견적서·주문서를 붙여넣는 경우 — 「개 2」처럼 단위가 수량 앞에 오고 탭으로 갈립니다.
+// 카톡 말투(「다루끼 5단」)와 순서가 반대라 따로 읽습니다.
+//
+//   KS분배기(ST,기름) - 9구< 하바>   개   2   45,700   91,400
+//   └ 품명                          단위 수량  단가     금액
+function pasteTable(text) {
+  var 단위 = new RegExp('^(' + PUNIT + ')$');
+  var out = [];
+  text.split(/\r?\n/).forEach(function (ln) {
+    var c = ln.split(/\t|\s{2,}/).map(function (x) { return x.trim(); })
+              .filter(function (x) { return x; });
+    if (c.length < 3) return;
+    for (var i = 1; i < c.length - 1; i++) {
+      if (!단위.test(c[i])) continue;
+      var q = Number(String(c[i + 1]).replace(/,/g, ''));
+      if (!(q > 0)) continue;
+      var 이름 = c.slice(0, i).join(' ').replace(/\s+/g, ' ').trim();
+      if (이름) out.push({ raw: 이름, qty: q, unit: c[i] });
+      break;
+    }
+  });
+  return out;
+}
+
 function pasteSegs(text) {
   var out = [], re = new RegExp('(\\d+(?:\\.\\d+)?)\\s*(' + PUNIT + ')', 'g'), m, last = 0;
   while ((m = re.exec(text)) !== null) {
@@ -1691,10 +1716,12 @@ function closePaste() { el('pasteMask').classList.add('hide'); }
 
 function readPaste() {
   var t = el('pasteIn').value;
-  var r = pasteSegs(t);
+  var 표 = pasteTable(t);
+  var r = 표.length >= 2 ? { segs: 표, tail: '' } : pasteSegs(t);
+  P.표 = (표.length >= 2);
   P.rows = r.segs.map(function (s) {
     var it = pasteMatch(s.raw, s.unit);
-    return { src: s.raw, qty: s.qty, unit: s.unit, id: it ? it.id : '' };
+    return { src: s.raw, qty: s.qty, unit: 단위정리(s.unit), id: it ? it.id : '' };
   });
   // 「추가 부탁드려요」 같은 인사말까지 경고할 이유는 없습니다. 숫자가 남았을 때만 알립니다.
   P.tail = /\d/.test(r.tail) ? r.tail : '';
@@ -1703,7 +1730,7 @@ function readPaste() {
 function renderPaste() {
   if (!P.rows.length) {
     el('pasteOut').innerHTML = '<div class="note" style="margin:10px 0 0">'
-      + (el('pasteIn').value.trim() ? '수량이 붙은 말을 못 찾았습니다 — 「다루끼 5단」처럼 적혀 있어야 합니다.'
+      + (el('pasteIn').value.trim() ? '수량을 못 찾았습니다 — 「다루끼 5단」처럼 적혀 있거나, 견적서를 표째 붙여넣으셔야 합니다.'
                                     : '붙여넣으면 품목을 짚어 보여드립니다.') + '</div>';
     return;
   }
@@ -1712,12 +1739,17 @@ function renderPaste() {
   });
   var miss = P.rows.filter(function (r) { return !r.id; }).length;
   var html = '<div class="psum"><b>' + P.rows.length + '줄</b>을 읽었습니다'
-    + (miss ? ' · <b style="color:var(--warn)">' + miss + '줄은 못 찾았습니다</b> — 골라주세요' : '') + '</div>';
+    + (miss ? ' · <b style="color:var(--warn)">' + miss + '줄은 목록에 없습니다</b>' : '') + '</div>';
+  // 분배기·수전구처럼 규격이 매번 달라 마스터에 못 넣는 것들이 있습니다.
+  // 그런 줄은 적힌 그대로 이번 발주에만 담습니다.
+  if (miss) html += '<div class="btn2" style="text-align:center;padding:9px;margin-bottom:9px"'
+    + ' onclick="pasteAllNew()">＋ ' + miss + '줄을 적힌 그대로 담기</div>';
   P.rows.forEach(function (r, i) {
     html += '<div class="pr' + (r.id ? '' : ' miss') + '">'
       + '<div class="src" title="' + esc(r.src) + '">' + esc(r.src) + '</div>'
       + '<select onchange="setPasteItem(' + i + ',this.value)">'
       + '<option value="">— 품목을 고르세요 —</option>'
+      + '<option value="__new"' + (r.id === '__new' ? ' selected' : '') + '>＋ 적힌 그대로 담기</option>'
       + opts.map(function (o) {
           return '<option value="' + o.id + '"' + (o.id === r.id ? ' selected' : '') + '>' + esc(o.label) + '</option>';
         }).join('') + '</select>'
@@ -1728,15 +1760,31 @@ function renderPaste() {
     + esc(P.tail.slice(0, 60)) + '</div>';
   el('pasteOut').innerHTML = html;
 }
+// EA 는 견적서에서만 쓰는 말입니다. 발주서에는 우리 말로 적습니다.
+function 단위정리(u) { return /^(EA|ea)$/.test(u || '') ? '개' : (u || ''); }
 function unitOf(id) { var i = pool().filter(function (x) { return x.id === id; })[0]; return i ? (i.unit || '') : ''; }
 function setPasteItem(i, v) { P.rows[i].id = v; renderPaste(); }
+function pasteAllNew() {
+  P.rows.forEach(function (r) { if (!r.id) r.id = '__new'; });
+  renderPaste();
+}
 function setPasteQty(i, v) { P.rows[i].qty = Number(v) || 0; }
 
 function applyPaste() {
   var ok = P.rows.filter(function (r) { return r.id && r.qty > 0; });
   if (!ok.length) return toast('담을 품목이 없습니다');
-  // 팀장이 짚어준 건 「추가로 더」입니다. 같은 품목이면 더합니다.
-  ok.forEach(function (r) { S.qty[r.id] = (Number(S.qty[r.id]) || 0) + r.qty; });
+  ok.forEach(function (r) {
+    if (r.id === '__new') {
+      // 마스터에 없는 것 — 적힌 그대로 이번 발주에만 담습니다.
+      var 있음 = S.extra.filter(function (x) { return x.name === r.src; })[0];
+      if (있음) 있음.qty = (Number(있음.qty) || 0) + r.qty;
+      else S.extra.push({ name: r.src, spec: '', cut: '', unit: r.unit || '개',
+                          qty: r.qty, group: '이번 발주에만' });
+      return;
+    }
+    // 팀장이 짚어준 건 「추가로 더」입니다. 같은 품목이면 더합니다.
+    S.qty[r.id] = (Number(S.qty[r.id]) || 0) + r.qty;
+  });
   var miss = P.rows.length - ok.length;
   closePaste(); renderItems(); draw(); bar(); side(); elevCalc();
   toast(ok.length + '품목을 담았습니다' + (miss ? ' · ' + miss + '줄은 건너뛰었습니다' : ''));
