@@ -2385,7 +2385,9 @@ function cutNote() {
   var m = liftMax();
   if (!m) return '';
   var needP = false, needL = false;
-  picked().forEach(function (x) {
+  // 그 장의 품목만 봅니다. 전체를 보면 목자재 장 때문에 생긴 재단 문구가
+  // 벽돌·방수붓 발주서에도 실립니다 (2026-09-17).
+  pickedOf(S.cur).forEach(function (x) {
     var L = specLen(x.spec); if (!L) return;
     if (isLong(x)) { if (L > m.long) needL = true; }
     else if (L > m.panel) needP = true;
@@ -2717,8 +2719,9 @@ function submit() {
     try { if (c) img = c.toDataURL('image/png').split(',')[1]; } catch (e) { img = null; }
     return api('submitOrder', {
       sitePageId: S.site.id, type: typeOf(S.cur), vendor: venOf(S.cur), orderNo: S.orderNo,
-      due: el('dueIn').value || null, shipKind: shipOf(S.cur),
-      note: el('noteIn').value.trim(), notes: footLines(), items: lines, image: img
+      due: el('dueIn').value || null, shipKind: shipOf(S.cur), liftKind: liftOf(S.cur),
+      note: (noteOf(S.cur).trim() || el('noteIn').value.trim()),
+      notes: footLines(), items: lines, image: img
     });
   }).then(function (r) {
     S.busy = false;
