@@ -117,6 +117,7 @@
   .cal .dnum { font-size:11.5px; color:var(--ink2); line-height:18px; display:inline-block; min-width:18px; }
   .cal .cell.out .dnum { color:var(--ink4); }
   .cal .cell.s0 .dnum { color:var(--sun); }
+  .cal .cell.hol .dnum { color:var(--sun); }
   .cal .cell.out.s0 .dnum { color:var(--ink4); }
   .cal .cell.now .dnum {
     background:var(--ink); color:var(--rev); border-radius:50%;
@@ -133,6 +134,9 @@
   .cal .bar.live { background:var(--ink); color:var(--rev); font-weight:700; }
   .cal .bar.done { background:var(--softer); color:var(--ink3); }
   .cal .bar.off  { background:transparent; border:1px dashed var(--line); color:var(--ink3); font-weight:500; }
+  /* 휴일은 달력의 일요일과 같은 빨강으로. 점선만으로는 미팅과 안 갈립니다 */
+  .cal .bar.holi { border-color:var(--sun); color:var(--sun); font-weight:600; }
+  .cal .bar.holi.done { opacity:.5; }
   .cal .bar.ship { background:var(--softer); color:var(--ink2); box-shadow:inset 2px 0 0 var(--ink3); }
   .cal .more { font-size:9px; color:var(--ink4); line-height:16px; padding-left:5px; }
 
@@ -196,6 +200,11 @@ function 달력만들기(상자, 일정, 옵션) {
   var 오늘 = new Date(); 오늘.setHours(0,0,0,0);
   var 오늘str = ymd(오늘);
   var 공사아님 = { '행정':1, '미팅':1, '검수':1 };
+
+  // 휴일은 「구분」에 따로 없고 행정에 섞여 들어옵니다 (추석연휴 · 한글날(공휴일) · 대체휴무일).
+  // 점선만으로는 미팅과 안 갈려서, 달력의 일요일과 같은 빨강으로 맞춥니다.
+  var 휴일말 = /휴일|연휴|휴무|공휴|명절/;
+  function 휴일인가(x){ return x.g === '휴일' || 휴일말.test(x.n || ''); }
   var 보는달;
 
   function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -213,6 +222,7 @@ function 달력만들기(상자, 일정, 옵션) {
   }
   function 모양(x){
     var st = 상태(x);
+    if (휴일인가(x)) return 'off holi' + (st==='done' ? ' done' : '');
     if (공사아님[x.g]) return 'off' + (st==='done' ? ' done' : '');
     if (x.g === '납품') return st==='live' ? 'live' : (st==='done' ? 'ship done' : 'ship');
     return st;
@@ -274,6 +284,7 @@ function 달력만들기(상자, 일정, 옵션) {
 
   function 그리기(){
     너비맞추기();
+    쉬는날모으기();
     var y=보는달.getFullYear(), m=보는달.getMonth();
     상자.querySelector('.js-mon').innerHTML = '<span class="yr">'+y+'</span>'+(m+1)+'월';
     var 달시작=ymd(new Date(y,m,1)), 달끝=ymd(new Date(y,m+1,0));
@@ -306,6 +317,16 @@ function 달력만들기(상자, 일정, 옵션) {
     return f;
   }
 
+  // 휴일에 걸친 날짜를 미리 모읍니다. 칸마다 일정을 훑으면 달을 넘길 때 버벅입니다.
+  var 쉬는날 = {};
+  function 쉬는날모으기(){
+    쉬는날 = {};
+    일정.forEach(function(x){
+      if (!휴일인가(x) || !x.s) return;
+      for (var d=날짜(x.s), 끝=날짜(x.e||x.s); d<=끝; d=더하기(d,1)) 쉬는날[ymd(d)] = 1;
+    });
+  }
+
   function 한주(주시작,주끝,이달월){
     var 주=document.createElement('div'); 주.className='week';
 
@@ -317,7 +338,8 @@ function 달력만들기(상자, 일정, 옵션) {
     for(var i=0;i<7;i++){
       var d=더하기(주시작,i), s=ymd(d);
       var c=document.createElement('div');
-      c.className='cell s'+i+(d.getMonth()!==이달월?' out':'')+(s===오늘str?' now':'');
+      c.className='cell s'+i+(d.getMonth()!==이달월?' out':'')+(s===오늘str?' now':'')
+        +(쉬는날[s]?' hol':'');
       var n=document.createElement('div'); n.className='dnum'; n.textContent=d.getDate();
       c.appendChild(n); 칸들.appendChild(c);
     }
