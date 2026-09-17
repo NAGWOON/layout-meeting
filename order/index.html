@@ -1933,6 +1933,48 @@ function picked() {
   return out;
 }
 
+
+// ═════ 발주서에서 수량 고치기 ═════
+//
+// 마지막에 「두 장 더」가 생깁니다. 품목 화면으로 돌아갔다 오면 장·거래처를 다시 찾아야 해서
+// 발주서 옆에서 바로 열게 뒀습니다. 발주서 이미지 밖이라 캡처에는 안 들어갑니다.
+//
+// 지금 보는 장의 품목만 보여줍니다 — 다른 장 것까지 섞으면 어느 발주서를 고치는지 흐려집니다.
+function openQty() {
+  if (!pickedOf(S.cur).length) return toast('이 장에 품목이 없습니다');
+  renderQty();
+  el('qtyMask').classList.remove('hide');
+}
+function closeQty() {
+  el('qtyMask').classList.add('hide');
+  renderItems(); draw(); bar(); side();
+}
+function renderQty() {
+  var lines = pickedOf(S.cur);
+  var 등록됨 = !!S.done[S.cur];
+  el('qtyHint').innerHTML = 등록됨
+    ? '<span style="color:var(--warn)">이미 등록한 장입니다 — 여기서 고쳐도 노션은 안 바뀝니다.'
+      + ' 노션 발주에서 같이 고쳐주세요.</span>'
+    : '0 으로 두면 이 발주서에서 빠집니다.';
+  el('qtyRows').innerHTML = lines.map(function (x) {
+    var ex = S.extra.indexOf(x);
+    var 손잡이 = (ex >= 0) ? 'setExtra(' + ex + ',this.value)'
+                          : 'setQty(\u0027' + x.id + '\u0027,this.value)';
+    return '<div class="crow" style="align-items:flex-start">'
+      + '<div class="cl" style="flex:1;min-width:0;line-height:1.45;font-size:12.5px">'
+      + esc(x.name) + (x.spec ? '<span style="color:var(--txt4);font-size:11px"> · '
+      + esc(x.spec) + '</span>' : '') + '</div>'
+      + '<input type="number" min="0" inputmode="numeric" value="' + x.qty
+      + '" oninput="' + 손잡이 + ';qtyTouched()">'
+      + '<span class="cu">' + esc(x.unit || '') + '</span></div>';
+  }).join('');
+}
+// 고치는 동안 발주서와 아래 바가 같이 따라옵니다. 목록은 창을 닫을 때 한 번만 다시 그립니다.
+function qtyTouched() {
+  clearTimeout(S.qtyT);
+  S.qtyT = setTimeout(function () { draw(); bar(); side(); }, 250);
+}
+
 // ═════ 발주서 나누기 ═════
 //
 // 자재는 거래처가 고정이 아닙니다. 그래서 품목에 발주처를 묶지 않고,
@@ -2011,10 +2053,15 @@ function renderSheetTabs() {
         '<div class="stab" style="border-color:var(--warn);color:var(--warn);'
         + 'background:rgba(192,86,29,.08);flex:1;font-weight:600;white-space:normal;line-height:1.5">'
         + '⚠ ' + ks.map(esc).join(' · ') + ' 가 한 장에 섞여 있습니다</div>'
+        + '<div class="stab" onclick="openQty()">✎ 수량</div>'
         + '<div class="stab" onclick="openSplit()">✂ 나누기</div>';
       return;
     }
-    el('sheetTabs').classList.add('hide');
+    // 장이 하나여도 수량은 여기서 고칠 수 있어야 합니다
+    el('sheetTabs').classList.remove('hide');
+    el('sheetTabs').innerHTML = '<div class="grow" style="flex:1"></div>'
+      + '<div class="stab" onclick="openQty()">✎ 수량 고치기</div>'
+      + '<div class="stab" onclick="openSplit()">✂ 나누기</div>';
     return;
   }
   el('sheetTabs').classList.remove('hide');
@@ -2623,6 +2670,7 @@ el('keyIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') lo
 el('addMask').addEventListener('click', function (e) { if (e.target === this) closeAdd(); });
 el('pasteMask').addEventListener('click', function (e) { if (e.target === this) closePaste(); });
 el('splitMask').addEventListener('click', function (e) { if (e.target === this) closeSplit(); });
+el('qtyMask').addEventListener('click', function (e) { if (e.target === this) closeQty(); });
 
 // 캡처한 견적서를 바로 붙여넣습니다. 글자가 같이 와도 사진이 있으면 사진을 씁니다.
 el('pasteMask').addEventListener('paste', function (e) {
