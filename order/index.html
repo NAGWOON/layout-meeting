@@ -176,6 +176,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:3px 0 1px; }
 .btn2.pri{ border-color:var(--accent); color:var(--accent); background:rgba(47,111,237,.09); font-weight:700; }
 .shotrow{ display:flex; gap:7px; }
+#pasteMask.drop .modal{ outline:2px dashed var(--accent); outline-offset:4px; }
 .shotrow label{ cursor:pointer; }
 .pr.unsure{ background:rgba(192,86,29,.07); }
 .pr.unsure .src::after{ content:' ⚠'; color:var(--warn); }
@@ -740,12 +741,12 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   <div class="modal wide">
     <h3>📋 붙여넣기 <em style="font-weight:400;color:var(--txt4);font-size:11.5px">카톡 · 견적서 · 주문서 그대로</em></h3>
     <div class="shotrow">
-      <label class="btn2 pri" style="flex:1;text-align:center;padding:11px">📷 견적서 사진에서 읽기
+      <label class="btn2 pri" style="flex:1;text-align:center;padding:11px">📷 견적서 사진 읽기
         <input type="file" accept="image/*" style="display:none" onchange="readShot(this)"></label>
     </div>
-    <div class="note" style="margin:7px 0 10px">카톡으로 받은 견적서는 글자 복사가 안 되니 사진으로 읽습니다.
+    <div class="note" style="margin:7px 0 10px"><b>캡처해서 Ctrl+V</b> 하거나 창에 끌어다 놓으셔도 됩니다.
       읽은 뒤 <b>규격이 맞는지 한 번 훑어주세요</b> — 「9구」를 「6구」로 볼 수 있습니다.</div>
-    <textarea id="pasteIn" rows="4" placeholder="또는 여기에 붙여넣기 &#10;예) 다루끼 5단, 일반석고 20장 / 견적서 표 그대로"
+    <textarea id="pasteIn" rows="4" placeholder="글자로 붙여넣기 &#10;예) 다루끼 5단, 일반석고 20장 / 견적서 표 그대로"
       style="width:100%;font-size:13px" oninput="readPaste()"></textarea>
     <div id="pasteOut"></div>
     <div class="mrow">
@@ -1723,6 +1724,12 @@ var P = { rows: [] };
 function readShot(input) {
   var f = input.files && input.files[0];
   input.value = '';                      // 같은 사진을 다시 고를 수 있게
+  if (f) shotFile(f);
+}
+
+// 캡처해서 Ctrl+V, 창에 끌어다 놓기, 파일 고르기 — 셋 다 여기로 옵니다.
+// 견적서를 일일이 저장하게 만들면 그 단계에서 안 하게 됩니다.
+function shotFile(f) {
   if (!f) return;
   if (f.size > 12 * 1024 * 1024) return toast('사진이 너무 큽니다 — 다시 찍어주세요');
 
@@ -2528,6 +2535,31 @@ el('keyIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') lo
 el('addMask').addEventListener('click', function (e) { if (e.target === this) closeAdd(); });
 el('pasteMask').addEventListener('click', function (e) { if (e.target === this) closePaste(); });
 el('splitMask').addEventListener('click', function (e) { if (e.target === this) closeSplit(); });
+
+// 캡처한 견적서를 바로 붙여넣습니다. 글자가 같이 와도 사진이 있으면 사진을 씁니다.
+el('pasteMask').addEventListener('paste', function (e) {
+  var it = (e.clipboardData && e.clipboardData.items) || [];
+  for (var i = 0; i < it.length; i++) {
+    if (it[i].kind === 'file' && it[i].type.indexOf('image') === 0) {
+      var f = it[i].getAsFile();
+      if (f) { e.preventDefault(); shotFile(f); return; }
+    }
+  }
+});
+['dragenter', 'dragover'].forEach(function (k) {
+  el('pasteMask').addEventListener(k, function (e) {
+    e.preventDefault(); el('pasteMask').classList.add('drop');
+  });
+});
+['dragleave', 'drop'].forEach(function (k) {
+  el('pasteMask').addEventListener(k, function (e) {
+    e.preventDefault(); el('pasteMask').classList.remove('drop');
+    if (k === 'drop') {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f && f.type.indexOf('image') === 0) shotFile(f);
+    }
+  });
+});
 </script>
 </body>
 </html>
