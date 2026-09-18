@@ -474,6 +474,22 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .eday label{ font-size:12px; color:var(--txt3); flex:none; }
 .eday input{ flex:1; font-size:13px; padding:7px 9px; font-family:var(--sans); }
 .btn.off{ opacity:.4; pointer-events:none; }
+
+.pbtn{ flex:none; padding:5px 9px; border-radius:8px; font-size:11px; font-weight:700;
+  white-space:nowrap; line-height:1.4; }
+.erow.enew{ display:block; padding:12px; margin:11px 0; border-radius:11px;
+  background:var(--field); border:1px solid var(--accent); }
+.nf{ display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+.nf label{ flex:none; width:32px; font-size:11.5px; color:var(--txt3); }
+.nf input{ flex:1; min-width:0; font-size:12.5px; padding:6px 8px; }
+.nf2{ display:flex; align-items:center; gap:7px; }
+.nf2 label{ flex:none; font-size:11.5px; color:var(--txt3); }
+.nf2 input{ width:58px; flex:none; text-align:right; font-size:14px; padding:6px 8px;
+  font-family:var(--sans); }
+.nf2 select{ width:76px; flex:none; font-size:12.5px; padding:6px 7px; }
+.nrm{ margin-inline-start:auto; flex:none; font-size:11.5px; color:var(--txt4);
+  cursor:pointer; padding:4px 2px; }
+.nrm:hover{ color:var(--warn); }
 </style>
 </head>
 <body>
@@ -2672,9 +2688,11 @@ function side() {
         return '<div class="past">'
           + '<div class="pmain" onclick="loadPastById(\'' + o.id + '\')"><b>' + esc(o.name || o.no) + '</b>'
           + '<span>' + esc(o.no || '') + ' · ' + (o.count || 0) + '품목 · ' + (o.date || '') + '</span></div>'
-          + '<div class="pbtn" title="' + (끝 ? '반품 기록' : '발주 수정')
-          + '" onclick="openEdit(\'' + o.id + '\')">' + (끝 ? '📤' : '✎') + '</div></div>';
+          + '<div class="pbtn" onclick="openEdit(\'' + o.id + '\')">'
+          + (끝 ? '📤 반품' : '✎ 수정') + '</div></div>';
       }).join('')
+      + '<div class="note" style="margin:8px 0 0">건을 누르면 그 품목을 불러옵니다  ·  '
+      + '<b>수정</b>은 수량 고치기, <b>반품</b>은 돌려보낸 수량 적기</div>'
     : '<div class="note" style="margin:0">아직 없습니다</div>';
 }
 function saveSite() {
@@ -2754,6 +2772,27 @@ function setErow(i, v) {
   renderEdit();
 }
 function setEtext(i, k, v) { E.rows[i][k] = v; }
+// 단위는 적는 것보다 고르는 편이 낫습니다. 「개」와 「EA」가 섞이면 나중에 합산이 안 됩니다.
+function 단위목록() {
+  var 본 = {}, out = [];
+  S.items.forEach(function (i) {
+    if (i.unit && !본[i.unit]) { 본[i.unit] = 1; out.push(i.unit); }
+  });
+  ['개', '장', '포', '말', '박스', '통', '세트', '롤', 'kg', 'm'].forEach(function (u) {
+    if (!본[u]) { 본[u] = 1; out.push(u); }
+  });
+  return out;
+}
+function 단위고르기(i, 값) {
+  return '<select onchange="setEtext(' + i + ',\'unit\',this.value)">'
+    + '<option value="">단위</option>'
+    + 단위목록().map(function (u) {
+        return '<option' + (u === 값 ? ' selected' : '') + '>' + esc(u) + '</option>';
+      }).join('')
+    + '</select>';
+}
+function delErow(i) { E.rows.splice(i, 1); renderEdit(); }
+
 function addErow() {
   E.rows.push({ name:'', spec:'', cut:'', unit:'', group:'이번 발주에만',
                 was:0, qty:1, isNew:true });
@@ -2795,29 +2834,45 @@ function renderEdit() {
     else if (r.qty === 0) cls += ' gone';
     else if (r.qty !== r.was) cls += ' chg';
 
-    var 이름 = r.isNew
-      ? '<input placeholder="품목 이름" value="' + esc(r.name) + '" oninput="setEtext(' + i + ',\'name\',this.value)">'
-        + '<input placeholder="규격 (없으면 비워두세요)" value="' + esc(r.spec) + '" oninput="setEtext(' + i + ',\'spec\',this.value)">'
-      : esc(r.name) + (r.spec ? '<i>' + esc(r.spec) + '</i>' : '');
+    // 새 품목은 칸마다 이름표를 답니다.
+    // 이름표 없이 입력칸 두 개를 세워두었더니 규격 자리에 단위를 적는 일이 생겼습니다
+    // — 「씨카씰 MS 변성실리콘 · 개 · 6」 처럼요 (2026-09-18).
+    if (r.isNew) {
+      html += '<div class="erow enew">'
+        + '<div class="nf"><label>이름</label>'
+        +   '<input value="' + esc(r.name) + '" placeholder="발주서에 적을 이름"'
+        +   ' oninput="setEtext(' + i + ',\'name\',this.value)"></div>'
+        + '<div class="nf"><label>규격</label>'
+        +   '<input value="' + esc(r.spec) + '" placeholder="없으면 비워두세요"'
+        +   ' oninput="setEtext(' + i + ',\'spec\',this.value)"></div>'
+        + '<div class="nf2"><label>수량</label>'
+        +   '<input type="number" min="0" inputmode="numeric" value="' + r.qty
+        +   '" oninput="setErow(' + i + ',this.value)">'
+        +   '<label>단위</label>' + 단위고르기(i, r.unit)
+        +   '<div class="nrm" onclick="delErow(' + i + ')">지우기</div>'
+        + '</div></div>';
+      return;
+    }
 
     var 옆 = 반품 ? ('발주 ' + r.was)
-                  : (r.isNew ? '새로' : (r.qty !== r.was ? (r.was + ' →') : ''));
+                  : (r.qty !== r.was ? (r.was + ' →') : '');
 
-    var 단위 = r.isNew
-      ? '<input class="q" style="width:38px;text-align:center" placeholder="개" value="' + esc(r.unit)
-        + '" oninput="setEtext(' + i + ',\'unit\',this.value)">'
-      : '<span class="u">' + esc(r.unit || '') + '</span>';
-
-    html += '<div class="' + cls + '"><div class="enm">' + 이름 + '</div>'
+    html += '<div class="' + cls + '"><div class="enm">'
+      + esc(r.name) + (r.spec ? '<i>' + esc(r.spec) + '</i>' : '') + '</div>'
       + '<div class="ewas">' + esc(옆) + '</div>'
       + '<input class="q" type="number" min="0" inputmode="numeric" value="' + r.qty
-      + '" oninput="setErow(' + i + ',this.value)">' + 단위 + '</div>';
+      + '" oninput="setErow(' + i + ',this.value)">'
+      + '<span class="u">' + esc(r.unit || '') + '</span></div>';
   });
   if (!반품) html += '<div class="btn2" style="margin-top:11px" onclick="addErow()">＋ 품목 추가</div>';
   el('editBody').innerHTML = 안내 + html;
 
   var 말 = editChanges();
-  var 요약 = 말.length
+  // 이름 없는 줄은 조용히 버려지고 있었습니다. 버리지 말고 막아야 합니다.
+  var 미완 = E.rows.some(function (r) { return r.isNew && r.qty > 0 && !r.name.trim(); });
+  var 요약 = 미완
+    ? '<div class="warn" style="margin-top:13px">\uc0c8 \ud488\ubaa9\uc758 \uc774\ub984\uc744 \uc801\uc5b4\uc8fc\uc138\uc694</div>'
+    : 말.length
     ? '<div class="esum' + (반품 ? ' ret' : '') + '"><b>'
       + (반품 ? '반품 ' : '바뀐 것 ') + 말.length + '건</b><br>' + esc(말.join(' · ')) + '</div>'
     : '<div class="enone">아직 적은 게 없습니다</div>';
@@ -2828,13 +2883,16 @@ function renderEdit() {
       + (E.notify ? ' checked' : '') + ' onchange="E.notify=this.checked"> 직원방에 알림 보내기</label>';
   el('editFoot').innerHTML = 요약 + 알림
     + '<div class="mrow"><div class="btn2" onclick="closeEdit()">취소</div>'
-    + '<div class="btn' + (말.length && !E.busy ? '' : ' off') + '" onclick="saveEdit()">'
+    + '<div class="btn' + (말.length && !미완 && !E.busy ? '' : ' off') + '" onclick="saveEdit()">'
     + (E.busy ? '저장 중…' : 글) + '</div></div>';
 }
 
 function saveEdit() {
   if (E.busy) return;
   var 말 = editChanges(); if (!말.length) return;
+  if (E.rows.some(function (r) { return r.isNew && r.qty > 0 && !r.name.trim(); })) {
+    return toast('새 품목의 이름을 적어주세요');
+  }
   E.busy = true; renderEdit();
 
   if (E.mode === 'return') {
@@ -2888,7 +2946,11 @@ function 편집을화면으로(lines) {
     else S.extra.push({ name:x.name, spec:x.spec, cut:x.cut || '', unit:x.unit,
                         qty:x.qty, group:'이번 발주에만', type:S.type });
   });
-  S.ven[1] = E.vendor; S.orderNo = E.no;
+  S.ven[1] = E.vendor;
+  S.orderNo = E.no;
+  // 이미 노션에 있는 발주를 고친 것입니다. 여기서 「등록」을 또 누르면
+  // 같은 내용의 발주 행이 하나 더 생깁니다. 등록됨으로 잠가둡니다.
+  S.done[1] = E.no;
   renderItems(); draw(); bar(); side();
   if (typeof goSheet === 'function') goSheet();
 }
