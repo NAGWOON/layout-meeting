@@ -2682,7 +2682,7 @@ function side() {
   var os = d.orders || [];
   el('pastCnt').textContent = os.length ? os.length + '건' : '';
   el('pastBox').innerHTML = os.length
-    ? os.slice(0, 6).map(function (o) {
+    ? os.slice(0, 12).map(function (o) {
         // 끝난 발주는 수량을 고칠 일이 없습니다. 대신 돌려보낸 것을 적습니다.
         var 끝 = (o.state === '입고완료');
         return '<div class="past">'
