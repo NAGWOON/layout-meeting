@@ -431,6 +431,49 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   background:rgba(16,18,23,.92); color:#fff; padding:11px 18px; border-radius:12px; font-size:13px;
   font-weight:600; opacity:0; pointer-events:none; transition:.22s; z-index:99; }
 #toast.show{ opacity:1; transform:translateX(-50%); }
+
+/* 발주 수정 · 반품 기록 */
+.past{ display:flex; align-items:center; gap:8px; }
+.pmain{ flex:1; min-width:0; }
+.pbtn{ flex:none; width:28px; height:28px; border-radius:8px; display:flex;
+  align-items:center; justify-content:center; font-size:13px; cursor:pointer;
+  border:1px solid var(--fieldbd); background:var(--field); color:var(--txt3); }
+.pbtn:hover{ border-color:var(--accent); color:var(--accent); }
+.erow{ display:flex; align-items:center; gap:8px; padding:10px 0;
+  border-bottom:1px solid var(--fieldbd); }
+.erow:last-child{ border-bottom:0; }
+.enm{ flex:1; min-width:0; line-height:1.4; font-size:12.5px; color:var(--txt);
+  word-break:keep-all; }
+.enm i{ display:block; font-style:normal; color:var(--txt4); font-size:11px; margin-top:2px; }
+.enm input{ width:100%; font-size:12.5px; padding:5px 7px; margin-bottom:4px; }
+.ewas{ flex:none; font-size:11px; color:var(--txt4); font-family:var(--sans); white-space:nowrap; }
+.erow input.q{ width:56px; flex:none; text-align:right; font-size:14px; padding:6px 8px;
+  font-family:var(--sans); }
+.erow .u{ min-width:22px; flex:none; font-size:11.5px; color:var(--txt3); }
+.erow.zero .enm{ color:var(--txt3); }
+.erow.zero .enm i{ opacity:.6; }
+.erow.zero input.q{ color:var(--txt4); }
+.erow.chg input.q{ border-color:var(--accent); color:var(--accent); font-weight:700; }
+.erow.chg .ewas{ color:var(--accent); }
+.erow.ret input.q{ border-color:var(--warn); color:var(--warn); font-weight:700; }
+.erow.ret .ewas{ color:var(--warn); }
+.erow.gone .enm{ text-decoration:line-through; color:var(--txt4); }
+.ewhy{ padding:11px 13px; border-radius:10px; margin-bottom:14px; word-break:keep-all;
+  background:var(--field); border:1px solid var(--fieldbd);
+  font-size:12px; line-height:1.75; color:var(--txt2); }
+.ewhy b{ color:var(--txt); font-weight:700; }
+.esum{ margin-top:13px; padding:10px 12px; border-radius:9px; word-break:keep-all;
+  background:rgba(47,111,237,.07); border:1px solid rgba(47,111,237,.22);
+  font-size:12px; line-height:1.7; color:var(--txt2); }
+.esum b{ color:var(--accent); }
+.esum.ret{ background:rgba(192,86,29,.07); border-color:rgba(192,86,29,.26); }
+.esum.ret b{ color:var(--warn); }
+.enone{ margin-top:13px; padding:12px; border-radius:9px; text-align:center;
+  border:1px dashed var(--fieldbd); font-size:12px; color:var(--txt4); }
+.eday{ display:flex; align-items:center; gap:9px; margin-bottom:15px; }
+.eday label{ font-size:12px; color:var(--txt3); flex:none; }
+.eday input{ flex:1; font-size:13px; padding:7px 9px; font-family:var(--sans); }
+.btn.off{ opacity:.4; pointer-events:none; }
 </style>
 </head>
 <body>
@@ -755,6 +798,15 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div class="note" id="qtyHint" style="margin:0 0 11px"></div>
     <div id="qtyRows"></div>
     <div class="btn2 pri" style="text-align:center;padding:10px;margin-top:13px" onclick="closeQty()">다 고쳤습니다</div>
+  </div>
+</div>
+<!-- ═════ 발주 수정 / 반품 기록 ═════ -->
+<div class="mask hide" id="editMask">
+  <div class="modal wide" style="max-height:calc(100vh - 36px);overflow-y:auto">
+    <h3 id="editTtl">발주</h3>
+    <div class="okline" id="editSub" style="margin-bottom:12px"></div>
+    <div id="editBody"></div>
+    <div id="editFoot"></div>
   </div>
 </div>
 <!-- ═════ 발주서 나누기 ═════ -->
@@ -2615,8 +2667,13 @@ function side() {
   el('pastCnt').textContent = os.length ? os.length + '건' : '';
   el('pastBox').innerHTML = os.length
     ? os.slice(0, 6).map(function (o) {
-        return '<div class="past" onclick="loadPastById(\'' + o.id + '\')"><b>' + esc(o.name || o.no) + '</b>'
-          + '<span>' + esc(o.no || '') + ' · ' + (o.count || 0) + '품목 · ' + (o.date || '') + '</span></div>';
+        // 끝난 발주는 수량을 고칠 일이 없습니다. 대신 돌려보낸 것을 적습니다.
+        var 끝 = (o.state === '입고완료');
+        return '<div class="past">'
+          + '<div class="pmain" onclick="loadPastById(\'' + o.id + '\')"><b>' + esc(o.name || o.no) + '</b>'
+          + '<span>' + esc(o.no || '') + ' · ' + (o.count || 0) + '품목 · ' + (o.date || '') + '</span></div>'
+          + '<div class="pbtn" title="' + (끝 ? '반품 기록' : '발주 수정')
+          + '" onclick="openEdit(\'' + o.id + '\')">' + (끝 ? '📤' : '✎') + '</div></div>';
       }).join('')
     : '<div class="note" style="margin:0">아직 없습니다</div>';
 }
@@ -2644,6 +2701,198 @@ function nmHtml(name) {
   if (!m || m[1].length < 7) return esc(name);
   return esc(m[1]) + ' <span class="dim">' + esc(m[2]) + '</span>';
 }
+
+// ═════ 발주 수정 · 반품 기록 ═════
+//
+// 발주하고 나면 수량이 바뀝니다. 실측이 틀렸거나 현장에서 더 달라고 하거나.
+// 업체에는 전화로 먼저 말하게 되는데, 그러면 노션과 현장 검수 화면만 옛 숫자로 남습니다.
+// 여기는 그 사실이 기록으로 따라오게 하는 자리입니다.
+//
+// 입고완료된 발주는 수량을 고치지 않습니다. 100장 받아 12장 돌려보낸 것이 사실이고,
+// 88장 시킨 것으로 고쳐버리면 왜 12장을 더 시켰는지가 사라집니다.
+var E = { id:'', no:'', name:'', vendor:'', state:'', type:'', mode:'edit',
+          rows:[], date:'', notify:true, busy:false };
+
+function 오늘값() {
+  var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
+}
+
+function openEdit(id) {
+  var o = ((S.detail && S.detail.orders) || []).filter(function (x) { return x.id === id; })[0];
+  if (!o) return toast('발주를 찾지 못했습니다');
+  E = { id:id, no:o.no || '', name:o.name || '', vendor:o.vendor || '', state:o.state || '',
+        type:o.type || S.type, mode:(o.state === '입고완료' ? 'return' : 'edit'),
+        rows:[], date:오늘값(), notify:true, busy:false };
+
+  el('editTtl').textContent = (E.mode === 'return') ? '📤 반품 기록' : '✎ 발주 수정';
+  el('editSub').textContent = [E.no, E.vendor, (E.state || '')].filter(String).join(' · ');
+  el('editBody').innerHTML = '<div class="note" style="margin:0">불러오는 중…</div>';
+  el('editFoot').innerHTML = '';
+  el('editMask').classList.remove('hide');
+
+  api('getOrderItems', { orderPageId: id }).then(function (r) {
+    if (!r || !r.ok || !(r.items || []).length) {
+      el('editBody').innerHTML = '<div class="warn">품목을 불러오지 못했습니다</div>';
+      el('editFoot').innerHTML = '<div class="mrow"><div class="btn2" onclick="closeEdit()">닫기</div></div>';
+      return;
+    }
+    E.rows = r.items.map(function (x) {
+      var w = Number(x.qty) || 0;
+      return { name:x.name, spec:x.spec || '', cut:x.cut || '', unit:x.unit || '',
+               group:x.group || '', was:w, qty:(E.mode === 'return' ? 0 : w), isNew:false };
+    });
+    renderEdit();
+  }).catch(function () {
+    el('editBody').innerHTML = '<div class="warn">품목을 불러오지 못했습니다</div>';
+  });
+}
+function closeEdit() { el('editMask').classList.add('hide'); }
+
+function setErow(i, v) {
+  var n = Number(v); E.rows[i].qty = (isFinite(n) && n > 0) ? n : 0;
+  renderEdit();
+}
+function setEtext(i, k, v) { E.rows[i][k] = v; }
+function addErow() {
+  E.rows.push({ name:'', spec:'', cut:'', unit:'', group:'이번 발주에만',
+                was:0, qty:1, isNew:true });
+  renderEdit();
+}
+
+// 바뀐 것만 말로 옮깁니다. 이 문장이 노션 이력과 직원방 알림에 그대로 들어갑니다.
+function editChanges() {
+  var 말 = [];
+  E.rows.forEach(function (r) {
+    if (E.mode === 'return') {
+      if (r.qty > 0) 말.push(r.name + ' ' + r.qty + (r.unit || ''));
+      return;
+    }
+    if (r.isNew) { if (r.qty > 0 && r.name.trim()) 말.push(r.name.trim() + ' ' + r.qty + (r.unit || '') + ' 추가'); return; }
+    if (r.qty === r.was) return;
+    말.push(r.qty === 0 ? (r.name + ' 빠짐') : (r.name + ' ' + r.was + '→' + r.qty));
+  });
+  return 말;
+}
+
+function renderEdit() {
+  var 반품 = (E.mode === 'return');
+  var 안내 = 반품
+    ? '<div class="ewhy"><b>업체로 돌려보낸 수량만 적어주세요.</b><br>'
+      + '돌려보내지 않은 품목은 0 그대로 두시면 됩니다. 발주 수량과 현장 검수 기록은 바뀌지 않습니다.</div>'
+      + '<div class="eday"><label>반품일</label><input type="date" id="retDay" value="' + E.date
+      + '" onchange="E.date=this.value"></div>'
+    : '<div class="ewhy"><b>업체에 이미 말씀하신 변경을 여기에 옮겨 적어주세요.</b><br>'
+      + '저장하면 노션과 현장 검수 화면이 같이 바뀌고, 발주서를 다시 그려드립니다. '
+      + '수량을 0으로 두면 이 발주에서 빠집니다.</div>';
+
+  var 묶음 = '', html = '';
+  E.rows.forEach(function (r, i) {
+    if (r.group && r.group !== 묶음) { 묶음 = r.group; html += '<div class="ch" style="margin-top:14px">' + esc(묶음) + '</div>'; }
+    var cls = 'erow';
+    if (반품) cls += (r.qty > 0 ? ' ret' : ' zero');
+    else if (r.isNew) cls += ' chg';
+    else if (r.qty === 0) cls += ' gone';
+    else if (r.qty !== r.was) cls += ' chg';
+
+    var 이름 = r.isNew
+      ? '<input placeholder="품목 이름" value="' + esc(r.name) + '" oninput="setEtext(' + i + ',\'name\',this.value)">'
+        + '<input placeholder="규격 (없으면 비워두세요)" value="' + esc(r.spec) + '" oninput="setEtext(' + i + ',\'spec\',this.value)">'
+      : esc(r.name) + (r.spec ? '<i>' + esc(r.spec) + '</i>' : '');
+
+    var 옆 = 반품 ? ('발주 ' + r.was)
+                  : (r.isNew ? '새로' : (r.qty !== r.was ? (r.was + ' →') : ''));
+
+    var 단위 = r.isNew
+      ? '<input class="q" style="width:38px;text-align:center" placeholder="개" value="' + esc(r.unit)
+        + '" oninput="setEtext(' + i + ',\'unit\',this.value)">'
+      : '<span class="u">' + esc(r.unit || '') + '</span>';
+
+    html += '<div class="' + cls + '"><div class="enm">' + 이름 + '</div>'
+      + '<div class="ewas">' + esc(옆) + '</div>'
+      + '<input class="q" type="number" min="0" inputmode="numeric" value="' + r.qty
+      + '" oninput="setErow(' + i + ',this.value)">' + 단위 + '</div>';
+  });
+  if (!반품) html += '<div class="btn2" style="margin-top:11px" onclick="addErow()">＋ 품목 추가</div>';
+  el('editBody').innerHTML = 안내 + html;
+
+  var 말 = editChanges();
+  var 요약 = 말.length
+    ? '<div class="esum' + (반품 ? ' ret' : '') + '"><b>'
+      + (반품 ? '반품 ' : '바뀐 것 ') + 말.length + '건</b><br>' + esc(말.join(' · ')) + '</div>'
+    : '<div class="enone">아직 적은 게 없습니다</div>';
+  var 글 = 반품 ? ('반품' + (말.length ? ' ' + 말.length + '건' : '') + ' 기록')
+                : ('저장' + (말.length ? ' ' + 말.length + '건' : '') + ' · 발주서 보기');
+  var 알림 = 반품 ? ''
+    : '<label class="mchk" style="margin:11px 0 0"><input type="checkbox" id="editNoti"'
+      + (E.notify ? ' checked' : '') + ' onchange="E.notify=this.checked"> 직원방에 알림 보내기</label>';
+  el('editFoot').innerHTML = 요약 + 알림
+    + '<div class="mrow"><div class="btn2" onclick="closeEdit()">취소</div>'
+    + '<div class="btn' + (말.length && !E.busy ? '' : ' off') + '" onclick="saveEdit()">'
+    + (E.busy ? '저장 중…' : 글) + '</div></div>';
+}
+
+function saveEdit() {
+  if (E.busy) return;
+  var 말 = editChanges(); if (!말.length) return;
+  E.busy = true; renderEdit();
+
+  if (E.mode === 'return') {
+    api('saveReturn', {
+      orderPageId: E.id, date: E.date,
+      items: E.rows.filter(function (r) { return r.qty > 0; })
+                   .map(function (r) { return { name:r.name, unit:r.unit, qty:r.qty }; })
+    }).then(function (r) {
+      E.busy = false;
+      if (!r || !r.ok) { renderEdit(); return toast('기록하지 못했습니다 — ' + ((r && r.error) || '')); }
+      closeEdit(); toast('반품 ' + r.count + '건 기록했습니다');
+    }).catch(function () { E.busy = false; renderEdit(); toast('기록하지 못했습니다'); });
+    return;
+  }
+
+  var lines = E.rows.filter(function (r) { return r.qty > 0 && r.name.trim(); })
+    .map(function (r) {
+      return { name:r.name.trim(), spec:r.spec, cut:r.cut, unit:r.unit, qty:r.qty,
+               group:(r.group || '기타') };
+    });
+  api('updateOrder', {
+    orderPageId: E.id, sitePageId: (S.site ? S.site.id : ''), items: lines,
+    summary: 말.join(' · '), notify: !!E.notify
+  }).then(function (r) {
+    E.busy = false;
+    if (!r || !r.ok) { renderEdit(); return toast('저장하지 못했습니다 — ' + ((r && r.error) || '')); }
+    closeEdit();
+    // 고친 내용을 그대로 화면에 올려 발주서를 다시 뽑을 수 있게 합니다.
+    편집을화면으로(lines);
+    toast('저장했습니다 — 발주서를 업체에 다시 보내세요');
+  }).catch(function () { E.busy = false; renderEdit(); toast('저장하지 못했습니다'); });
+}
+
+// 고친 품목을 입력 화면에 채우고 발주서로 넘어갑니다. 「지난 발주 불러오기」와 같은 방식입니다.
+function 편집을화면으로(lines) {
+  // 발주 유형을 먼저 맞춥니다. 목자재 발주를 설비 탭에서 열면 이름이 하나도 안 맞습니다.
+  if (E.type && TYPES.indexOf(E.type) >= 0) { S.type = E.type; renderTypes(); }
+  var 후보 = {};
+  S.items.forEach(function (i) { (후보[i.name] = 후보[i.name] || []).push(i); });
+  var byName = {};
+  Object.keys(후보).forEach(function (n) {
+    var c = 후보[n];
+    var m = c.filter(function (i) { return i.type === S.type; })[0] || c[0];
+    byName[n] = m.id;
+  });
+  S.qty = {}; S.cut = {}; S.extra = [];
+  S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1;
+  lines.forEach(function (x) {
+    var id = byName[x.name];
+    if (id) { S.qty[id] = x.qty; if (x.cut) S.cut[id] = x.cut; }
+    else S.extra.push({ name:x.name, spec:x.spec, cut:x.cut || '', unit:x.unit,
+                        qty:x.qty, group:'이번 발주에만', type:S.type });
+  });
+  S.ven[1] = E.vendor; S.orderNo = E.no;
+  renderItems(); draw(); bar(); side();
+  if (typeof goSheet === 'function') goSheet();
+}
+
 // ═════ 출력 ═════
 // 발주서 · 텍스트 · 노션이 같은 문장을 쓰도록 한 곳에서 만듭니다
 // 특기사항 — 업체마다 전할 말이 다릅니다. 한 벌로 통일해두면 결국 카톡으로 다시 씁니다.
