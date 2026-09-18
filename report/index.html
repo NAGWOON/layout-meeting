@@ -696,7 +696,13 @@ var API_대기 = 25000;        // 읽기
 var API_대기_사진 = 90000;   // 사진 한 장
 var API_대기_저장 = 120000;  // 저장 — 사진 43장 첨부에 57초 걸린 적이 있습니다
 
+// 부를 때마다 얼마나 걸렸는지 남깁니다. 「느리다」는 말을 들었을 때
+// 어느 동작이 느린지 추측하지 않으려고요. 주소창에 느림() 을 치면 표로 보여줍니다.
+var 느림기록 = [];
+function 느림() { console.table(느림기록.slice(-20)); return 느림기록.slice(-20); }
+
 function api(action, data, 남은시도) {
+  var 잰때 = Date.now();
   var 읽기 = (읽기요청.indexOf(action) >= 0);
   var 제한 = (action === 'uploadPhoto') ? API_대기_사진 : (읽기 ? API_대기 : API_대기_저장);
   var 시도 = (남은시도 === undefined) ? (읽기 ? 2 : 1) : 남은시도;
@@ -716,6 +722,11 @@ function api(action, data, 남은시도) {
     }).then(function (r) { return r.json(); }).then(function (r) {
       if (끝남) return;
       끝남 = true; clearTimeout(시계);
+      var 총 = Date.now() - 잰때, 서버 = (r && r._ms) || 0;
+      느림기록.push({ 동작: action, 총: 총, 서버: 서버, 길: 총 - 서버, 왕복: (r && r._n) || 0 });
+      if (느림기록.length > 60) 느림기록.shift();
+      if (총 > 2500) console.warn('느림 · ' + action + ' ' + (총 / 1000).toFixed(1)
+        + '초 (서버 ' + (서버 / 1000).toFixed(1) + '초 · 노션 ' + ((r && r._n) || 0) + '회)');
       if (r && r.error === 'unauthorized') { logout(); 깨짐(new Error('unauthorized')); return; }
       풀림(r);
     }).catch(function (e) {
