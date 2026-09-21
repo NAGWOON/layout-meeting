@@ -691,7 +691,8 @@ var state = {
 // 2026-09-15 사고 — 보고 제출이 25초를 넘기자 앱이 자동으로 한 번 더 보냈고,
 // 노션에 같은 일지가 26초 간격으로 두 개 생겼습니다.
 // 저장하는 요청은 결과를 못 받아도 다시 보내지 않습니다.
-var 읽기요청 = ['ping', 'getSites', 'getSiteDetail', 'getSpaces', 'getSiteOrders'];
+var 읽기요청 = ['ping', 'getSites', 'getSiteDetail', 'getSpaces', 'getSiteOrders',
+               'getOrderItemsBatch'];
 var API_대기 = 25000;        // 읽기
 var API_대기_사진 = 90000;   // 사진 한 장
 var API_대기_저장 = 120000;  // 저장 — 사진 43장 첨부에 57초 걸린 적이 있습니다
@@ -760,10 +761,10 @@ function show(id) {
 //
 // 현장에서 노션을 여는 게 불편해서 여기로 옮겼습니다.
 // 체크는 노션 발주 페이지의 「할 일」에 그대로 저장되므로 사무실에서도 같은 게 보입니다.
-var OD = { orders: [], open: '' };
+var OD = { orders: [], open: '', pre: null };
 
 function startOrders() {
-  OD = { orders: [], open: '' };
+  OD = { orders: [], open: '', pre: null };
   document.getElementById('oSite').textContent = state.site.name.replace(/\s*PROJECT\s*$/, '');
   document.getElementById('oList').innerHTML = '<div class="spin"></div>';
   show('scr-order');
@@ -783,11 +784,45 @@ function loadOrders() {
         return o;
       });
       renderOrders();
+      prefetchItems();          // 펼칠 때마다 기다리지 않게 미리 받아둡니다
     })
     .catch(function () {
       document.getElementById('oList').innerHTML =
         '<div class="hint">연결에 실패했습니다. 신호가 약한 곳일 수 있습니다.</div>';
     });
+}
+
+// 발주를 펼칠 때마다 서버를 부르면 왕복(1.5초)이 건수만큼 쌓입니다.
+// 목록이 뜨자마자 전부 한 번에 받아두면, 펼치는 건 그 뒤로 즉시입니다.
+function prefetchItems() {
+  var ids = OD.orders.filter(function (o) { return !o.items; })
+                     .map(function (o) { return o.id; });
+  if (!ids.length) return;
+  var 잰때 = Date.now();
+  OD.pre = { 상태: '받는중', n: ids.length };
+  var 멈춤 = function (사유) {
+    // 이 문구는 서버가 이 동작을 모를 때만 나옵니다 — 요청이 웹훅 갈래로 흘러간 겁니다.
+    if (사유.indexOf('웹훅에 페이지 id') >= 0)
+      사유 = '서버 배포본에 이 기능이 없습니다 — 앱스스크립트 「배포 관리」에서 '
+           + '기존 배포를 편집해 버전을 「새 버전」으로 올려주세요';
+    OD.pre = { 상태: '실패', 사유: 사유 };
+    console.warn('품목 미리받기 실패 — ' + 사유);
+    renderOrders();
+  };
+  api('getOrderItemsBatch', { orderPageIds: ids })
+    .then(function (r) {
+      if (!r || !r.ok) return 멈춤((r && r.error) || '서버가 ok 를 안 줬습니다');
+      if (!r.byOrder)  return 멈춤('byOrder 가 없습니다 — 배포본이 예전 것일 수 있습니다');
+      var 받음 = 0;
+      OD.orders.forEach(function (o) {
+        if (r.byOrder[o.id]) { o.items = r.byOrder[o.id]; 받음++; }
+      });
+      OD.pre = { 상태: '완료', n: 받음,
+                 초: ((Date.now() - 잰때) / 1000).toFixed(1) };
+      console.log('품목 미리받기 ' + 받음 + '건 · ' + OD.pre.초 + '초');
+      renderOrders();
+    })
+    .catch(function (e) { 멈춤(String((e && e.message) || e)); });
 }
 
 // 품목은 펼칠 때만, 그 건만 받아옵니다. 목록을 다시 훑지 않으니 훨씬 가볍습니다.
@@ -809,10 +844,16 @@ function renderOrders() {
       '<div class="hint">이 현장에 아직 발주가 없습니다.</div>';
     return;
   }
-  document.getElementById('oList').innerHTML = OD.orders.map(function (o) {
+  var 글 = OD.orders.map(function (o) {
     var 펼침 = (OD.open === o.id);
     var 끝남 = (o.state === '입고완료');
-    var 남음 = o.items ? o.items.filter(function (x) { return !x.checked; }).length : null;
+    // 품목이 0개인 것을 '완료'로 보여주면 안 됩니다. 옛 표 형식 발주가
+    // 품목 0개로 읽히면서 전부 완료처럼 보이던 일이 있었습니다.
+    var 비었음 = !!(o.items && !o.items.length);
+    var 읽기전용 = !!(o.items && o.items.length && o.items[0].readonly);
+    var 남음 = (o.items && o.items.length)
+                 ? o.items.filter(function (x) { return !x.checked; }).length
+                 : null;
 
     var 머리 = '<div class="ocard' + (끝남 ? ' done' : '') + '">'
       + '<div class="ohd" onclick="toggleOrder(\'' + o.id + '\')">'
@@ -820,14 +861,37 @@ function renderOrders() {
       + '<div class="ot"><b>' + esc(짧은제목(o)) + '</b>'
       + '<i>' + esc(o.vendor || '발주처 미지정') + '</i>'
       + '<i class="sub">' + [o.due ? '입고예정 ' + o.due : '', o.no].filter(String).map(esc).join('  ·  ') + '</i></div>'
-      + '<div class="oc">' + (남음 === null
-          ? '<b class="n">' + (o.count || 0) + '</b><i>품목</i>'
-          : (남음 ? '<b class="n left">' + 남음 + '</b><i>남음</i>' : '<b class="n ok">✓</b><i>완료</i>'))
+      + '<div class="oc">' + (비었음
+          ? '<b class="n">—</b><i>품목 없음</i>'
+          : 읽기전용
+            ? '<b class="n">' + o.items.length + '</b><i>옛 형식</i>'
+            : (남음 === null
+                ? '<b class="n">' + (o.count || 0) + '</b><i>품목</i>'
+                : (남음 ? '<b class="n left">' + 남음 + '</b><i>남음</i>'
+                        : '<b class="n ok">✓</b><i>완료</i>')))
         + '</div>'
       + '<div class="og">' + (펼침 ? '⌄' : '›') + '</div></div>';
 
     if (!펼침) return 머리 + '</div>';
     if (!o.items) return 머리 + '<div class="obody"><div class="spin"></div></div></div>';
+
+    if (!o.items.length) {
+      return 머리 + '<div class="obody"><div class="hint">'
+        + '이 발주에는 품목이 적혀 있지 않습니다. 노션 발주 페이지를 확인해 주세요.'
+        + '</div></div></div>';
+    }
+
+    if (읽기전용) {
+      return 머리 + '<div class="obody">'
+        + o.items.map(function (x) {
+            return '<label class="oitem" style="opacity:.75">'
+              + '<span>' + esc(x.text) + '</span></label>';
+          }).join('')
+        + '<div class="hint" style="margin-top:9px">'
+        + '예전 형식(표)으로 적힌 발주라 여기서는 체크할 수 없습니다. '
+        + '품목 확인만 하시고, 체크는 노션에서 해주세요.</div>'
+        + '</div></div>';
+    }
 
     return 머리 + '<div class="obody">'
       + o.items.map(function (x) {
@@ -844,6 +908,14 @@ function renderOrders() {
       + '<div class="hint" style="margin-top:9px">받으신 것부터 체크하세요. 다 체크되면 사무실에 알림이 갑니다.</div>'
       + '</div></div>';
   }).join('');
+
+  // 미리받기가 실패하면 펼칠 때마다 기다리게 됩니다. 조용히 넘어가면
+  // 「그냥 느리네」로 끝나서 원인을 영영 못 찾습니다. 그래서 적어 둡니다.
+  if (OD.pre && OD.pre.상태 === '실패') {
+    글 += '<div class="hint" style="margin-top:10px">품목 미리받기가 안 돼서 '
+        + '발주를 펼칠 때마다 기다리게 됩니다.<br>사유 · ' + esc(OD.pre.사유) + '</div>';
+  }
+  document.getElementById('oList').innerHTML = 글;
 }
 
 // 현장명은 화면 맨 위에 이미 있습니다. 카드에 또 적으면 좁은 폰에서 제목이 두 줄이 됩니다.
@@ -862,7 +934,7 @@ function toggleOrder(id) {
   OD.open = (OD.open === id) ? '' : id;
   renderOrders();
   var o = OD.orders.filter(function (x) { return x.id === id; })[0];
-  if (OD.open && o && !o.items) loadOrderItems(id);   // 품목은 펼칠 때 받아옵니다
+  if (OD.open && o && !o.items) loadOrderItems(id);   // 미리받기가 실패했을 때만 여기로 옵니다
 }
 
 function checkItem(orderId, blockId, checked) {
