@@ -228,6 +228,9 @@
   .donewrap .sub { font-size:12px; color:var(--txt3); text-align:center; margin:8px 0 22px; line-height:1.7; }
   .kakao { padding:15px 16px; font-size:13px; line-height:1.75; white-space:pre-wrap; color:var(--txt2);
     max-height:290px; overflow-y:auto; margin-bottom:12px; }
+  .crow.bad select { border-color:#c0392b; background:rgba(192,57,43,.07); }
+  .crowwarn { font-size:11.5px; color:#c0392b; line-height:1.6; margin:2px 0 10px 3px; }
+  @media (prefers-color-scheme: dark) { .crowwarn { color:#ef8272; } }
   .warn { background:rgba(224,169,46,.12); border:1px solid rgba(224,169,46,.34); border-radius:12px;
     padding:11px 13px; font-size:12px; color:#a67c12; line-height:1.65; margin-bottom:12px; }
   @media (prefers-color-scheme: dark) { .warn { color:#e0b45e; } }
@@ -483,6 +486,7 @@
       <div class="sec internal">
         <div class="lab">내부 전용 · 고객에게 보이지 않습니다</div>
         <div id="crewRows"></div>
+        <div id="crewWarn" class="crowwarn hide"></div>
         <div class="opt" onclick="addCrewRow()">＋ 팀 추가</div>
         <div class="authorrow"><span>작성자</span><b id="authorName">—</b></div>
       </div>
@@ -509,6 +513,7 @@
       <div class="big" id="doneTitle">보고가 등록되었습니다</div>
       <div class="sub" id="doneSub"></div>
       <div id="photoWarn"></div>
+      <div id="doneWarn"></div>
       <div class="lab">고객 안내 메시지</div>
       <div class="kakao" id="kakaoMsg">—</div>
       <button class="btn" onclick="copyKakao()">📋 메시지 복사</button>
@@ -1223,7 +1228,7 @@ function toggleMic() {
 // ── 투입 현황 ──
 function addCrewRow(proc) {
   var opts = (state.detail && state.detail.processOptions) || [];
-  var sel = '<select onchange="renderPreview()"><option value="">공정 ▾</option>';
+  var sel = '<select onchange="빠진줄_지우기();renderPreview()"><option value="">공정 ▾</option>';
   opts.forEach(function (o) {
     sel += '<option' + (o === proc ? ' selected' : '') + '>' + esc(o) + '</option>';
   });
@@ -1236,6 +1241,29 @@ function addCrewRow(proc) {
     + '<button class="rm" onclick="this.parentNode.remove();renderPreview()">✕</button>';
   document.getElementById('crewRows').appendChild(row);
 }
+// 인원은 적었는데 공정을 안 고른 줄.
+// 지금은 collectCrew 가 이런 줄을 조용히 버립니다 — 적은 사람은 올라간 줄 압니다.
+// 그래서 제출 전에 잡습니다. 버릴 데이터를 애초에 만들지 않는 게 제일 확실합니다.
+function 공정빠진줄() {
+  var 빠짐 = [];
+  document.querySelectorAll('#crewRows .crow').forEach(function (r) {
+    var proc = r.querySelector('select').value;
+    var n = r.querySelector('input[type=number]').value;
+    if (!proc && n) 빠짐.push(r);
+  });
+  return 빠짐;
+}
+
+// 고치는 순간 빨간 표시를 거둡니다. 고쳤는데도 빨간 채로 두면 화를 냅니다.
+function 빠진줄_지우기() {
+  document.querySelectorAll('#crewRows .crow.bad').forEach(function (r) {
+    if (r.querySelector('select').value) r.classList.remove('bad');
+  });
+  if (!document.querySelectorAll('#crewRows .crow.bad').length) {
+    document.getElementById('crewWarn').classList.add('hide');
+  }
+}
+
 function collectCrew() {
   var rows = document.querySelectorAll('#crewRows .crow');
   var crew = [];
@@ -1274,12 +1302,28 @@ function submitAll() {
   if (!collectProcs().length && !work) { toast('공정을 선택하거나 작업 내용을 입력하세요'); return; }
   if (!work) { toast('오늘 작업 내용을 입력해주세요'); return; }
 
+  // 공정을 안 고른 줄이 있으면 여기서 멈춥니다.
+  var 빠짐 = 공정빠진줄();
+  if (빠짐.length) {
+    빠짐.forEach(function (r) { r.classList.add('bad'); });
+    var w = document.getElementById('crewWarn');
+    w.textContent = '인원을 적었는데 공정을 안 고르신 줄이 ' + 빠짐.length
+                  + '줄 있습니다. 이대로 올리면 그 줄은 안 들어갑니다.';
+    w.classList.remove('hide');
+    try { 빠짐[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { }
+    toast('공정을 골라주세요');
+    return;
+  }
+
   var btn = document.getElementById('submitBtn');
   btn.disabled = true;
   state.submitting = true;
   ovShow('보고 저장 중…', '노션에 일지를 등록하고 있습니다 · 화면을 닫지 마세요', 0);
 
   var doneIds = Object.keys(state.doneInst).filter(function (k) { return state.doneInst[k]; });
+  // 무엇을 보냈는지 적어둡니다. 저장된 것과 대조해 완료 화면에 영수증을 찍습니다.
+  state.sentCrew = collectCrew().length;
+  state.sentDone = doneIds.length;
   api('submitReport', {
     sitePageId: state.site.id,
     processTypes: collectProcs(),
@@ -1384,9 +1428,21 @@ function showDone() {
   var dd = new Date();
   document.getElementById('doneDate').textContent = (dd.getMonth()+1) + '월 ' + dd.getDate() + '일 · ' + (r.title || '');
   document.getElementById('doneTitle').textContent = r.title + ' 보고 등록 완료';
-  document.getElementById('doneSub').innerHTML = '사진 ' + state.photos.length + '장 저장 · 노션 일지 생성됨<br>아래 메시지를 복사해 고객 카톡에 붙여넣으세요';
+  // 무엇이 저장됐는지 한 줄로 찍습니다. 이 한 줄이 영수증입니다 —
+  // 기억과 숫자가 다르면 직원분이 그 자리에서 압니다.
+  var 보낸투입 = state.sentCrew || 0;
+  var 저장투입 = (typeof r.crewCount === 'number') ? r.crewCount : 보낸투입;
+  document.getElementById('doneSub').innerHTML =
+      '사진 ' + state.photos.length + '장 · 투입 ' + 저장투입 + '줄 · 지시 '
+    + (state.sentDone || 0) + '건 저장됨'
+    + '<br>아래 메시지를 복사해 고객 카톡에 붙여넣으세요';
   document.getElementById('kakaoMsg').textContent = r.kakaoMessage || '(해당 공정의 안내 문구 없음)';
   document.getElementById('photoWarn').innerHTML = '';
+  // 보낸 줄보다 적게 저장됐으면 조용히 넘어가지 않습니다.
+  document.getElementById('doneWarn').innerHTML = (저장투입 < 보낸투입)
+    ? '<div class="warn">투입 인원 ' + (보낸투입 - 저장투입) + '줄이 저장되지 않았습니다.<br>'
+      + '적어서 올리신 게 맞습니다 — 사무실에 알림이 갔습니다.</div>'
+    : '';
 }
 function ovShow(title, sub, pct, cnt) {
   document.getElementById('overlay').classList.remove('hide');
