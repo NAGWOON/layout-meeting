@@ -696,6 +696,12 @@ var 읽기요청 = ['ping', 'getSites', 'getSiteDetail', 'getSpaces', 'getSiteOr
 var API_대기 = 25000;        // 읽기
 var API_대기_사진 = 90000;   // 사진 한 장
 var API_대기_저장 = 120000;  // 저장 — 사진 43장 첨부에 57초 걸린 적이 있습니다
+// 2026-09-21: 앱을 열었는데 현장 목록이 빙글만 돌았습니다.
+// 재보니 스크립트가 자다 깨는 데 26.9초가 걸렸습니다 (그 뒤로는 1.8초).
+// 10분마다 예열을 찌르고 있었는데도 그랬습니다 — 구글이 인스턴스 재사용을
+// 보장하지 않아서, 예열이 깨운 놈과 사람이 닿는 놈이 다를 수 있습니다.
+// 우리가 막을 수 없는 일이니, 첫 화면만 넉넉히 기다려줍니다.
+var API_대기_깨움 = 45000;   // 앱을 연 뒤 첫 호출
 
 // 부를 때마다 얼마나 걸렸는지 남깁니다. 「느리다」는 말을 들었을 때
 // 어느 동작이 느린지 추측하지 않으려고요. 주소창에 느림() 을 치면 표로 보여줍니다.
@@ -705,7 +711,9 @@ function 느림() { console.table(느림기록.slice(-20)); return 느림기록.
 function api(action, data, 남은시도) {
   var 잰때 = Date.now();
   var 읽기 = (읽기요청.indexOf(action) >= 0);
-  var 제한 = (action === 'uploadPhoto') ? API_대기_사진 : (읽기 ? API_대기 : API_대기_저장);
+  var 제한 = (action === 'uploadPhoto') ? API_대기_사진
+           : (action === 'getSites')    ? API_대기_깨움
+           : (읽기 ? API_대기 : API_대기_저장);
   var 시도 = (남은시도 === undefined) ? (읽기 ? 2 : 1) : 남은시도;
 
   return new Promise(function (풀림, 깨짐) {
@@ -993,7 +1001,13 @@ function loadSites() {
   show('scr-sites');
   document.getElementById('siteList').innerHTML = '<div class="spin"></div>';
   document.getElementById('sitesMeta').textContent = '불러오는 중…';
+  // 8초가 넘어가면 고장난 줄 압니다. 기다리는 이유를 적어줍니다.
+  var 깨우는중 = setTimeout(function () {
+    var el = document.getElementById('sitesMeta');
+    if (el) el.textContent = '서버를 깨우는 중입니다 · 처음 한 번은 30초까지 걸립니다';
+  }, 8000);
   api('getSites').then(function (r) {
+    clearTimeout(깨우는중);
     if (!r.ok) throw new Error(r.error);
     state.sites = r.sites || [];
     state.details = r.details || {};   // 서버가 상세까지 같이 보내줬으면 받아둡니다
@@ -1012,8 +1026,11 @@ function loadSites() {
     document.getElementById('sitesMeta').textContent = '진행 중인 현장' + (owner ? ' · 접속 ' + owner : '');
     document.getElementById('sitesCount').textContent = state.sites.length;
   }).catch(function (e) {
+    clearTimeout(깨우는중);
     if (String(e.message) === 'unauthorized') return;
-    document.getElementById('siteList').innerHTML = '<div class="codebox">목록을 불러오지 못했습니다<br>' + esc(e.message) + '</div>';
+    document.getElementById('sitesMeta').textContent = '불러오지 못했습니다';
+    document.getElementById('siteList').innerHTML = '<div class="codebox">목록을 불러오지 못했습니다<br>'
+      + esc(e.message) + '<br><br><a href="#" onclick="loadSites();return false;">다시 시도</a></div>';
   });
 }
 function ddayParts(start) {
