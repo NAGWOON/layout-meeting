@@ -689,6 +689,11 @@
 var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
 var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 
+// 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
+// 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
+// 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
+var APP_VER = '2026-09-22';
+
 var state = {
   sites: [], site: null, detail: null,
   procs: [],            // 선택된 공정들
@@ -1395,6 +1400,7 @@ function submitAll() {
     author: localStorage.getItem(LS_OWNER) || '',
     doneInstructionIds: doneIds,
     noCrewConfirmed: !!state.noCrew,   // 잊은 게 아니라 정말 없었던 날입니다
+    appVer: APP_VER,
     photos: []
   }).then(function (r) {
     if (!r.ok) throw new Error(r.error || '저장 실패');
