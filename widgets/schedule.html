@@ -358,7 +358,10 @@ function 달력만들기(상자, 일정, 옵션) {
     });
 
     var 레인=[], 넘침=[0,0,0,0,0,0,0];
-    var 최대 = 상자.classList.contains('narrow') ? 4 : 3;
+    // 2026-09-22 — 9/23에 일정이 넷 겹쳤는데 「전기」가 통째로 안 보였습니다.
+    // 고객이 보는 화면입니다. 안 보이는 일정이 있으면 안 됩니다.
+    // 칸은 겹치는 주에만 늘어나므로 한산한 달의 높이는 그대로입니다.
+    var 최대 = 상자.classList.contains('narrow') ? 6 : 5;
     걸친것.forEach(function(it){
       var L=0;
       for(;L<최대;L++){
@@ -384,7 +387,9 @@ function 달력만들기(상자, 일정, 옵션) {
       for(var i=0;i<7;i++){
         if(!넘침[i]) continue;
         var mo=document.createElement('div'); mo.className='more'; mo.textContent='+'+넘침[i];
-        mo.style.gridColumn=(i+1)+' / '+(i+2); mo.style.gridRow=레인.length;
+        // 마지막 막대와 같은 줄에 찍혀서 「+1」이 막대 뒤에 가려져 있었습니다.
+        // 넘친 게 있다는 사실조차 안 보이면 없는 일정이 됩니다. 한 줄 내립니다.
+        mo.style.gridColumn=(i+1)+' / '+(i+2); mo.style.gridRow=레인.length+1;
         막대들.appendChild(mo);
       }
       주.appendChild(막대들);
