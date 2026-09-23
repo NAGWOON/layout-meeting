@@ -176,6 +176,13 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .crow .cu{ width:20px; font-size:11px; color:var(--txt4); flex:none; }
 .crow .cl{ font-size:12.5px; color:var(--txt2); flex:1; }
 .crow .del{ color:var(--txt4); cursor:pointer; font-size:15px; padding:0 3px; flex:none; }
+/* 겹마다 한 면인지 양면인지 — 좁은 화면에서는 면재 셀렉이 아랫줄로 내려갑니다 */
+.crow.wrp{ flex-wrap:wrap; }
+.crow.wrp select.mt{ flex:1 1 140px; min-width:140px; }
+.crow .sb{ flex:none; width:36px; text-align:center; font-size:10.5px; font-weight:700;
+  padding:7px 0; border-radius:8px; cursor:pointer; user-select:none;
+  border:1px solid var(--fieldbd); background:var(--field); color:var(--txt3); }
+.crow .sb.one{ border-color:var(--warn); color:var(--warn); background:rgba(192,86,29,.09); }
 .crow input.xn{ flex:1; min-width:0; width:auto; text-align:left;
   font-family:var(--sans); font-size:12.5px; }
 .addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:3px 0 1px; }
@@ -577,7 +584,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div class="sect">🪵 상 자재 <span>벽·천장 공통</span></div>
       <div id="studRow"></div>
 
-      <div class="sect">🧱 벽체 <span>높이 2.4 · 양면 마감</span></div>
+      <div class="sect">🧱 벽체 <span>높이 2.4 · 겹마다 한면/양면</span></div>
       <div id="wallRows"></div>
       <div class="addrow" onclick="addWall()">＋ 벽 추가</div>
 
@@ -906,14 +913,14 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-09-23';
+var APP_VER = '2026-09-23b';
 
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
   type: '목자재', qty: {}, cut: {}, extra: [], orderNo: '', ship: '용차 배송', busy: false, safe: 5, cutNote: true,
   only: false, calcOpen: true, loss: 10, elev: null, unload: null,   // 산출부터 하는 게 순서입니다
   studMat: '',                   // 벽·천장 상 자재 — 현장 하나에 한 종류를 씁니다
-  walls: [{ m: '', pitch: '@300', plies: [''] }],
+  walls: [{ m: '', pitch: '@300', plies: [{ n:'', s:2 }] }],
   ceil:  { m2: '', plies: [''] },
   mold:  [{ m: '', mat: '' }],
   ins:   [{ v: '', mode: '벽', mat: '' }],
@@ -1248,8 +1255,11 @@ function 기본자재채우기() {
   var 면 = 첫자재(면재후보(), ['일반 석고보드']);
   var 단 = 첫자재(단열후보(), ['아이소핑크 30T (특호)']);
   S.walls.forEach(function (w) {
-    w.plies = (w.plies || []).map(function (x) { return x || 면; });
-    if (!w.plies.length) w.plies = [면];
+    w.plies = (w.plies || []).map(function (x) {
+      if (typeof x === 'string') x = { n: x, s: 2 };       // 옛 모양도 받아 줍니다
+      return { n: (x && x.n) || 면, s: (x && Number(x.s) === 1) ? 1 : 2 };
+    });
+    if (!w.plies.length) w.plies = [{ n: 면, s: 2 }];
   });
   S.ceil.plies = (S.ceil.plies || []).map(function (x) { return x || 면; });
   if (!S.ceil.plies.length) S.ceil.plies = [면];
@@ -1261,38 +1271,57 @@ function 기본자재채우기() {
 
 // 면재는 겹으로 쌓습니다. 기본은 한 줄이고, ＋ 를 누른 벽만 아래로 늘어납니다 —
 // 늘 여러 줄로 펴두면 계산기가 화면을 다 먹습니다.
-function 면재셀렉(값, 콜백) {
+function 면재셀렉(값, 콜백, 클래스) {
   var 목록 = 면재후보();
   if (목록.indexOf(값) < 0 && 값) 목록 = [값].concat(목록);   // 마스터에서 빠진 것도 보이게
-  return '<select onchange="' + 콜백 + '">'
+  return '<select' + (클래스 ? ' class="' + 클래스 + '"' : '') + ' onchange="' + 콜백 + '">'
     + 목록.map(function (k) {
         return '<option' + (k === 값 ? ' selected' : '') + '>' + esc(k) + '</option>';
       }).join('') + '</select>';
 }
+// 벽은 양면이 기본입니다. 아트월 하지·붙박이 뒤판처럼 한 면만 치는 겹은
+// 「양면」을 눌러 「한면」으로 바꾸면 그 겹만 면적이 절반으로 잡힙니다.
+function 면칩(s, 콜백) {
+  var 한 = Number(s) === 1;
+  return '<span class="sb' + (한 ? ' one' : '') + '" title="한 면 / 양면 바꾸기" onclick="'
+    + 콜백 + '">' + (한 ? '한면' : '양면') + '</span>';
+}
 function renderWalls() {
   el('wallRows').innerHTML = S.walls.map(function (w, i) {
-    var 머리 = '<div class="crow"><input type="number" min="0" value="' + (w.m || '')
+    var 머리 = '<div class="crow wrp"><input type="number" min="0" value="' + (w.m || '')
       + '" placeholder="0" oninput="setWall(' + i + ',\'m\',this.value)"><span class="cu">m</span>'
-      + '<select style="flex:0 0 66px" onchange="setWall(' + i + ',\'pitch\',this.value)">'
+      + '<select style="flex:0 0 76px" onchange="setWall(' + i + ',\'pitch\',this.value)">'
       + Object.keys(PITCH).map(function (k) {
           return '<option' + (k === w.pitch ? ' selected' : '') + '>' + k + '</option>'; }).join('')
       + '</select>'
-      + 면재셀렉(w.plies[0], 'setPly(' + i + ',0,this.value)')
+      + 면칩(w.plies[0].s, 'togPly(' + i + ',0)')
+      + 면재셀렉(w.plies[0].n, 'setPly(' + i + ',0,this.value)', 'mt')
       + '<span class="del" title="겹 추가" onclick="addPly(' + i + ')">＋</span>'
       + (S.walls.length > 1 ? '<span class="del" onclick="delWall(' + i + ')">×</span>' : '')
       + '</div>';
-    var 겹 = w.plies.slice(1).map(function (nm, j) {
-      return '<div class="crow" style="padding-left:78px"><span class="cu" style="width:22px">'
+    var 겹 = w.plies.slice(1).map(function (p, j) {
+      return '<div class="crow wrp" style="padding-left:78px"><span class="cu" style="width:22px">'
         + (j + 2) + '겹</span>'
-        + 면재셀렉(nm, 'setPly(' + i + ',' + (j + 1) + ',this.value)')
+        + 면칩(p.s, 'togPly(' + i + ',' + (j + 1) + ')')
+        + 면재셀렉(p.n, 'setPly(' + i + ',' + (j + 1) + ',this.value)', 'mt')
         + '<span class="del" onclick="delPly(' + i + ',' + (j + 1) + ')">×</span></div>';
     }).join('');
     return 머리 + 겹;
   }).join('');
 }
 function setWall(i, k, v) { S.walls[i][k] = v; calcPreview(); }
-function setPly(i, j, v) { S.walls[i].plies[j] = v; calcPreview(); }
-function addPly(i) { S.walls[i].plies.push(S.walls[i].plies[0] || 첫면재()); renderWalls(); calcPreview(); }
+function setPly(i, j, v) { S.walls[i].plies[j].n = v; calcPreview(); }
+function togPly(i, j) {
+  var p = S.walls[i].plies[j];
+  p.s = (Number(p.s) === 1 ? 2 : 1);
+  renderWalls(); calcPreview();
+}
+// 겹을 더하면 아래 겹도 같은 면 수로 시작합니다 — 한 면짜리 벽은 대개 끝까지 한 면입니다.
+function addPly(i) {
+  var 머 = S.walls[i].plies[0] || {};
+  S.walls[i].plies.push({ n: 머.n || 첫면재(), s: Number(머.s) === 1 ? 1 : 2 });
+  renderWalls(); calcPreview();
+}
 function delPly(i, j) { S.walls[i].plies.splice(j, 1); renderWalls(); calcPreview(); }
 function 첫면재() { return 첫자재(면재후보(), ['일반 석고보드']); }
 
@@ -1330,7 +1359,7 @@ function renderMold() {
 function setMold(i, k, v) { S.mold[i][k] = v; calcPreview(); }
 function addMold() { S.mold.push({ m:'', mat:첫자재(몰딩후보(), ['중백색 평몰딩 30MM']) }); renderMold(); }
 function delMold(i) { S.mold.splice(i,1); renderMold(); calcPreview(); }
-function addWall() { S.walls.push({ m:'', pitch:'@300', plies:[첫면재()] }); renderWalls(); }
+function addWall() { S.walls.push({ m:'', pitch:'@300', plies:[{ n:첫면재(), s:2 }] }); renderWalls(); }
 function delWall(i) { S.walls.splice(i,1); renderWalls(); calcPreview(); }
 
 // 천장도 같은 모양입니다. 예전에는 1ply·2ply 두 칸이었고 면재가 일반 석고로 고정이라
@@ -1379,7 +1408,8 @@ function delIns(i) { S.ins.splice(i,1); renderIns(); calcPreview(); }
 function calc() {
   var f = 1 + S.loss / 100, acc = {};
   function add(n, q) { if (!n || !q) return; acc[n] = (acc[n] || 0) + q; }
-  // 면재 한 겹은 그 자재의 장당 면적으로 나눕니다. 벽은 양면(2.4 × 2 = 4.8㎡/m)입니다.
+  // 면재 한 겹은 그 자재의 장당 면적으로 나눕니다.
+  // 벽은 겹마다 한면(2.4㎡/m)·양면(4.8㎡/m)을 골라 잡습니다.
   function 겹더하기(이름, 면적) {
     var a = 면적of(이름);
     if (a) add(이름, 면적 / a);
@@ -1390,7 +1420,9 @@ function calc() {
     if (!m) return;
     var d = PITCH[w.pitch];
     if (d) add(S.studMat || T.d, m * d);
-    (w.plies || []).forEach(function (nm) { 겹더하기(nm, m * 벽높이 * 2); });
+    (w.plies || []).forEach(function (p) {
+      겹더하기(p.n, m * 벽높이 * (Number(p.s) === 1 ? 1 : 2));
+    });
   });
 
   var c2 = Number(S.ceil.m2) || 0;
