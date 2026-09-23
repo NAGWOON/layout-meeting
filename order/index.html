@@ -183,6 +183,11 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
   padding:7px 0; border-radius:8px; cursor:pointer; user-select:none;
   border:1px solid var(--fieldbd); background:var(--field); color:var(--txt3); }
 .crow .sb.one{ border-color:var(--warn); color:var(--warn); background:rgba(192,86,29,.09); }
+/* 겹을 더하는 버튼 — ＋ 기호만 두면 뭘 하는 건지 안 읽힙니다.
+   설명은 title 에만 있어서 폰에서는 띄울 방법도 없었습니다 */
+.crow .addp{ flex:none; cursor:pointer; user-select:none; white-space:nowrap;
+  font-size:10px; font-weight:700; padding:6px 6px; border-radius:8px;
+  color:var(--accent); border:1px solid var(--accent); background:rgba(47,111,237,.07); }
 .crow input.xn{ flex:1; min-width:0; width:auto; text-align:left;
   font-family:var(--sans); font-size:12.5px; }
 .addrow{ font-size:11.5px; font-weight:700; color:var(--accent); cursor:pointer; padding:3px 0 1px; }
@@ -913,7 +918,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-09-23b';
+var APP_VER = '2026-09-23c';
 
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
@@ -1296,7 +1301,7 @@ function renderWalls() {
       + '</select>'
       + 면칩(w.plies[0].s, 'togPly(' + i + ',0)')
       + 면재셀렉(w.plies[0].n, 'setPly(' + i + ',0,this.value)', 'mt')
-      + '<span class="del" title="겹 추가" onclick="addPly(' + i + ')">＋</span>'
+      + '<span class="addp" title="면재를 한 겹 더 올립니다" onclick="addPly(' + i + ')">＋겹</span>'
       + (S.walls.length > 1 ? '<span class="del" onclick="delWall(' + i + ')">×</span>' : '')
       + '</div>';
     var 겹 = w.plies.slice(1).map(function (p, j) {
@@ -1369,7 +1374,7 @@ function renderCeil() {
   var 머리 = '<div class="crow"><input type="number" min="0" value="' + (c.m2 || '')
     + '" placeholder="0" oninput="setCeil(this.value)"><span class="cu">㎡</span>'
     + 면재셀렉(c.plies[0], 'setCeilPly(0,this.value)')
-    + '<span class="del" title="겹 추가" onclick="addCeilPly()">＋</span></div>';
+    + '<span class="addp" title="면재를 한 겹 더 올립니다" onclick="addCeilPly()">＋겹</span></div>';
   var 겹 = c.plies.slice(1).map(function (nm, j) {
     return '<div class="crow" style="padding-left:78px"><span class="cu" style="width:22px">'
       + (j + 2) + '겹</span>'
