@@ -514,7 +514,8 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 <div id="scr-input" class="wrap hide">
   <div class="hd">
     <div class="dmark">D</div>
-    <div><div class="sub">DASIFILL</div><div class="ttl">자재 발주</div></div>
+    <div><div class="sub">DASIFILL <span id="verTag" style="opacity:.55;font-weight:400"></span></div>
+      <div class="ttl">자재 발주</div></div>
     <div class="sp"></div>
     <select id="siteSel" onchange="pickSite()"><option value="">현장을 고르세요</option></select>
     <div class="who" id="whoTxt">—</div>
@@ -902,6 +903,11 @@ var CO = {
   mail: 'official@dasifilldesign.co.kr'
 };
 
+// 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
+// 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
+// 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
+var APP_VER = '2026-09-23';
+
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
   type: '목자재', qty: {}, cut: {}, extra: [], orderNo: '', ship: '용차 배송', busy: false, safe: 5, cutNote: true,
@@ -997,6 +1003,7 @@ function goSheet() {
 
 // ═════ 시작 ═════
 function boot() {
+  try { el('verTag').textContent = APP_VER; } catch (e) { }
   el('scr-key').classList.add('hide');
   el('scr-input').classList.remove('hide');
   el('whoTxt').textContent = localStorage.getItem(LS_OWNER) || '—';
