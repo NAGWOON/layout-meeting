@@ -573,6 +573,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
     <div id="calcBody">
       <div class="f"><label>로스율</label><div class="chips" id="lossChips"></div></div>
 
+      <div class="sect">🪵 상 자재 <span>벽·천장 공통</span></div>
+      <div id="studRow"></div>
+
       <div class="sect">🧱 벽체 <span>높이 2.4 · 양면 마감</span></div>
       <div id="wallRows"></div>
       <div class="addrow" onclick="addWall()">＋ 벽 추가</div>
@@ -584,9 +587,9 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
       <div id="insRows"></div>
       <div class="addrow" onclick="addIns()">＋ 단열 추가</div>
 
-      <div class="sect">📏 몰딩</div>
-      <div class="crow"><input type="number" min="0" id="mold" placeholder="0" oninput="calcPreview()">
-        <span class="cu">m</span><span class="cl">평몰딩 30MM · 실측 총길이</span></div>
+      <div class="sect">📏 몰딩 <span>실측 총길이</span></div>
+      <div id="moldRows"></div>
+      <div class="addrow" onclick="addMold()">＋ 몰딩 추가</div>
 
       <div id="calcOut" class="calcout"></div>
       <div class="btn2" onclick="applyCalc()" style="margin-top:11px;text-align:center;padding:10px">산출값으로 채우기</div>
@@ -903,8 +906,10 @@ var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
   type: '목자재', qty: {}, cut: {}, extra: [], orderNo: '', ship: '용차 배송', busy: false, safe: 5, cutNote: true,
   only: false, calcOpen: true, loss: 10, elev: null, unload: null,   // 산출부터 하는 게 순서입니다
+  studMat: '',                   // 벽·천장 상 자재 — 현장 하나에 한 종류를 씁니다
   walls: [{ m: '', pitch: '@300', plies: [''] }],
   ceil:  { m2: '', plies: [''] },
+  mold:  [{ m: '', mat: '' }],
   ins:   [{ v: '', mode: '벽', mat: '' }],
   film:  {},                     // 몰딩에 지정하는 필름 번호·브랜드
   sheetNo: {}, ven: {}, cur: 1, done: {}, shipBy: {}, typeBy: {}, liftBy: {}, noteBy: {},   // 발주서 분리 — 품목→장, 장→발주처·배송·발주번호
@@ -1019,7 +1024,7 @@ function boot() {
     });
     renderTypes(); renderVendors(); renderShip();
     기본자재채우기();
-    renderLoss(); renderWalls(); renderCeil(); renderIns();
+    renderLoss(); renderStud(); renderWalls(); renderCeil(); renderIns(); renderMold();
     cardOpen('calc', S.type === '목자재');
     cardOpen('exp',  S.type === '설비·방수');
     cardOpen('tile', S.type === '설비·방수' || S.type === '타일');
@@ -1139,6 +1144,8 @@ var CEIL_D = 0.0757;                 // 천장 상 800 — ㎡당 다루끼 단�
 var 벽높이 = 2.4;
 var 면재분류 = { '석고·보드':1, '합판·MDF':1 };
 var 단열분류 = { '단열재':1 };
+var 몰딩분류 = { '몰딩':1 };
+var 각재분류 = { '각재':1 };
 
 // 면재 한 장이 몇 ㎡인지는 규격에 이미 적혀 있습니다.
 //   「3×6×9.5T」  자 표기 (1자 = 0.3m)      → 0.9 × 1.8 = 1.62㎡
@@ -1172,19 +1179,30 @@ function 장당면적(spec) {
   return 변[0] * 변[1] * 배수;
 }
 // 계산기 드롭다운에 올릴 품목. 마스터에서 그대로 가져옵니다.
-function 자재후보(분류표) {
+// 쓸만한지는 자재군마다 다릅니다 — 판은 면적이, 몰딩은 길이가 읽혀야 합니다.
+function 자재후보(분류표, 쓸만한가) {
   var 본 = {}, out = [];
   S.items.forEach(function (i) {
     if (!분류표[i.group]) return;
     if (본[i.name]) return;
-    if (장당면적(i.spec) == null) return;          // 면적을 못 읽으면 계산에 못 씁니다
+    if (쓸만한가 && !쓸만한가(i)) return;
     본[i.name] = 1;
     out.push(i.name);
   });
   return out;
 }
-function 면재후보() { return 자재후보(면재분류); }
-function 단열후보() { return 자재후보(단열분류); }
+function 면재후보() { return 자재후보(면재분류, function (i) { return 장당면적(i.spec) != null; }); }
+function 단열후보() { return 자재후보(단열분류, function (i) { return 장당면적(i.spec) != null; }); }
+// 몰딩은 길이만 있으면 됩니다. 「2440×9×30」의 맨 앞이 길이입니다.
+function 몰딩길이m(spec) {
+  if (!spec) return null;
+  var 첫 = String(spec).replace(/\s/g, '').split(/[×X*]/)[0];
+  var v = 치수m(첫);
+  return (v && v > 0.5) ? v : null;                 // 0.5m 미만은 길이가 아닙니다
+}
+function 몰딩후보() { return 자재후보(몰딩분류, function (i) { return 몰딩길이m(i.spec) != null; }); }
+// 상 자재는 단 단위라 규격에서 읽을 게 없습니다. 각재면 다 올립니다.
+function 상자재후보() { return 자재후보(각재분류, null); }
 // 이름으로 장당 면적을 찾습니다. 못 찾으면 계산에서 빠집니다.
 function 면적of(name) {
   var it = 품목찾기(name, S.type);
@@ -1195,12 +1213,15 @@ function 첫자재(목록, 선호) {
   for (var i = 0; i < 선호.length; i++) if (목록.indexOf(선호[i]) >= 0) return 선호[i];
   return 목록[0] || '';
 }
-var MOLD = 0.410;
 // 단열재를 시키면 붙일 것도 같이 가야 합니다. 폼본드 하나로 몇 장 붙이는지는
 // 확장부 계산기와 같은 값을 씁니다 — 회사 기준이 두 벌이 되면 안 됩니다.
 var INS_SHEET = 1.62;            // 900×1800 한 장 = 1.62㎡
-var T = { d:'합판 다루끼 (LVL) 8자', g:'일반 석고보드', m:'고밀도 MDF 9T (U-30) 수입',
-          o:'중백색 평몰딩 30MM', f:'폼본드' };
+
+// 화면에서 고르지 않는 것만 남깁니다.
+// 석고·MDF·몰딩·다루끼는 이제 드롭다운에서 고르므로 여기 없습니다 —
+// 안 쓰는 상수를 남겨두면 반년 뒤에 그게 기준인 줄 알고 고칩니다 (2026-09-23).
+var T = { d:'합판 다루끼 (LVL) 8자',   // 상 자재를 못 고른 경우의 대비값
+          f:'폼본드' };
 
 function toggleCalc() {
   S.calcOpen = !S.calcOpen;
@@ -1226,6 +1247,9 @@ function 기본자재채우기() {
   S.ceil.plies = (S.ceil.plies || []).map(function (x) { return x || 면; });
   if (!S.ceil.plies.length) S.ceil.plies = [면];
   S.ins.forEach(function (x) { if (!x.mat) x.mat = 단; });
+  if (!S.studMat) S.studMat = 첫자재(상자재후보(), ['합판 다루끼 (LVL) 8자']);
+  var 몰 = 첫자재(몰딩후보(), ['중백색 평몰딩 30MM']);
+  S.mold.forEach(function (x) { if (!x.mat) x.mat = 몰; });
 }
 
 // 면재는 겹으로 쌓습니다. 기본은 한 줄이고, ＋ 를 누른 벽만 아래로 늘어납니다 —
@@ -1264,6 +1288,41 @@ function setPly(i, j, v) { S.walls[i].plies[j] = v; calcPreview(); }
 function addPly(i) { S.walls[i].plies.push(S.walls[i].plies[0] || 첫면재()); renderWalls(); calcPreview(); }
 function delPly(i, j) { S.walls[i].plies.splice(j, 1); renderWalls(); calcPreview(); }
 function 첫면재() { return 첫자재(면재후보(), ['일반 석고보드']); }
+
+// 상 자재는 현장 하나에 한 종류입니다. 벽마다 고르게 하면 틀릴 자리만 늘어납니다.
+//
+// ⚠️ 수량 계수(@300 0.472 · @450 0.389 · 천장 0.0757)는 8자 기준입니다.
+// 12자짜리로 바꾸시면 단수가 달라질 텐데, 한 단에 몇 본인지는 아직 못 정했습니다.
+// 지금은 「어느 다루끼로 시킬지」만 고르는 자리이고 수량은 그대로 나옵니다.
+function renderStud() {
+  var 목록 = 상자재후보();
+  if (목록.indexOf(S.studMat) < 0 && S.studMat) 목록 = [S.studMat].concat(목록);
+  el('studRow').innerHTML = '<div class="crow"><span class="cu" style="width:auto;font-size:10.5px">상</span>'
+    + '<select onchange="setStud(this.value)">'
+    + 목록.map(function (k) {
+        return '<option' + (k === S.studMat ? ' selected' : '') + '>' + esc(k) + '</option>';
+      }).join('') + '</select></div>';
+}
+function setStud(v) { S.studMat = v; calcPreview(); }
+
+// 몰딩도 여러 종류를 한 현장에 씁니다 — 거실 30MM, 안방 60MM 처럼.
+function renderMold() {
+  el('moldRows').innerHTML = S.mold.map(function (x, i) {
+    var 목록 = 몰딩후보();
+    if (목록.indexOf(x.mat) < 0 && x.mat) 목록 = [x.mat].concat(목록);
+    return '<div class="crow"><input type="number" min="0" value="' + (x.m || '')
+      + '" placeholder="0" oninput="setMold(' + i + ',\'m\',this.value)"><span class="cu">m</span>'
+      + '<select onchange="setMold(' + i + ',\'mat\',this.value)">'
+      + 목록.map(function (k) {
+          return '<option' + (k === x.mat ? ' selected' : '') + '>' + esc(k) + '</option>';
+        }).join('') + '</select>'
+      + (S.mold.length > 1 ? '<span class="del" onclick="delMold(' + i + ')">×</span>' : '')
+      + '</div>';
+  }).join('');
+}
+function setMold(i, k, v) { S.mold[i][k] = v; calcPreview(); }
+function addMold() { S.mold.push({ m:'', mat:첫자재(몰딩후보(), ['중백색 평몰딩 30MM']) }); renderMold(); }
+function delMold(i) { S.mold.splice(i,1); renderMold(); calcPreview(); }
 function addWall() { S.walls.push({ m:'', pitch:'@300', plies:[첫면재()] }); renderWalls(); }
 function delWall(i) { S.walls.splice(i,1); renderWalls(); calcPreview(); }
 
@@ -1323,13 +1382,13 @@ function calc() {
     var m = Number(w.m) || 0;
     if (!m) return;
     var d = PITCH[w.pitch];
-    if (d) add(T.d, m * d);
+    if (d) add(S.studMat || T.d, m * d);
     (w.plies || []).forEach(function (nm) { 겹더하기(nm, m * 벽높이 * 2); });
   });
 
   var c2 = Number(S.ceil.m2) || 0;
   if (c2) {
-    add(T.d, c2 * CEIL_D);
+    add(S.studMat || T.d, c2 * CEIL_D);
     (S.ceil.plies || []).forEach(function (nm) { 겹더하기(nm, c2); });
   }
 
@@ -1349,7 +1408,13 @@ function calc() {
     var 폼당 = Number((el('x_foamyield') || {}).value) || 5;
     add(T.f, (단열장 * INS_SHEET) / 폼당 / (1 + S.loss / 100));
   }
-  var md = Number(el('mold').value) || 0; if (md) add(T.o, md * MOLD);
+  // 몰딩 한 장 길이는 규격 맨 앞에 적혀 있습니다 (2440×9×30 → 2.44m).
+  S.mold.forEach(function (x) {
+    var v = Number(x.m) || 0;
+    if (!v || !x.mat) return;
+    var L = 몰딩길이m((품목찾기(x.mat, S.type) || {}).spec);
+    if (L) add(x.mat, v / L);
+  });
   var out = {}; Object.keys(acc).forEach(function (k) { out[k] = Math.ceil(acc[k] * f); });
   return out;
 }
