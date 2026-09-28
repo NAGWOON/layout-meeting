@@ -312,6 +312,15 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .stbl .nm i{ display:block; font-style:normal; font-size:10.5px; color:#9a9aa4; font-weight:400;
   font-family:ui-monospace,monospace; margin-top:1px; }
 .stbl .nm .dim{ font-weight:400; color:#9a9aa4; }
+/* 필름도 재단과 같은 지시입니다. 규격과 똑같은 연회색으로 품명 밑에 깔아두면
+   거래처가 못 보고 전화로 되짚어주게 됩니다.
+   같은 몰딩이 필름만 달라 두 줄로 갈릴 때 그 두 줄을 가르는 게 필름입니다 —
+   주석이 아니라 품명의 일부라 품명 옆에 붙입니다. 길면 아랫줄로 떨어집니다. */
+.stbl .nm em.fm{ font-style:normal; display:inline-block; margin-left:7px;
+  font-size:11.5px; font-weight:700; color:#12233a; }
+.stbl .nm em.fm b{ display:inline-block; font-size:9px; font-weight:800; letter-spacing:.08em;
+  color:#fff; background:#12233a; border-radius:4px; padding:2px 5px; margin-right:5px;
+  vertical-align:1.5px; }
 /* 재단은 지시입니다 — 놓치면 원장이 그대로 옵니다 */
 .stbl .ct{ width:86px; text-align:center; }
 .stbl .ct em{ font-style:normal; display:inline-block; padding:2px 8px; border-radius:99px;
@@ -918,7 +927,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-09-23c';
+var APP_VER = '2026-09-28';
 
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
@@ -2599,8 +2608,8 @@ function draw() {
     // 규격은 품명 아래로 내립니다 — 칸을 하나 줄이면 품명이 그만큼 넓어집니다
     rows += '<tr><td class="no">' + (n < 10 ? '0' + n : n) + '</td>'
       + '<td class="nm">' + nmHtml(x.name)
-      + (x.spec ? '<i>' + esc(x.spec) + '</i>' : '')
-      + (x.film ? '<i>필름 ' + esc(x.film) + '</i>' : '') + '</td>'
+      + (x.film ? '<em class="fm"><b>필름</b>' + esc(x.film) + '</em>' : '')
+      + (x.spec ? '<i>' + esc(x.spec) + '</i>' : '') + '</td>'
       + (hasCut ? '<td class="ct">' + (x.cut ? '<em>' + esc(x.cut) + '</em>' : '') + '</td>' : '')
       + '<td class="un">' + esc(x.unit || '') + '</td>'
       + '<td class="qt">' + x.qty + '</td></tr>';
@@ -3324,6 +3333,10 @@ function textVersion() {
     if (x.group !== group) { group = x.group; t += '[' + (group || '기타') + ']\n'; }
     n++;
     t += ' ' + n + '. ' + x.name + (x.spec ? ' (' + x.spec + ')' : '') + '  ' + x.qty + (x.unit || '') + '\n';
+    // 재단·필름은 「이렇게 만들어 주십시오」입니다. 여기에 안 실으면
+    // 카톡으로 보낸 발주서에는 그 지시가 통째로 빠집니다.
+    if (x.film) t += '    ▸ 필름 ' + x.film + '\n';
+    if (x.cut)  t += '    ▸ 재단 ' + x.cut + '\n';
   });
   t += '──────────────\n';
   footLines().forEach(function (x) { t += '· ' + x + '\n'; });
