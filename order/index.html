@@ -1009,7 +1009,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-06-unified2';
+var APP_VER = '2026-10-06-unified3';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -4332,13 +4332,12 @@ function submit() {
       if (next.tagName === 'INPUT' && pos !== null && next.type !== 'date') next.setSelectionRange(pos, pos);
     }
   }
-  // 한글은 「ㅎ → 허 → 헌」 조합이 이어져야 합니다. 조합 중에 화면을 다시 그리면 자모가 흩어집니다(10/6 대표).
-  // 조합 중에는 아무것도 안 하고, 조합이 끝나면 그때 한 번 처리합니다.
-  root.addEventListener('compositionend', (e) => {
-    if (e.target && e.target.dataset && e.target.dataset.field) e.target.dispatchEvent(new Event('input', { bubbles: true }));
-  });
+  // 한글은 「ㅎ → 허 → 헌」 조합이 이어져야 합니다. 치는 칸을 다시 그리면 자모가 흩어집니다(10/6 대표).
+  // 맥 한글 입력기는 한 글자가 끝나자마자 다음 글자 조합을 시작하므로, 「조합이 끝나면 다시 그리기」도 끊깁니다.
+  // 그래서 글자 칸은 치는 동안 값만 담고(미리보기만 고침) 화면은 다시 그리지 않습니다. 칸을 벗어날 때(change) 한 번 정리합니다.
+  const 글자칸 = (t, keys) => t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && t.type !== 'number' && t.type !== 'date'
+    && ['space', 'name', 'spec', 'memo', 'color', 'note', 'otherVendor'].includes(keys.at(-1)));
   root.addEventListener('input', (e) => {
-    if (e.isComposing) return;
     const s = state(),
       t = e.target;
     if (locked(s)) return;
@@ -4372,6 +4371,7 @@ function submit() {
     syncGrout(s);
     persist();
     if (s.attempted) validate(s);
+    if (글자칸(t, keys)) { refreshPreview(); return; }
     if (path.startsWith('tiles.') || path === 'lossRate' || path === 'vendor' || keys.at(-1) === 'materialId')
       preserveRender(t);
     else refreshPreview();
@@ -4388,6 +4388,18 @@ function submit() {
     }
   });
   root.addEventListener('change', (e) => {
+    // 글자 칸을 벗어나면 그때 한 번 다시 그려 줄눈 합계·검사 표시를 맞춥니다 (다음 칸으로 포커스는 그대로)
+    if (e.target.dataset && e.target.dataset.field && 글자칸(e.target, e.target.dataset.field.split('.'))) {
+      // 포커스가 다음 칸으로 옮겨진 뒤에 다시 그리고, 그 칸으로 포커스를 돌려줍니다
+      setTimeout(() => {
+        const 지금 = document.activeElement, 칸 = 지금 && 지금.dataset ? 지금.dataset.field : '';
+        if (칸 && 글자칸(지금, 칸.split('.'))) return;   // 다른 글자 칸으로 옮겼으면 거기서 치는 중일 수 있어 그리지 않음
+        render();
+        const 찾음 = 칸 && [...root.querySelectorAll('[data-field]')].find((x) => x.dataset.field === 칸);
+        if (찾음) 찾음.focus();
+      }, 0);
+      return;
+    }
     if (e.target.id === 'tileSite') {
       el('siteSel').value = e.target.value;
       pickSite();
