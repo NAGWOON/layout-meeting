@@ -514,6 +514,70 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .nrm{ margin-inline-start:auto; flex:none; font-size:11.5px; color:var(--txt4);
   cursor:pointer; padding:4px 2px; }
 .nrm:hover{ color:var(--warn); }
+/* v5 승인 타일 화면: 주문량만 연노랑, 오류는 빨간 테두리 */
+body.tile-order-mode {padding:0;background:#f6f6f5;color-scheme:light}
+.tile-order-mode #scr-input > .hd,.tile-order-mode #scr-input > .cols {display:none}
+.tile-order-mode #scr-input {max-width:none;width:100%;padding:0;margin:0}
+.tile-order-mode #bar {display:none}
+#tileOrderApp[hidden] {display:none!important}
+#tileOrderApp {display:flex;min-height:100vh;background:#f6f6f5;color:#222;font-size:13px;line-height:1.5}
+#tileOrderApp * {box-sizing:border-box}
+#tileOrderApp button,#tilePasteDialog button {border:1px solid #d5d5d2;border-radius:6px;background:white;padding:7px 10px;color:#282828;font:inherit;cursor:pointer;white-space:nowrap}
+#tileOrderApp button:hover {border-color:#555}
+#tileOrderApp button:disabled {opacity:.4;cursor:default}
+#tileOrderApp input,#tileOrderApp select,#tileOrderApp textarea {width:100%;min-width:0;border:1px solid #d8d8d5;border-radius:5px;padding:8px;color:#222;background:#fff;font:inherit;outline:none}
+#tileOrderApp input:focus,#tileOrderApp select:focus,#tileOrderApp textarea:focus {border-color:#222;box-shadow:0 0 0 1px #222}
+#tileOrderApp input:disabled,#tileOrderApp select:disabled {opacity:1;color:#555}
+#tileOrderApp label {display:block;font-size:12px;color:#62625f}
+#tileOrderApp h2 {font-size:20px;margin:0}
+#tileOrderApp h3 {font-size:14px;margin:0 0 10px}
+#tileOrderApp p {margin:4px 0}
+#tileOrderApp small {font-size:11px;color:#73736e;font-weight:400}
+.to-rail {width:64px;flex-shrink:0;display:flex;align-items:center;gap:26px;padding:22px 8px;background:#202020;color:white;flex-direction:column}
+.to-rail b {font-size:27px}.to-rail small {writing-mode:vertical-rl;margin-top:auto}
+.to-shell {width:calc(100% - 64px);min-width:0}
+.to-context {display:flex;align-items:end;gap:12px;background:white;padding:18px 24px;border-bottom:1px solid #e4e4e0;flex-wrap:wrap}
+.to-context label:first-child {flex:1;min-width:170px}.to-context label {width:145px}
+.to-tabs {display:flex;gap:4px;padding:10px 24px;border-bottom:1px solid #dededb;background:white}
+#tileOrderApp .to-tabs button {border:0;background:transparent;font-weight:600;padding:9px 20px}
+#tileOrderApp .to-tabs .active {background:#222;color:white}
+.to-workbench {display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;padding:20px 24px;max-width:1920px;margin:auto}
+.to-workbench main {min-width:0;background:white;border:1px solid #dededb;border-radius:9px;padding:20px;max-height:calc(100vh - 255px);overflow:auto}
+.to-heading {display:flex;justify-content:space-between;gap:10px;align-items:start}.to-heading>select {max-width:240px}
+.to-heading p {color:#777;font-size:12px}.to-import {display:flex;gap:6px;margin:16px 0}
+#tileFields {border:0;padding:0;margin:0;min-width:0}
+.to-settings {display:flex;gap:14px;align-items:center;margin:15px 0}.to-settings label {display:flex!important;align-items:center;gap:6px;white-space:nowrap}.to-settings input {width:60px!important}
+.to-grid-hint {display:none;color:#777;font-size:11px;margin:8px 0}.to-grid {width:100%;overflow:auto}.to-grid table {width:100%;min-width:880px;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12px}
+.to-grid th {text-align:left;background:#f6f6f5;color:#666;padding:10px 5px;border-bottom:1px solid #d7d7d2;font-weight:500}
+.to-grid td {padding:5px 3px;border-bottom:1px solid #eee;vertical-align:top}.to-grid td:first-child {padding-top:14px;color:#888;text-align:center}
+.to-grid select,.to-grid input {padding:7px 4px!important;border-color:transparent!important;border-radius:3px!important;font-size:12px!important}
+.to-grid td input:focus,.to-grid td select:focus {border-color:#222!important}
+.to-grid td button {padding:5px!important;font-size:11px!important}.to-grid td select+input {margin-top:3px;border-color:#ddd!important}
+#tileOrderApp .to-quantity,.to-paper .to-amount strong {background:#fff5a8;color:#25220e;font-weight:750}
+.to-grid .to-suggest td {padding:2px 5px 8px;font-size:11px;color:#777;border:0}.to-grid .to-suggest button {border:0!important;text-decoration:underline;background:transparent!important}
+.to-row-actions {margin-top:10px}.to-subsection {border-top:1px solid #e7e7e3;padding-top:18px;margin-top:20px}.to-subsection h3 small {margin-left:10px}
+.to-grout {display:grid;grid-template-columns:minmax(160px,1fr) 95px 75px 135px;gap:10px;align-items:center;padding:12px;background:#f7f7f5;margin:8px 0;border-radius:6px}.to-grout small {display:block}
+.to-check {display:flex!important;align-items:center;gap:5px}.to-check input {width:16px!important}
+.to-acc {display:grid;grid-template-columns:minmax(160px,1.6fr) 90px 60px minmax(100px,1fr) 32px;gap:7px;margin:8px 0}
+.to-bath {display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0}.to-bath input {width:100px!important}.to-bath-sizes {width:100%;display:flex;gap:6px;padding-left:80px}.to-subsection textarea {min-height:68px;margin-top:5px}
+.to-workbench aside {min-width:0;max-height:calc(100vh - 255px);overflow:auto}.to-workbench aside>h2 {font-size:13px!important;margin:0 0 12px!important;color:#666}
+.to-paper {font-family:Pretendard,-apple-system,sans-serif;background:white;border:1px solid #ddd;border-radius:3px;padding:20px;color:#222;line-height:1.55;overflow-wrap:anywhere;box-sizing:border-box}
+.to-paper h2 {font-size:22px!important;margin:7px 0!important;color:#222}.to-paper h3 {font-size:13px!important;margin:0!important}.to-paper p {font-size:12px;margin:4px 0!important;color:#555}
+.to-paper-head {border-bottom:2px solid #222;padding-bottom:14px}.to-paper-head small {font-size:10px;letter-spacing:2px;color:#777}.to-paper-meta {padding:15px 0;border-bottom:1px solid #ddd;font-size:13px}
+.to-paper-row {padding:13px 0;border-bottom:1px solid #eee}.to-amount {display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:8px 0}.to-amount small {font-size:11px;color:#777}.to-amount strong {font-size:15px;border-radius:3px;padding:5px 9px}
+.to-paper-note {border-top:1px solid #ddd;padding:12px 0;font-size:12px}.to-paper-foot {font-size:10px;color:#777;margin-top:24px}.to-paper .to-empty {padding:35px 0;color:#888}
+.to-capture .to-paper-row {padding:17px 0}.to-capture .to-paper-row h3 {font-size:19px!important}.to-capture p {font-size:16px}.to-capture .to-amount strong {font-size:23px}.to-capture .to-amount small {font-size:14px}
+.to-footer {display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 24px;background:#fff;border-top:1px solid #ddd}.to-footer>div:last-child {display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.to-footer p {font-size:11px;color:#666}
+#tileOrderApp .to-primary {background:#222;color:white;border-color:#222}
+#tileOrderApp .to-invalid {border:2px solid #cf3030!important;box-shadow:none!important}
+.to-error {background:#fff7f7;border:1px solid #ca3333;color:#a52323;padding:10px 12px;margin:10px 0;border-radius:6px;font-size:12px}.to-success {padding:10px;border:1px solid #aaa;background:#fafafa}.to-warning {color:#a52323!important}
+#tilePasteDialog {max-width:720px;width:90%;border:1px solid #aaa;border-radius:9px;padding:24px;color:#222;background:white}#tilePasteDialog::backdrop {background:#0006}#tilePasteDialog textarea {width:100%;padding:10px}#tilePasteError {color:#b22}
+@media(min-width:1700px) {.to-workbench {grid-template-columns:minmax(0,1fr) 430px}.to-paper {padding:28px}}
+@media(max-width:1100px) {.to-workbench {grid-template-columns:minmax(0,1fr)}.to-workbench main,.to-workbench aside {max-height:none}.to-workbench aside {max-width:700px;width:100%;margin:auto}.to-footer {align-items:start;flex-direction:column}}
+@media(max-width:600px) {.to-grid-hint {display:block}.to-rail {display:none}.to-shell {width:100%}.to-context {padding:12px;gap:8px}.to-context label {width:calc(50% - 4px)}.to-context label:first-child {width:100%;flex:auto}.to-tabs {padding:8px;overflow:auto}.to-tabs button {padding:8px 12px!important}.to-workbench {padding:10px;gap:12px}.to-workbench main {padding:12px}.to-heading {flex-direction:column}.to-heading>select {max-width:none}.to-import {flex-direction:column}.to-settings {align-items:start;flex-direction:column;gap:5px}.to-grout {grid-template-columns:1fr 1fr}.to-grout>div {grid-column:1/-1}.to-grout .to-check {grid-column:1/-1}.to-acc {grid-template-columns:1fr 1fr 32px}.to-acc select {grid-column:1/3}.to-acc input:nth-child(2) {grid-row:2;grid-column:1}.to-acc input:nth-child(3) {grid-row:2;grid-column:2}.to-acc input:nth-child(4) {grid-column:1/3}.to-bath {gap:5px}.to-bath b {width:100%}.to-bath input {width:calc(50% - 12px)!important}.to-bath-sizes {padding:0;flex-wrap:wrap}.to-footer {padding:12px}.to-footer>div:last-child {justify-content:start}.to-subsection h3 small {display:block;margin:4px 0}.to-footer .to-primary {white-space:normal!important}}
+
+.to-sheet-tabs {display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}.to-sheet-tabs small {width:100%}#tileOrderApp .to-sheet-tabs button {font-size:11px;padding:6px}.to-sheet-tabs .active {border:2px solid #222!important;font-weight:700}
+#tileSplitDialog {width:min(760px,92vw);max-height:85vh;overflow:auto;border:1px solid #aaa;border-radius:8px;padding:24px;background:white;color:#222}#tileSplitDialog::backdrop {background:#0006}#tileSplitDialog p {font-size:13px;margin:10px 0}#tileSplitDialog label {display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #ddd;padding:12px 0;font-size:13px}#tileSplitDialog select,#tileSplitDialog button {padding:8px;border:1px solid #aaa;border-radius:5px;background:white;color:#222}#tileSplitError {color:#b22}
 </style>
 </head>
 <body>
@@ -927,7 +991,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-09-28';
+var APP_VER = '2026-10-06-tile1';
 
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
@@ -1072,7 +1136,8 @@ function pickSite() {
   if (!id) { draw(); bar(); side(); return; }
   S.site = S.sites.filter(function (x) { return x.id === id; })[0];
   api('getOrderSite', { sitePageId: id }).then(function (r) {
-    if (!r || !r.ok) return;
+    if (!S.site || S.site.id !== id) return;
+    if (!r || !r.ok) { draw(); return; }
     S.detail = r;
     (r.orders || []).forEach(function (o) {
       var op = document.createElement('option');
@@ -1080,7 +1145,7 @@ function pickSite() {
       el('pastSel').appendChild(op);
     });
     renderShip(); draw(); bar(); side();
-  });
+  }).catch(function () { if (S.site && S.site.id === id) { draw(); toast('현장 정보를 불러오지 못했습니다. 다시 선택해 주세요.'); } });
 }
 
 // ═════ 유형 / 발주처 / 배송 ═════
@@ -1092,10 +1157,10 @@ function pickSite() {
 // 마스터에 품목을 채우면 탭은 알아서 다시 나타납니다.
 function renderTypes() {
   var 보일것 = TYPES.filter(function (t) {
-    return t === S.type || S.items.some(function (i) { return i.type === t; });
+    return t === '타일' || t === S.type || S.items.some(function (i) { return i.type === t; });
   });
   el('typeTabs').innerHTML = 보일것.map(function (t) {
-    var has = S.items.some(function (i) { return i.type === t; });
+    var has = t === '타일' || S.items.some(function (i) { return i.type === t; });
     return '<div class="tab' + (t === S.type ? ' on' : '') + (has ? '' : ' off') + '"'
       + (has ? ' onclick="setType(\'' + t + '\')"' : '') + '>' + t + '</div>';
   }).join('');
@@ -3407,6 +3472,1442 @@ function submit() {
     pickSite(); draw(); bar();
   }).catch(function () { S.busy = false; bar(); toast('연결에 실패했습니다'); });
 }
+
+// ═════ v5 타일 주문 — 기존 목자재/설비 상태와 분리 ═════
+(function () {
+  'use strict';
+  const drafts = new Map();
+  const trace = [];
+  let busy = false,
+    initReady = false,
+    siteError = '';
+  const root = document.createElement('section');
+  root.id = 'tileOrderApp';
+  root.hidden = true;
+  el('scr-input').appendChild(root);
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const html = (x) =>
+    String(x == null ? '' : x).replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+    );
+  const positive = (x) =>
+    String(x == null ? '' : x).trim() !== '' && Number.isFinite(Number(x)) && Number(x) > 0;
+  const number = (x) => Number(Number(x).toFixed(3)).toLocaleString('ko-KR', { maximumFractionDigits: 3 });
+  const uid = (prefix) =>
+    prefix +
+    '-' +
+    (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const blankTile = () => ({
+    id: uid('t'),
+    kind: 'tile',
+    space: '',
+    name: '',
+    spec: '',
+    measured: '',
+    qty: '',
+    unit: '㎡',
+    grout: { name: '', color: '', materialId: '' },
+    memo: ''
+  });
+  const blankAcc = () => ({
+    id: uid('a'),
+    kind: 'acc',
+    name: '',
+    materialId: '',
+    spec: '',
+    qty: '',
+    unit: '',
+    color: '',
+    note: ''
+  });
+  const blankTub = () => ({
+    id: uid('b'),
+    kind: 'tub',
+    name: '아크릴욕조',
+    w: '',
+    h: '',
+    space: '',
+    qty: '',
+    unit: '개',
+    note: ''
+  });
+  function fresh() {
+    return {
+      lossRate: '20',
+      tiles: [blankTile()],
+      accessories: [blankAcc()],
+      tubs: [blankTub()],
+      groutOrders: {},
+      vendor: '신성타일',
+      otherVendor: '',
+      due: '',
+      shipKind: '업체 배송',
+      liftKind: '양중 없음',
+      note: '',
+      requestId: uid('r'),
+      phase: 'draft',
+      orderPageId: '',
+      orderNo: '',
+      imageUrl: '',
+      sourceData: {},
+      errors: [],
+      invalid: [],
+      message: '',
+      attempted: false
+    };
+  }
+  function scopeBase() {
+    // 접속키 원문은 진단/초안 이름에 남기지 않습니다. 계정별 초안 분리용 해시입니다.
+    let hash = 2166136261;
+    for (const c of localStorage.getItem(LS_KEY) || '') hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
+    return 'dsf-tile-v1-' + (hash >>> 0).toString(36) + '-' + (S.site ? S.site.id : 'none');
+  }
+  // 발주서 장은 현장별로 보관합니다. 한 장이 한 번의 submitOrder 요청입니다.
+  const sheetBooks = new Map();
+  function getSheetBook() {
+    const base = scopeBase();
+    if (!sheetBooks.has(base)) {
+      let book;
+      try {
+        book = JSON.parse(sessionStorage.getItem(base + '-sheets') || 'null');
+      } catch (_) {}
+      if (!book || !Array.isArray(book.ids) || !book.ids.includes(book.active))
+        book = { ids: ['base'], active: 'base' };
+      sheetBooks.set(base, book);
+    }
+    return sheetBooks.get(base);
+  }
+  function sheetKey(id) {
+    return scopeBase() + (id === 'base' ? '' : '-sheet-' + id);
+  }
+  function scope() {
+    return sheetKey(getSheetBook().active);
+  }
+  function saveSheetBook() {
+    try {
+      sessionStorage.setItem(scopeBase() + '-sheets', JSON.stringify(getSheetBook()));
+    } catch (_) {
+      state().storageWarning = '발주서 장 구성을 브라우저에 보관하지 못했습니다. 이 창을 닫지 마세요.';
+    }
+  }
+  function getSheetState(id) {
+    const book = getSheetBook(),
+      current = book.active;
+    book.active = id;
+    const result = state();
+    book.active = current;
+    return result;
+  }
+  function addSheet() {
+    const source = state(),
+      id = uid('sheet'),
+      next = fresh();
+    ['vendor', 'otherVendor', 'due', 'shipKind', 'liftKind', 'note', 'lossRate'].forEach(
+      (k) => (next[k] = source[k])
+    );
+    Object.defineProperty(next, '_storageKey', { value: sheetKey(id), enumerable: false });
+    drafts.set(sheetKey(id), next);
+    getSheetBook().ids.push(id);
+    persist(next);
+    saveSheetBook();
+    return id;
+  }
+  function renderSheetChoices() {
+    const book = getSheetBook();
+    return (
+      '<div class="to-sheet-tabs">' +
+      book.ids
+        .map((id, i) => {
+          const draft = getSheetState(id),
+            count = build(draft).lines.length;
+          const vendor = draft.vendor === '그 외' ? draft.otherVendor : draft.vendor;
+          return `<button data-action="sheet" data-value="${html(id)}" class="${id === book.active ? 'active' : ''}">${i + 1}장 · ${html(vendor || '업체 미입력')} · ${count}품목${draft.orderNo ? ' · 기록됨' : ''}</button>`;
+        })
+        .join('') +
+      '<button data-action="addSheet">＋ 빈 발주서</button><button data-action="split">✂ 나누기</button><button data-action="merge">같은 물건 합치기</button><small>타일 전용 · 장마다 별도 기록</small></div>'
+    );
+  }
+  function openTileSplit() {
+    const s = state();
+    if (locked(s) || s.phase !== 'draft') return;
+    let dialog = el('tileSplitDialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.id = 'tileSplitDialog';
+      document.body.appendChild(dialog);
+    }
+    const book = getSheetBook(),
+      active = book.active;
+    const choices = book.ids.filter(
+      (id) => getSheetState(id).phase === 'draft' && !getSheetState(id).pending
+    );
+    const rows = [];
+    ['tiles', 'accessories', 'tubs'].forEach((kind) =>
+      s[kind].forEach((r, i) => {
+        if (activeRow(r, { tiles: 'tile', accessories: 'acc', tubs: 'tub' }[kind]))
+          rows.push({ kind, i, row: r });
+      })
+    );
+    dialog.innerHTML =
+      '<h2>발주서 나누기</h2><p>타일은 타일 장끼리 나눕니다. 장마다 업체·배송·양중·요청사항을 정하고 각각 기록하세요.<br>같은 제품·색의 줄눈 주문 수량은 나눈 뒤 각 장에서 확인해 주세요.</p>' +
+      rows
+        .map(
+          ({ kind, i, row }) =>
+            `<label>${html([row.space, row.name, row.spec, row.qty ? row.qty + row.unit : ''].filter(Boolean).join(' · '))}<select data-split-kind="${kind}" data-split-index="${i}">${choices
+              .map((id) => {
+                const d = getSheetState(id);
+                return `<option value="${html(id)}"${id === active ? ' selected' : ''}>${book.ids.indexOf(id) + 1}장 · ${html(d.vendor === '그 외' ? d.otherVendor : d.vendor)}</option>`;
+              })
+              .join('')}<option value="new">새 발주서로</option></select></label>`
+        )
+        .join('') +
+      '<p id="tileSplitError"></p><button id="tileSplitApply">선택한 장으로 나누기</button><button id="tileSplitClose">닫기</button>';
+    el('tileSplitClose').onclick = () => dialog.close();
+    el('tileSplitApply').onclick = () => {
+      if (locked(s) || s.phase !== 'draft' || state() !== s) return;
+      const moves = [...dialog.querySelectorAll('[data-split-kind]')].filter((x) => x.value !== active);
+      if (!moves.length) {
+        el('tileSplitError').textContent = '다른 장으로 보낼 품목을 골라 주세요.';
+        return;
+      }
+      const nextId = moves.some((x) => x.value === 'new') ? addSheet() : null,
+        targets = new Map();
+      moves.forEach((x) => {
+        const id = x.value === 'new' ? nextId : x.value;
+        if (!targets.has(id)) targets.set(id, getSheetState(id));
+      });
+      if ([...targets.values()].some((d) => d.phase !== 'draft' || d.pending)) {
+        el('tileSplitError').textContent = '작성 중인 발주서로만 옮길 수 있습니다.';
+        return;
+      }
+      moves.forEach((x) => {
+        const kind = x.dataset.splitKind,
+          r = s[kind][Number(x.dataset.splitIndex)],
+          target = targets.get(x.value === 'new' ? nextId : x.value);
+        target[kind] = target[kind].filter((v) =>
+          activeRow(v, { tiles: 'tile', accessories: 'acc', tubs: 'tub' }[kind])
+        );
+        target[kind].push(r);
+      });
+      ['tiles', 'accessories', 'tubs'].forEach((kind) => {
+        const indexes = new Set(
+          moves.filter((x) => x.dataset.splitKind === kind).map((x) => Number(x.dataset.splitIndex))
+        );
+        s[kind] = s[kind].filter((_, i) => !indexes.has(i));
+      });
+      // 한 그룹 전체가 한 장으로 이동한 때만 그 줄눈 주문량도 이동합니다.
+      // 여러 장으로 갈라졌으면 기존 수량을 복제하지 않고 직접 확인하게 합니다.
+      Object.entries(s.groutOrders).forEach(([key, g]) => {
+        if (groups(s).some((v) => v.key === key)) return;
+        const destinations = [...targets.values()].filter((d) => groups(d).some((v) => v.key === key));
+        if (destinations.length === 1 && !destinations[0].groutOrders[key]) {
+          destinations[0].groutOrders[key] = g;
+          delete s.groutOrders[key];
+        }
+      });
+      [s, ...targets.values()].forEach((d) => {
+        syncGrout(d);
+        d.errors = [];
+        d.invalid = [];
+        persist(d);
+      });
+      s.message = '발주서를 나눴습니다. 각 장의 업체·줄눈 주문 수량을 확인해 주세요.';
+      persist(s);
+      dialog.close();
+      render();
+      record('split', 'ok');
+    };
+    dialog.showModal();
+  }
+  function mergeSameRows() {
+    const s = state();
+    if (locked(s) || s.phase !== 'draft') return;
+    let merged = 0;
+    ['tiles', 'accessories', 'tubs'].forEach((kind) => {
+      const out = [],
+        seen = new Map();
+      s[kind].forEach((r) => {
+        if (
+          !positive(r.qty) ||
+          (r.measured !== undefined && r.measured !== null && r.measured !== '' && !positive(r.measured))
+        ) {
+          out.push(r);
+          return;
+        }
+        const compare = clone(r);
+        delete compare.id;
+        delete compare.qty;
+        delete compare.measured;
+        delete compare._originalMemo;
+        // 공간·사양·줄눈·재단·비고·단위가 모두 같을 때만 합칩니다.
+        const key =
+          JSON.stringify(
+            Object.keys(compare)
+              .sort()
+              .map((k) => [k, compare[k]])
+          ) +
+          '|실측:' +
+          positive(r.measured);
+        if (!seen.has(key)) {
+          seen.set(key, r);
+          out.push(r);
+          return;
+        }
+        const target = seen.get(key);
+        target.qty = String(Number((Number(target.qty) + Number(r.qty)).toFixed(3)));
+        if (positive(r.measured))
+          target.measured = String(Number((Number(target.measured) + Number(r.measured)).toFixed(3)));
+        merged++;
+      });
+      s[kind] = out;
+    });
+    s.message = merged
+      ? merged + '줄을 합쳤습니다. 수량을 확인해 주세요.'
+      : '공간·사양·줄눈·비고·단위가 같은 중복 줄이 없습니다.';
+    persist(s);
+    render();
+    record('merge', 'ok');
+  }
+
+  function state() {
+    const key = scope();
+    if (!drafts.has(key)) {
+      let value;
+      try {
+        const raw = sessionStorage.getItem(key);
+        if (raw) {
+          value = JSON.parse(raw);
+          if (
+            !Array.isArray(value.tiles) ||
+            !Array.isArray(value.accessories) ||
+            !Array.isArray(value.tubs) ||
+            !value.groutOrders
+          )
+            throw Error('shape');
+        }
+      } catch (e) {
+        value = fresh();
+        value.message = '이 브라우저의 초안을 읽지 못했습니다. 저장된 발주는 지난 발주에서 다시 열어주세요.';
+      }
+      value = value || fresh();
+      value.errors = [];
+      value.invalid = [];
+      Object.defineProperty(value, '_storageKey', { value: key, enumerable: false });
+      drafts.set(key, value);
+    }
+    const current = drafts.get(key);
+    if (!current._storageKey)
+      Object.defineProperty(current, '_storageKey', { value: key, enumerable: false });
+    return current;
+  }
+  function persist(s = state()) {
+    try {
+      sessionStorage.setItem(s._storageKey || scope(), JSON.stringify(s));
+    } catch (e) {
+      s.storageWarning = '브라우저에 초안을 보관하지 못했습니다. 저장 완료 전 이 창을 닫지 마세요.';
+    }
+  }
+  function record(stage, result, started) {
+    trace.push({ at: new Date().toISOString(), stage, result, ms: started ? Date.now() - started : 0 });
+    if (trace.length > 40) trace.shift();
+  }
+  async function request(action, data) {
+    const started = Date.now();
+    record(action, 'start');
+    // 응답 불명확 시 요청 내용을 바꾸지 않고 같은 요청번호로 다시 확인합니다.
+    let timer;
+    try {
+      const r = await Promise.race([
+        api(action, data),
+        new Promise((_, reject) => {
+          timer = setTimeout(
+            () => reject(Error('응답을 기다리는 시간이 길어졌습니다. 같은 내용으로 다시 확인해 주세요.')),
+            65000
+          );
+        })
+      ]);
+      record(action, r && r.ok ? 'ok' : 'rejected', started);
+      return r;
+    } catch (e) {
+      record(action, 'failed', started);
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  function materials(group) {
+    return S.items.filter((x) => x.type === '타일' && (!group || x.group === group));
+  }
+  function byMaterial(id) {
+    return materials().find((x) => x.id === id);
+  }
+  function keyFor(g) {
+    return JSON.stringify([g.materialId || g.name, (g.color || '').trim()]);
+  }
+  function groups(s) {
+    const out = new Map();
+    s.tiles.forEach((r, i) => {
+      if (!r.grout || !r.grout.name) return;
+      const key = keyFor(r.grout);
+      if (!out.has(key))
+        out.set(key, {
+          key,
+          name: r.grout.name,
+          color: (r.grout.color || '').trim(),
+          materialId: r.grout.materialId || '',
+          area: 0,
+          missing: 0,
+          rows: []
+        });
+      const g = out.get(key);
+      g.rows.push(i + 1);
+      if (positive(r.measured)) g.area += Number(r.measured);
+      else g.missing++;
+    });
+    return [...out.values()];
+  }
+  function syncGrout(s) {
+    groups(s).forEach((g) => {
+      if (!s.groutOrders[g.key]) {
+        const m = byMaterial(g.materialId) || materials('줄눈').find((x) => x.name === g.name);
+        s.groutOrders[g.key] = {
+          id: 'g-' + encodeURIComponent(g.key),
+          kind: 'acc',
+          role: 'grout',
+          materialId: g.materialId,
+          name: g.name,
+          color: g.color,
+          spec: m ? m.spec : '',
+          unit: m ? m.unit : '',
+          qty: '',
+          skip: false
+        };
+      }
+    });
+  }
+  function proposal(r, s) {
+    return positive(r.measured) &&
+      s.lossRate !== '' &&
+      Number.isFinite(Number(s.lossRate)) &&
+      Number(s.lossRate) >= 0
+      ? Number((Number(r.measured) * (1 + Number(s.lossRate) / 100)).toFixed(3))
+      : null;
+  }
+  function field(path, value, placeholder, options, quantity = false) {
+    const cls = quantity ? ' class="to-quantity"' : '';
+    if (options)
+      return `<select data-field="${path}" aria-label="${html(placeholder)}"${cls}><option value="">선택</option>${options
+        .map((o) => {
+          const v = typeof o === 'string' ? o : o.value,
+            l = typeof o === 'string' ? o : o.label;
+          return `<option value="${html(v)}"${String(value) === String(v) ? ' selected' : ''}>${html(l)}</option>`;
+        })
+        .join('')}</select>`;
+    return `<input data-field="${path}" value="${html(value)}" placeholder="${html(placeholder)}" aria-label="${html(placeholder)}"${cls}>`;
+  }
+  function optionsFor(list, id, name) {
+    const result = list.map((m) => ({ value: m.id, label: m.name }));
+    if ((id || name) && !list.some((m) => m.id === id))
+      result.unshift({ value: id || '', label: name + ' (지난 발주)' });
+    return result;
+  }
+  function activeRow(r, kind) {
+    if (kind === 'tile')
+      return (
+        ['space', 'name', 'spec', 'measured', 'qty', 'memo'].some((k) => String(r[k] || '').trim()) ||
+        !!(r.grout && (r.grout.name || r.grout.color))
+      );
+    if (kind === 'acc') return ['name', 'qty', 'note', 'color'].some((k) => String(r[k] || '').trim());
+    return ['w', 'h', 'space', 'qty', 'note'].some((k) => String(r[k] || '').trim());
+  }
+  function build(s) {
+    syncGrout(s);
+    const tiles = s.tiles
+      .filter((r) => activeRow(r, 'tile'))
+      .map((r) => {
+        const line = {
+          ...clone(r),
+          kind: 'tile',
+          measured: r.measured === '' ? null : Number(r.measured),
+          qty: Number(r.qty)
+        };
+        const memo = (r.memo || '').trim();
+        if (r._originalMemo !== undefined && memo === r._originalMemo) {
+          delete line.memo;
+          delete line._originalMemo;
+          delete line.boxM2;
+          return line;
+        }
+        line.cut = /^\d+(?:\.\d+)?\s*[×x*]\s*\d+(?:\.\d+)?$/.test(memo) ? memo.replace(/[x*]/g, '×') : '';
+        line.note = line.cut ? '' : memo;
+        delete line.memo;
+        delete line._originalMemo;
+        delete line.boxM2;
+        return line;
+      });
+    const grout = groups(s)
+      .map((g) => s.groutOrders[g.key])
+      .filter((g) => !g.skip && positive(g.qty))
+      .map((g) => {
+        const r = { ...clone(g), qty: Number(g.qty) };
+        delete r.skip;
+        return r;
+      });
+    const acc = s.accessories
+      .filter((r) => activeRow(r, 'acc'))
+      .map((r) => ({ ...clone(r), qty: Number(r.qty), kind: 'acc' }));
+    const tubs = s.tubs
+      .filter((r) => activeRow(r, 'tub'))
+      .map((r) => {
+        const m = materials('욕조').find((m) => m.spec === String(r.w) + '×' + String(r.h));
+        const line = {
+          ...clone(r),
+          kind: 'tub',
+          name: '아크릴욕조',
+          w: Number(r.w),
+          h: Number(r.h),
+          spec: r.w + '×' + r.h,
+          qty: Number(r.qty),
+          unit: '개'
+        };
+        if (m) line.materialId = m.id;
+        else delete line.materialId;
+        return line;
+      });
+    return {
+      ...clone(s.sourceData || {}),
+      v: 1,
+      type: '타일',
+      lossRate: Number(s.lossRate),
+      lines: [...tiles, ...grout, ...acc, ...tubs],
+      header: {
+        ...clone(s.sourceData?.header || {}),
+        shipKind: s.shipKind,
+        liftKind: s.liftKind,
+        note: s.note
+      }
+    };
+  }
+  function validate(s) {
+    const errors = [],
+      invalid = [];
+    function bad(path, msg) {
+      invalid.push(path);
+      errors.push(msg);
+    }
+    if (!S.site) bad('site', '현장을 선택해 주세요.');
+    if (!S.detail || (S.detail.id && S.detail.id !== S.site?.id))
+      errors.push('현장 정보를 끝까지 불러온 뒤 다시 시도해 주세요.');
+    if (!initReady || !materials().length)
+      errors.push('자재 목록을 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.');
+    if (!(s.vendor === '그 외' ? s.otherVendor.trim() : s.vendor))
+      bad(s.vendor === '그 외' ? 'otherVendor' : 'vendor', '발주처를 입력해 주세요.');
+    if (!s.due || !/^\d{4}-\d{2}-\d{2}$/.test(s.due)) bad('due', '납품 희망일을 입력해 주세요.');
+    if (s.lossRate === '' || !Number.isFinite(Number(s.lossRate)) || Number(s.lossRate) < 0)
+      bad('lossRate', '로스율은 0 이상의 숫자로 입력해 주세요.');
+    s.tiles.forEach((r, i) => {
+      if (!activeRow(r, 'tile')) return;
+      const p = 'tiles.' + i + '.',
+        label = i + 1 + '번 타일';
+      [
+        ['space', '공간'],
+        ['name', '제품'],
+        ['spec', '규격']
+      ].forEach(([k, n]) => {
+        if (!String(r[k] || '').trim()) bad(p + k, label + ' — ' + n + '을 입력해 주세요.');
+      });
+      if (!positive(r.qty)) bad(p + 'qty', label + ' — 주문량은 양수로 입력해 주세요.');
+      if (!['㎡', '박스'].includes(r.unit)) bad(p + 'unit', label + ' — 단위를 선택해 주세요.');
+      if (r.unit === '박스' && !Number.isInteger(Number(r.qty)))
+        bad(p + 'qty', label + ' — 박스는 정수로 입력해 주세요.');
+      if (r.measured !== '' && r.measured !== null && !positive(r.measured))
+        bad(p + 'measured', label + ' — 실측은 양수로 입력하거나 비워 주세요.');
+      if (r.grout?.name && !r.grout.color?.trim())
+        bad(p + 'grout.color', label + ' — 줄눈 색을 입력해 주세요.');
+      if (r.grout?.color && !r.grout.name)
+        bad(p + 'grout.materialId', label + ' — 줄눈 제품을 선택해 주세요.');
+    });
+    syncGrout(s);
+    const current = groups(s);
+    current.forEach((g, i) => {
+      const q = s.groutOrders[g.key];
+      if (!q.skip && !positive(q.qty))
+        bad(
+          'grout.' + i + '.qty',
+          g.name + ' ' + g.color + ' — 주문 수량을 넣거나 이번 발주 안 함을 선택해 주세요.'
+        );
+      if (!q.skip && !q.unit) bad('grout.' + i + '.unit', g.name + ' — 주문 단위를 확인해 주세요.');
+    });
+    Object.entries(s.groutOrders).forEach(([key, r]) => {
+      if (positive(r.qty) && !r.skip && !current.some((g) => g.key === key))
+        errors.push(r.name + ' ' + r.color + ' — 연결이 끊긴 줄눈 주문을 확인해 주세요.');
+    });
+    s.accessories.forEach((r, i) => {
+      if (!activeRow(r, 'acc')) return;
+      if (!r.name) bad('accessories.' + i + '.materialId', i + 1 + '번 부자재 품목을 선택해 주세요.');
+      if (!positive(r.qty))
+        bad('accessories.' + i + '.qty', i + 1 + '번 부자재 수량은 양수로 입력해 주세요.');
+      if (!r.unit) bad('accessories.' + i + '.unit', i + 1 + '번 부자재 단위를 입력해 주세요.');
+    });
+    s.tubs.forEach((r, i) => {
+      if (!activeRow(r, 'tub')) return;
+      ['w', 'h', 'qty'].forEach((k) => {
+        if (!positive(r[k]))
+          bad(
+            'tubs.' + i + '.' + k,
+            i + 1 + '번 욕조 — ' + { w: '가로', h: '세로', qty: '수량' }[k] + '를 양수로 입력해 주세요.'
+          );
+      });
+    });
+    const data = build(s);
+    if (!data.lines.length) errors.push('주문할 타일·부자재·욕조를 입력해 주세요.');
+    const ids = data.lines.map((r) => r.id);
+    if (new Set(ids).size !== ids.length)
+      errors.push('품목 줄 번호가 겹칩니다. 같은 발주를 다시 열어 주세요.');
+    s.invalid = invalid;
+    s.errors = errors;
+    return errors;
+  }
+  function context() {
+    return {
+      name: S.detail?.name || S.site?.name || '',
+      address: S.detail?.address || '',
+      owner: localStorage.getItem(LS_OWNER) || '',
+      unload: S.detail?.unload || ''
+    };
+  }
+  function paper(s, data = build(s), ctx = s.savedContext || context()) {
+    const vendor = s.vendor === '그 외' ? s.otherVendor : s.vendor;
+    const rows = data.lines
+      .map(
+        (r) =>
+          `<section class="to-paper-row"><h3>${r.kind === 'tile' ? html(r.space) + ' · ' : r.kind === 'tub' && r.space ? html(r.space) + ' · ' : ''}${html(r.name || '—')}</h3><p>${html(r.spec || '')}${r.color ? ' · ' + html(r.color) : ''}</p><div class="to-amount"><small>${r.kind === 'tile' ? '실측 ' + (positive(r.measured) ? number(r.measured) + '㎡' : '미입력') : r.kind === 'acc' ? '부자재' : '욕조'}</small><strong>주문량 ${positive(r.qty) ? number(r.qty) : '—'} ${html(r.unit)}</strong></div>${r.kind === 'tile' && r.grout?.name ? '<p>줄눈 ' + html(r.grout.name) + ' / ' + html(r.grout.color) + '</p>' : ''}${r.cut ? '<p>재단 ' + html(r.cut) + '</p>' : ''}${r.note ? '<p>' + html(r.note) + '</p>' : ''}</section>`
+      )
+      .join('');
+    return `<div class="to-paper-head"><small>${html(CO.en)}</small><h2>타일 발주요청서</h2><p>${html(s.orderNo || '발주번호 · 기록 후 정해집니다')}</p></div><div class="to-paper-meta"><b>${html(ctx.name || '현장 미선택')}</b><p>${html(ctx.address)}</p><p>받는 곳 ${html(vendor || '—')} · 납품 ${html(s.due || '—')}</p><p>${html(s.shipKind || '—')} · ${html(s.liftKind || '—')}</p></div>${rows || '<p class="to-empty">주문할 품목을 입력해 주세요.</p>'}${s.note ? '<div class="to-paper-note"><b>요청사항</b><p>' + html(s.note).replace(/\n/g, '<br>') + '</p></div>' : ''}${ctx.unload ? '<div class="to-paper-note"><b>현장 하차·양중 조건</b><p>' + html(ctx.unload) + '</p></div>' : ''}<div class="to-paper-foot">${html(CO.name)} · 사업자 ${html(CO.biz)}<br>담당 ${html(ctx.owner)} · ${html(CO.tel)}<br>${html(CO.mail)}</div>`;
+  }
+  function text(s = state()) {
+    const data = build(s),
+      ctx = s.savedContext || context();
+    return (
+      '[타일 발주요청서] ' +
+      CO.name +
+      '\n' +
+      (s.orderNo || '발주번호: 기록 후 정해집니다') +
+      '\n현장: ' +
+      ctx.name +
+      '\n주소: ' +
+      ctx.address +
+      '\n수신: ' +
+      (s.vendor === '그 외' ? s.otherVendor : s.vendor) +
+      '\n납품: ' +
+      s.due +
+      '\n배송: ' +
+      s.shipKind +
+      ' / ' +
+      s.liftKind +
+      '\n\n' +
+      data.lines
+        .map(
+          (r, i) =>
+            i +
+            1 +
+            '. ' +
+            (r.space ? r.space + ' / ' : '') +
+            r.name +
+            (r.spec ? ' / ' + r.spec : '') +
+            (r.color ? ' / ' + r.color : '') +
+            '\n' +
+            (r.kind === 'tile'
+              ? '   실측 ' + (positive(r.measured) ? number(r.measured) + '㎡' : '미입력') + '\n'
+              : '') +
+            '【주문량 ' +
+            (positive(r.qty) ? number(r.qty) : '—') +
+            ' ' +
+            r.unit +
+            '】' +
+            (r.grout?.name ? '\n줄눈 ' + r.grout.name + ' / ' + r.grout.color : '') +
+            (r.cut ? '\n재단 ' + r.cut : '') +
+            (r.note ? '\n' + r.note : '')
+        )
+        .join('\n\n') +
+      (s.note ? '\n\n요청사항: ' + s.note : '') +
+      (ctx.unload ? '\n\n현장 하차·양중: ' + ctx.unload : '') +
+      '\n\n담당 ' +
+      ctx.owner +
+      ' · ' +
+      CO.tel +
+      '\n' +
+      CO.mail
+    );
+  }
+  function locked(s) {
+    return (
+      busy ||
+      ['sending', 'uncertain', 'imagePending', 'saved', 'updateUncertain', 'readonly'].includes(s.phase)
+    );
+  }
+  function render() {
+    const enabled =
+      S.type === '타일' && !el('scr-input').classList.contains('hide') && !!localStorage.getItem(LS_KEY);
+    document.body.classList.toggle('tile-order-mode', enabled);
+    root.hidden = !enabled;
+    if (!enabled) return;
+    el('bar').classList.add('hide');
+    const s = state();
+    syncGrout(s);
+    const grout = materials('줄눈'),
+      acc = materials().filter((m) => !['줄눈', '욕조'].includes(m.group));
+    const currentGroups = groups(s),
+      oldGroups = Object.entries(s.groutOrders).filter(
+        ([key, g]) => positive(g.qty) && !g.skip && !currentGroups.some((x) => x.key === key)
+      );
+    const tabs = TYPES.filter((t) => t === '타일' || S.items.some((i) => i.type === t))
+      .map(
+        (t) =>
+          `<button data-action="tab" data-value="${html(t)}" class="${t === '타일' ? 'active' : ''}">${html(t)}</button>`
+      )
+      .join('');
+    const tiles = s.tiles
+      .map(
+        (r, i) =>
+          `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) !== null ? `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>` : '실측·로스율을 확인해 주세요'}</td></tr>` : ''}`
+      )
+      .join('');
+    root.innerHTML = `<nav class="to-rail"><b>D</b><span>발주</span><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 노란 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
+      S.detail?.orders || []
+    )
+      .filter((o) => (o.type || o.name || '').includes('타일'))
+      .map(
+        (o) =>
+          `<option value="${html(o.id)}">${html(o.no || '')} ${html(o.name || '')} · ${html(o.state || '')}</option>`
+      )
+      .join(
+        ''
+      )}</select></div><div class="to-import"><button data-action="paste">엑셀 타일표 붙여넣기</button><button disabled>스펙북에서 불러오기 · 준비 중</button></div><div id="tileFeedback" role="status"></div><fieldset id="tileFields"><div class="to-settings"><label>로스율 ${field('lossRate', s.lossRate, '로스율')} %</label><small>제안은 ㎡ · 채우면 단위도 ㎡ · 박스 수량은 직접 입력</small></div><div class="to-grid-hint">표를 좌우로 밀면 주문량·줄눈·비고를 입력할 수 있습니다.</div><div class="to-grid"><table><colgroup>${[3, 10, 17, 10, 8, 9, 7, 16, 13, 7].map((w) => `<col style="width:${w}%">`).join('')}</colgroup><thead><tr>${['#', '공간', '제품', '규격', '실측㎡', '주문량', '단위', '줄눈·색', '재단·비고', ''].map((h) => '<th>' + h + '</th>').join('')}</tr></thead><tbody>${tiles}</tbody></table></div><div class="to-row-actions"><button data-action="addTile">＋ 타일 행 추가</button></div><section class="to-subsection"><h3>줄눈 합계 <small>같은 제품·색의 실측만 합산 · 수량 직접 입력</small></h3>${
+      currentGroups
+        .map((g, i) => {
+          const q = s.groutOrders[g.key],
+            m = byMaterial(g.materialId);
+          return `<div class="to-grout"><div><b>${html(g.name)} · ${html(g.color || '색 미입력')}</b><small>${g.rows.join(', ')}번 공간 · ${g.missing ? '입력된 면적' : '합계'} ${number(g.area)}㎡${g.missing ? ' / ' + g.missing + '줄 미입력·오류' : ''}</small>${m?.desc?.includes('확인 필요') ? '<small class="to-warning">규격·단위 확인 필요</small>' : ''}</div><label>주문량${field('grout.' + i + '.qty', q.qty, '줄눈 주문량', null, true)}</label><label>단위${field('grout.' + i + '.unit', q.unit, '줄눈 단위')}</label><label class="to-check"><input type="checkbox" data-grout-skip="${i}"${q.skip ? ' checked' : ''}>이번 발주 안 함</label></div>`;
+        })
+        .join('') ||
+      '<p>공간 줄에서 제품·색을 고르면 면적 합계가 나타납니다. 소요량 제안은 하지 않습니다.</p>'
+    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside><h2>발주서 미리보기</h2>${renderSheetChoices()}<div id="tilePaper" class="to-paper">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose">점검 기록</button><button data-action="copy">텍스트 복사</button><button data-action="download">이미지 내려받기</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
+    renderStatus();
+  }
+  function renderStatus() {
+    const s = state(),
+      fieldSet = el('tileFields');
+    if (!fieldSet) return;
+    fieldSet.disabled = locked(s);
+    root
+      .querySelectorAll('.to-context input,.to-context select')
+      .forEach((x) => (x.disabled = busy || !!s.pending || s.phase !== 'draft'));
+    el('tileSite').disabled = busy || !!s.pending;
+    el('tileSite').classList.toggle('to-invalid', s.invalid.includes('site'));
+    el('tileSite').setAttribute('aria-invalid', String(s.invalid.includes('site')));
+    el('tilePast').disabled = busy || !!s.pending;
+    root
+      .querySelectorAll('[data-action="sheet"],[data-action="addSheet"]')
+      .forEach((x) => (x.disabled = busy || !!s.pending));
+    root
+      .querySelectorAll('[data-action="split"],[data-action="merge"]')
+      .forEach((x) => (x.disabled = locked(s) || s.phase !== 'draft'));
+    root.querySelectorAll('.to-tabs button').forEach((x) => (x.disabled = busy || !!s.pending));
+    root
+      .querySelectorAll('[data-action="paste"],[data-action="new"],[data-action="edit"]')
+      .forEach((x) => (x.disabled = busy || !!s.pending || s.phase === 'imagePending'));
+    if (s.phase === 'readonly') root.querySelector('[data-action="edit"]')?.setAttribute('disabled', '');
+    root.querySelectorAll('[data-field]').forEach((x) => {
+      const bad = s.invalid.includes(x.dataset.field);
+      x.classList.toggle('to-invalid', bad);
+      x.setAttribute('aria-invalid', String(bad));
+    });
+    const warning = [siteError, s.storageWarning, s.message, ...s.errors].filter(Boolean);
+    el('tileFeedback').innerHTML = warning.length
+      ? '<div class="' +
+        (s.phase === 'saved' && !s.errors.length ? 'to-success' : 'to-error') +
+        '">' +
+        warning.map((x) => '<p>' + html(x) + '</p>').join('') +
+        '</div>'
+      : '';
+    const phaseText = {
+      draft: '입력 중 · 브라우저 초안 보관',
+      sending: '발주 기록 중…',
+      uncertain: '결과 확인 필요 · 입력을 보존했습니다',
+      imagePending: '발주 기록됨 · 이미지 저장 대기',
+      saved: '발주 기록·이미지 저장 완료',
+      edit: '발주 수정 중 · 공통 정보는 원발주 유지',
+      readonly: '입고완료 · 품목 수정 불가',
+      updateUncertain: '수정 결과 확인 필요 · 입력 보존'
+    };
+    el('tileStatus').textContent = busy ? '처리 중…' : phaseText[s.phase] || '작성 중';
+    [
+      ['발주 기록 열기', s.pageUrl],
+      ['저장된 이미지 열기', s.imageUrl]
+    ].forEach(([label, url]) => {
+      if (/^https:\/\//.test(url || '')) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = label;
+        el('tileStatus').append(' · ', a);
+      }
+    });
+    const b = el('tileSubmit');
+    b.disabled = busy || ['saved', 'readonly'].includes(s.phase);
+    b.textContent = busy
+      ? '처리 중…'
+      : s.phase === 'imagePending'
+        ? '이미지 저장만 다시 시도'
+        : s.phase === 'uncertain'
+          ? '같은 발주 결과 확인·재시도'
+          : s.phase === 'updateUncertain'
+            ? '수정 결과 다시 확인'
+            : s.phase === 'edit'
+              ? '수정 기록하고 발주서 만들기'
+              : '발주 기록하고 발주서 만들기 →';
+  }
+  function refreshPreview() {
+    const s = state();
+    if (el('tilePaper')) el('tilePaper').innerHTML = paper(s);
+    persist();
+    renderStatus();
+  }
+  function setPath(s, path, value) {
+    const keys = path.split('.');
+    if (keys[0] === 'grout') {
+      const g = groups(s)[Number(keys[1])];
+      s.groutOrders[g.key][keys[2]] = value;
+      return;
+    }
+    let p = s;
+    keys.slice(0, -1).forEach((k) => (p = p[k]));
+    p[keys.at(-1)] = value;
+  }
+  function preserveRender(target) {
+    const path = target.dataset.field,
+      pos = target.selectionStart;
+    render();
+    const next = [...root.querySelectorAll('[data-field]')].find((x) => x.dataset.field === path);
+    if (next) {
+      next.focus();
+      if (next.tagName === 'INPUT' && pos !== null && next.type !== 'date') next.setSelectionRange(pos, pos);
+    }
+  }
+  root.addEventListener('input', (e) => {
+    const s = state(),
+      t = e.target;
+    if (locked(s)) return;
+    if (t.dataset.groutSkip !== undefined) {
+      s.groutOrders[groups(s)[Number(t.dataset.groutSkip)].key].skip = t.checked;
+      persist();
+      render();
+      return;
+    }
+    const path = t.dataset.field;
+    if (!path) return;
+    if (s.phase === 'edit' && !/^(tiles|accessories|tubs|grout|lossRate)\./.test(path) && path !== 'lossRate')
+      return;
+    setPath(s, path, t.value);
+    s.message = '';
+    s.errors = [];
+    s.invalid = [];
+    const keys = path.split('.');
+    if (keys.at(-1) === 'materialId') {
+      const m = byMaterial(t.value);
+      if (keys[0] === 'tiles') {
+        const g = s.tiles[Number(keys[1])].grout;
+        g.name = m ? m.name : '';
+      }
+      if (keys[0] === 'accessories') {
+        const r = s.accessories[Number(keys[1])];
+        if (m) Object.assign(r, { name: m.name, spec: m.spec, unit: m.unit });
+        else Object.assign(r, { name: '', spec: '', unit: '' });
+      }
+    }
+    syncGrout(s);
+    persist();
+    if (s.attempted) validate(s);
+    if (path.startsWith('tiles.') || path === 'lossRate' || path === 'vendor' || keys.at(-1) === 'materialId')
+      preserveRender(t);
+    else refreshPreview();
+  });
+  root.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || !e.target.dataset.field?.startsWith('tiles.')) return;
+    const k = e.target.dataset.field.split('.');
+    k[1] = String(Number(k[1]) + (e.shiftKey ? -1 : 1));
+    const next = [...root.querySelectorAll('[data-field]')].find((x) => x.dataset.field === k.join('.'));
+    if (next) {
+      e.preventDefault();
+      next.focus();
+    }
+  });
+  root.addEventListener('change', (e) => {
+    if (e.target.id === 'tileSite') {
+      el('siteSel').value = e.target.value;
+      pickSite();
+      render();
+    }
+    if (e.target.id === 'tilePast' && e.target.value) openOrder(e.target.value);
+  });
+  root.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-action]');
+    if (!b || b.disabled) return;
+    const a = b.dataset.action,
+      s = state(),
+      i = Number(b.dataset.index);
+    if (a === 'sheet') {
+      if (busy || s.pending) return;
+      persist(s);
+      getSheetBook().active = b.dataset.value;
+      saveSheetBook();
+      render();
+      return;
+    }
+    if (a === 'addSheet') {
+      if (busy || s.pending) return;
+      getSheetBook().active = addSheet();
+      saveSheetBook();
+      render();
+      return;
+    }
+    if (a === 'split') {
+      openTileSplit();
+      return;
+    }
+    if (a === 'merge') {
+      mergeSameRows();
+      return;
+    }
+    if (a === 'tab') {
+      setType(b.dataset.value);
+      return;
+    }
+    if (a === 'submit') {
+      await submitTile();
+      return;
+    }
+    if (a === 'copy') {
+      try {
+        if (s.pending) throw Error('저장 결과를 확인한 뒤 복사해 주세요.');
+        if (validate(s).length) {
+          s.attempted = true;
+          render();
+          return;
+        }
+        const txt = text(s);
+        if (navigator.clipboard) await navigator.clipboard.writeText(txt);
+        else {
+          const area = document.createElement('textarea');
+          area.value = txt;
+          document.body.appendChild(area);
+          area.select();
+          const ok = document.execCommand('copy');
+          area.remove();
+          if (!ok) throw Error('복사하지 못했습니다.');
+        }
+        toast('타일 발주 글을 복사했습니다');
+      } catch (e) {
+        s.message = e.message;
+        renderStatus();
+      }
+      return;
+    }
+    if (a === 'download') {
+      try {
+        if (s.pending) throw Error('저장 결과를 확인한 뒤 이미지를 만드세요.');
+        if (validate(s).length) {
+          s.attempted = true;
+          render();
+          return;
+        }
+        const image = await capture(s);
+        const link = document.createElement('a');
+        link.download = (s.orderNo || '타일_검토용_초안') + '.png';
+        link.href = 'data:image/png;base64,' + image;
+        link.click();
+      } catch (e) {
+        s.message = '이미지를 만들지 못했습니다 — ' + e.message;
+        renderStatus();
+      }
+      return;
+    }
+    if (a === 'diagnose') {
+      const blob = new Blob([JSON.stringify(check(), null, 2)], { type: 'application/json' }),
+        url = URL.createObjectURL(blob),
+        link = document.createElement('a');
+      link.href = url;
+      link.download = '타일_점검_' + ymd(new Date()) + '.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return;
+    }
+    if (a === 'recoverUpdate') {
+      if (busy || !s.pending) return;
+      if (!confirm('서버 내용을 다시 읽을까요? 현재 수정 초안은 이 브라우저에 별도 보관합니다.')) return;
+      busy = true;
+      try {
+        const r = await request('getOrderData', { orderPageId: s.orderPageId });
+        if (!r?.ok) throw Error(r?.error || '발주를 읽지 못했습니다.');
+        sessionStorage.setItem((s._storageKey || scope()) + '-수정초안', JSON.stringify(s.pending));
+        importData(s, r, s.orderPageId);
+        delete s.pending;
+      } catch (e) {
+        s.message = e.message;
+      } finally {
+        busy = false;
+        persist(s);
+        render();
+      }
+      return;
+    }
+    if (a === 'edit') {
+      await openOrder(s.orderPageId);
+      return;
+    }
+    if (a === 'new') {
+      if (s.pending || busy || s.phase === 'imagePending') return;
+      if (!confirm('현재 화면을 비우고 새 타일 발주를 작성할까요? 저장된 발주는 지우지 않습니다.')) return;
+      drafts.set(scope(), fresh());
+      persist();
+      render();
+      return;
+    }
+    if (locked(s)) return;
+    if (a === 'paste') {
+      openPasteTile();
+      return;
+    }
+    if (a === 'addTile') s.tiles.push(blankTile());
+    if (a === 'cloneTile') {
+      const copy = clone(s.tiles[i]);
+      copy.id = uid('t');
+      s.tiles.splice(i + 1, 0, copy);
+    }
+    if (a === 'delTile') s.tiles.splice(i, 1);
+    if (a === 'fill') {
+      const n = proposal(s.tiles[i], s);
+      if (n !== null) {
+        s.tiles[i].qty = String(n);
+        s.tiles[i].unit = '㎡';
+      }
+    }
+    if (a === 'addAcc') s.accessories.push(blankAcc());
+    if (a === 'delAcc') s.accessories.splice(i, 1);
+    if (a === 'addTub') s.tubs.push(blankTub());
+    if (a === 'delTub') s.tubs.splice(i, 1);
+    if (a === 'tubSize') {
+      const dims = b.dataset.value.split('×');
+      s.tubs[i].w = dims[0];
+      s.tubs[i].h = dims[1];
+    }
+    if (a === 'keepOrphan') {
+      const g = s.groutOrders[b.dataset.key];
+      const copy = clone(g);
+      delete copy.role;
+      delete copy.skip;
+      s.accessories.push(copy);
+      delete s.groutOrders[b.dataset.key];
+    }
+    if (a === 'dropOrphan') {
+      if (!confirm('연결이 끊긴 이 줄눈 주문을 이번 발주에서 제외할까요?')) return;
+      delete s.groutOrders[b.dataset.key];
+    }
+    s.errors = [];
+    s.invalid = [];
+    persist();
+    render();
+  });
+  function openPasteTile() {
+    let dialog = el('tilePasteDialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.id = 'tilePasteDialog';
+      dialog.innerHTML =
+        '<h2>엑셀 타일표 붙여넣기</h2><p>공간 / 제품 / 규격 / 실측㎡ / 주문량 / 단위 / 줄눈 품목명 / 색 / 재단·비고<br>9개 열을 탭으로 나눠 붙여넣으세요. 모든 줄을 확인한 뒤 기존 표 아래에 더합니다.</p><textarea rows="8" id="tilePasteInput"></textarea><p id="tilePasteError"></p><button id="tilePasteApply">확인하고 표에 더하기</button><button id="tilePasteClose">닫기</button>';
+      document.body.appendChild(dialog);
+      el('tilePasteClose').onclick = () => dialog.close();
+      el('tilePasteApply').onclick = () => {
+        const input = el('tilePasteInput').value.replace(/^[\r\n]+|[\r\n]+$/g, ''),
+          parsed = input.split(/\r?\n/).map((line) => line.split('\t').map((v) => v.trim())),
+          out = [];
+        if (!input) {
+          el('tilePasteError').textContent = '원문을 입력해 주세요.';
+          return;
+        }
+        for (let i = 0; i < parsed.length; i++) {
+          const c = parsed[i],
+            g = materials('줄눈').find((m) => m.name === c[6]);
+          if (
+            c.length !== 9 ||
+            !c[0] ||
+            !c[1] ||
+            !c[2] ||
+            (c[3] && !positive(c[3])) ||
+            !positive(c[4]) ||
+            !['㎡', '박스'].includes(c[5]) ||
+            (c[5] === '박스' && !Number.isInteger(Number(c[4]))) ||
+            (c[6] && !g) ||
+            (c[7] && !g) ||
+            (g && !c[7])
+          ) {
+            el('tilePasteError').textContent =
+              i + 1 + '줄의 열 개수·숫자·줄눈 품목/색을 확인해 주세요. 아직 아무 줄도 담지 않았습니다.';
+            record('paste', 'invalid');
+            return;
+          }
+          out.push({
+            ...blankTile(),
+            space: c[0],
+            name: c[1],
+            spec: c[2],
+            measured: c[3],
+            qty: c[4],
+            unit: c[5],
+            grout: { materialId: g ? g.id : '', name: g ? g.name : '', color: c[7] },
+            memo: c[8]
+          });
+        }
+        const s = state();
+        if (locked(s)) return;
+        s.tiles = s.tiles.filter((r) => activeRow(r, 'tile')).concat(out);
+        persist();
+        dialog.close();
+        render();
+        record('paste', 'ok');
+      };
+    }
+    el('tilePasteInput').value = '';
+    el('tilePasteError').textContent = '';
+    dialog.showModal();
+  }
+  async function capture(s) {
+    if (typeof html2canvas !== 'function')
+      throw Error('이미지 도구를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.');
+    const host = document.createElement('div');
+    host.className = 'to-paper to-capture';
+    host.style.cssText =
+      'position:absolute;left:-12000px;top:0;width:820px;padding:32px;background:white;color:#222;';
+    host.innerHTML = paper(s, s.pending?.payload?.data || build(s), s.savedContext || context());
+    document.body.appendChild(host);
+    try {
+      if (document.fonts?.ready) await document.fonts.ready;
+      const canvas = await html2canvas(host, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        windowWidth: 1200
+      });
+      return canvas.toDataURL('image/png').split(',')[1];
+    } finally {
+      host.remove();
+    }
+  }
+  async function storeImage(s) {
+    s.phase = 'imagePending';
+    persist(s);
+    render();
+    if (s._storageKey && s._storageKey !== scope())
+      throw Error('접속 또는 현장이 바뀌었습니다. 원래 현장에서 이미지 저장을 재시도해 주세요.');
+    const image = await capture(s),
+      r = await request('saveOrderImage', { orderPageId: s.orderPageId, image });
+    if (!r?.ok) throw Error(r?.error || '이미지 저장 응답을 확인하지 못했습니다.');
+    s.imageUrl = r.fileUrl || '';
+    s.phase = 'saved';
+    s.message = '발주 기록과 이미지를 저장했습니다. 대표가 카톡으로 전달해 주세요.';
+    persist(s);
+  }
+  function importData(s, r, id) {
+    if (r.type !== '타일' || !r.data || !Array.isArray(r.data.lines))
+      throw Error('타일 발주 자료를 끝까지 읽지 못했습니다.');
+    if (r.data.lines.some((x) => !['tile', 'acc', 'tub'].includes(x.kind)))
+      throw Error('이 화면에서 읽을 수 없는 품목이 있습니다. 내용을 보존하려면 노션에서 확인해 주세요.');
+    const next = fresh();
+    next.sourceData = clone(r.data);
+    next.lossRate = String(r.data.lossRate ?? 20);
+    next.tiles = [];
+    next.accessories = [];
+    next.tubs = [];
+    next.groutOrders = {};
+    r.data.lines.forEach((raw) => {
+      const x = clone(raw);
+      if (x.kind === 'tile') {
+        const g = x.grout || {};
+        const m = byMaterial(g.materialId) || materials('줄눈').find((m) => m.name === g.name);
+        next.tiles.push({
+          ...x,
+          measured: x.measured ?? '',
+          qty: String(x.qty ?? ''),
+          memo: [x.cut || '', x.note || ''].filter(Boolean).join(' / '),
+          _originalMemo: [x.cut || '', x.note || ''].filter(Boolean).join(' / '),
+          grout: { ...g, materialId: m ? m.id : g.materialId || '', name: g.name || '', color: g.color || '' }
+        });
+      } else if (x.kind === 'tub')
+        next.tubs.push({
+          ...x,
+          w: x.w ?? (String(x.spec || '').match(/^(\d+)\s*[×x]\s*(\d+)$/) || [])[1] ?? '',
+          h: x.h ?? (String(x.spec || '').match(/^(\d+)\s*[×x]\s*(\d+)$/) || [])[2] ?? '',
+          qty: String(x.qty ?? '')
+        });
+      else {
+        const m = byMaterial(x.materialId) || materials().find((m) => m.name === x.name);
+        x.materialId = m ? m.id : x.materialId || '';
+        x.qty = String(x.qty ?? '');
+        if (x.role === 'grout' || m?.group === '줄눈') {
+          const key = keyFor(x);
+          if (next.groutOrders[key])
+            throw Error('같은 제품·색 줄눈 주문이 여러 줄입니다. 노션에서 중복 주문을 확인해 주세요.');
+          next.groutOrders[key] = { ...x, skip: false };
+        } else next.accessories.push(x);
+      }
+    });
+    groups(next).forEach((g) => {
+      if (!next.groutOrders[g.key]) {
+        const m = byMaterial(g.materialId);
+        next.groutOrders[g.key] = {
+          id: 'g-' + encodeURIComponent(g.key),
+          kind: 'acc',
+          role: 'grout',
+          name: g.name,
+          materialId: g.materialId,
+          color: g.color,
+          spec: m?.spec || '',
+          unit: m?.unit || '',
+          qty: '',
+          skip: true
+        };
+      }
+    });
+    next.vendor = ['신성타일', '마벨로'].includes(r.vendor) ? r.vendor : '그 외';
+    next.otherVendor = next.vendor === '그 외' ? r.vendor || '' : '';
+    next.due = r.due || '';
+    next.shipKind = r.data.header?.shipKind || '';
+    next.liftKind = r.data.header?.liftKind || '';
+    next.note = r.data.header?.note || '';
+    next.orderPageId = id;
+    next.orderNo = r.orderNo;
+    next.savedContext = context();
+    next.phase = r.state === '입고완료' ? 'readonly' : 'edit';
+    next.checked = r.checked || {};
+    next.message =
+      next.phase === 'readonly'
+        ? '입고완료된 발주입니다. 품목 수정은 막았습니다.'
+        : '지난 타일 발주를 열었습니다. 바뀐 품목은 다시 검수해야 합니다.';
+    Object.assign(s, next);
+    persist(s);
+  }
+  async function openOrder(id) {
+    if (busy || state().pending) return;
+    const s = state(),
+      site = S.site?.id;
+    if (
+      (s.phase === 'edit' ||
+        (s.phase === 'draft' &&
+          (s.tiles.some((x) => activeRow(x, 'tile')) ||
+            s.accessories.some((x) => activeRow(x, 'acc')) ||
+            s.tubs.some((x) => activeRow(x, 'tub'))))) &&
+      !confirm('작성 중인 화면을 지난 발주 내용으로 바꿀까요? 아직 저장하지 않은 입력은 사라집니다.')
+    )
+      return;
+    if (!site) {
+      s.message = '현장을 먼저 선택해 주세요.';
+      render();
+      return;
+    }
+    busy = true;
+    renderStatus();
+    try {
+      const r = await request('getOrderData', { orderPageId: id });
+      if (!r?.ok) throw Error(r?.error || '발주 자료를 읽지 못했습니다.');
+      if (site !== S.site?.id) return;
+      importData(s, r, id);
+      record('reopen', 'ok');
+    } catch (e) {
+      s.message = '지난 발주를 열지 못했습니다 — ' + e.message;
+      s.errors = [];
+      record('reopen', 'failed');
+    } finally {
+      busy = false;
+      render();
+    }
+  }
+  async function submitTile() {
+    if (busy) return;
+    const s = state();
+    if (['saved', 'readonly'].includes(s.phase)) return;
+    if (!s.pending && s.phase !== 'imagePending') {
+      s.attempted = true;
+      if (validate(s).length) {
+        record('validate', 'rejected');
+        render();
+        return;
+      }
+    }
+    busy = true;
+    renderStatus();
+    try {
+      if (s.phase === 'imagePending') {
+        await storeImage(s);
+        return;
+      }
+      if (!s.pending) {
+        const editing = s.phase === 'edit';
+        const data = build(s);
+        s.savedContext = context();
+        s.pending = {
+          action: editing ? 'updateOrder' : 'submitOrder',
+          payload: editing
+            ? { orderPageId: s.orderPageId, data, summary: '타일 주문 사양 수정', notify: false }
+            : {
+                type: '타일',
+                requestId: s.requestId,
+                sitePageId: S.site.id,
+                vendor: s.vendor === '그 외' ? s.otherVendor : s.vendor,
+                due: s.due,
+                shipKind: s.shipKind,
+                liftKind: s.liftKind,
+                note: s.note,
+                notes: s.note ? s.note.split('\n').filter(Boolean) : [],
+                data
+              }
+        };
+        s.phase = editing ? 'updateUncertain' : 'sending';
+        persist(s);
+      }
+      const pending = s.pending;
+      // 수정은 응답이 유실되면 먼저 읽어서 이미 반영됐는지 확인합니다.
+      if (pending.action === 'updateOrder' && s.phase === 'updateUncertain' && pending.sent) {
+        const checkResult = await request('getOrderData', { orderPageId: s.orderPageId });
+        if (!checkResult?.ok) throw Error(checkResult?.error || '수정 결과를 읽지 못했습니다.');
+        const relevant = (x) => JSON.stringify({ lossRate: x.lossRate, lines: x.lines, header: x.header });
+        if (relevant(checkResult.data) !== relevant(pending.payload.data))
+          throw Error(
+            '서버 내용과 이 창의 수정 내용이 다릅니다. 자동 재저장하지 않았습니다. 지난 발주를 다시 확인해 주세요.'
+          );
+        delete s.pending;
+        await storeImage(s);
+        return;
+      }
+      pending.sent = true;
+      persist(s);
+      const r = await request(pending.action, pending.payload);
+      if (!r?.ok) {
+        if (Array.isArray(r?.problems)) {
+          s.phase = pending.action === 'updateOrder' ? 'edit' : 'draft';
+          delete s.pending;
+          s.errors = r.problems;
+          s.message = r.error || '입력을 확인해 주세요.';
+          record('server-validation', 'rejected');
+          persist(s);
+          return;
+        }
+        throw Error(r?.error || '저장 결과를 확인하지 못했습니다.');
+      }
+      if (pending.action === 'submitOrder') {
+        if (!r.orderNo || !r.orderPageId)
+          throw Error('확정 발주번호를 읽지 못했습니다. 같은 발주로 다시 확인해 주세요.');
+        s.orderNo = r.orderNo;
+        s.orderPageId = r.orderPageId;
+        s.pageUrl = r.pageUrl || '';
+      }
+      s.lastUnchecked = r.unchecked || 0;
+      delete s.pending;
+      s.phase = 'imagePending';
+      persist(s);
+      render();
+      await storeImage(s);
+      if (s.lastUnchecked) s.message += ' ' + s.lastUnchecked + '줄은 다시 검수해 주세요.';
+    } catch (e) {
+      if (s.pending) s.phase = s.pending.action === 'updateOrder' ? 'updateUncertain' : 'uncertain';
+      s.message =
+        (s.phase === 'imagePending'
+          ? '발주 기록은 남았습니다. 이미지 저장만 다시 시도해 주세요. '
+          : '입력과 요청을 보존했습니다. ') + e.message;
+      record('save', 'failed');
+      persist(s);
+    } finally {
+      busy = false;
+      render();
+    }
+  }
+  function check() {
+    const s = state();
+    return {
+      version: APP_VER,
+      phase: s.phase,
+      orderNo: s.orderNo,
+      rows: build(s).lines.length,
+      pendingAction: s.pending?.action || '',
+      issueCount: s.errors.length,
+      trace: clone(trace)
+    };
+  }
+  window.TileOrder = {
+    render,
+    submit: submitTile,
+    retry: submitTile,
+    check,
+    open: openOrder,
+    text: () => text(),
+    build: () => build(state())
+  };
+  window.타일발주_점검 = check;
+  window.타일발주_재시도 = submitTile;
+  const originalApi = api;
+  api = function (action, data) {
+    return originalApi(action, data)
+      .then((r) => {
+        if (action === 'getOrderInit') {
+          initReady = !!r?.ok && Array.isArray(r.items);
+          if (!initReady) record('master', 'failed');
+        }
+        if (action === 'getOrderSite' && data.sitePageId === S.site?.id) {
+          siteError = r?.ok ? '' : '현장 정보를 불러오지 못했습니다. 현장을 다시 선택해 주세요.';
+        }
+        return r;
+      })
+      .catch((e) => {
+        if (action === 'getOrderSite' && data.sitePageId === S.site?.id) {
+          siteError = '현장 정보를 불러오지 못했습니다. 현장을 다시 선택해 주세요.';
+          render();
+        }
+        throw e;
+      });
+  };
+  const originalDraw = draw;
+  draw = function () {
+    originalDraw();
+    render();
+  };
+  const originalBar = bar;
+  bar = function () {
+    originalBar();
+    render();
+  };
+  const originalPick = pickSite;
+  pickSite = function () {
+    if (busy || state().pending) {
+      el('siteSel').value = S.site?.id || '';
+      return;
+    }
+    persist();
+    siteError = '';
+    originalPick();
+    render();
+  };
+  const originalLogout = logout;
+  logout = function () {
+    originalLogout();
+    root.hidden = true;
+    document.body.classList.remove('tile-order-mode');
+    drafts.clear();
+    sheetBooks.clear();
+  };
+})();
 
 // ═════ 진입 ═════
 if (localStorage.getItem(LS_KEY)) boot();
