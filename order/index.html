@@ -578,6 +578,24 @@ body.tile-order-mode {padding:0;background:#f6f6f5;color-scheme:light}
 
 .to-sheet-tabs {display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}.to-sheet-tabs small {width:100%}#tileOrderApp .to-sheet-tabs button {font-size:11px;padding:6px}.to-sheet-tabs .active {border:2px solid #222!important;font-weight:700}
 #tileSplitDialog {width:min(760px,92vw);max-height:85vh;overflow:auto;border:1px solid #aaa;border-radius:8px;padding:24px;background:white;color:#222}#tileSplitDialog::backdrop {background:#0006}#tileSplitDialog p {font-size:13px;margin:10px 0}#tileSplitDialog label {display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #ddd;padding:12px 0;font-size:13px}#tileSplitDialog select,#tileSplitDialog button {padding:8px;border:1px solid #aaa;border-radius:5px;background:white;color:#222}#tileSplitError {color:#b22}
+/* 공통 새 틀: 기존 요소를 이동하되 계산/입력 이벤트는 유지 */
+body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--txt:#222;--txt2:#555;--txt3:#777;--txt4:#888;--card:#fff;--field:#fff;--fieldbd:#d8d8d5;--line:#e5e5e2;--soft:#f6f6f5;--accent:#222;--warn:#ba3030;--ok:#34684c;--btn:#222;--btntx:#fff}
+.unified-mode #scr-input {max-width:none;width:100%;margin:0;padding:0}.unified-mode #scr-input>.hd,.unified-mode #scr-input>.cols {display:none!important}
+#unifiedOrder[hidden] {display:none!important}#unifiedOrder {display:flex;min-height:100vh;font-size:13px;color:#222}
+#unifiedOrder button,#unifiedOrder .btn2,.unified-mode .btn {border:1px solid #d5d5d2;border-radius:6px;background:white;padding:7px 10px;color:#222;font:inherit;box-shadow:none;cursor:pointer}#unifiedOrder button:disabled {opacity:.45;cursor:default}
+#unifiedOrder .to-primary {background:#222;color:white}#unifiedOrder .to-rail button,#unifiedOrder .to-rail a {background:transparent;border:0;color:white;font-size:12px;padding:4px;text-decoration:none}
+#unifiedOrder label {font-size:12px;color:#666}#unifiedOrder input,#unifiedOrder select,#unifiedOrder textarea {background:white;border:1px solid #d8d8d5;border-radius:5px;color:#222;box-shadow:none;font-family:inherit}
+#unifiedOrder .to-context label>select,#unifiedOrder .to-context label>input {display:block;width:100%;padding:8px;margin-top:3px}#unifiedOrder .to-context label:last-child {width:270px}#unifiedOrder #shipChips {display:flex;gap:6px;margin-top:3px}#unifiedOrder #shipChips select {width:50%;padding:8px}#unifiedOrder #vendorFreeRow {width:150px;margin:0}#vendorFreeRow>label {display:none}
+#unifiedTabs {background:#fff;border-bottom:1px solid #ddd;padding:10px 24px}#unifiedTabs .tabs {margin:0;gap:6px;flex-wrap:nowrap;overflow:auto}#unifiedTabs .tab {flex:0 0 auto;padding:9px 18px;background:white;border:0;border-radius:6px;font-size:13px}#unifiedTabs .tab.on {background:#222;color:white}
+#unifiedOrder .card,.unified-mode .mask .modal {background:#fff;border:1px solid #e1e1de;box-shadow:none;backdrop-filter:none;border-radius:7px}#unifiedOrder .card::before {display:none}#unifiedOrder .card {margin:12px 0;padding:14px}#unifiedItems>.card {border:0;padding:0}
+#unifiedTitle {font-size:20px;margin:0 0 14px}#unifiedCalculators .card {margin:7px 0}#unifiedCalculators .ch {margin:0;padding:7px 0}#unifiedCalculators [id$="Body"]:not(.hide) {padding-top:14px}
+#unifiedItems .items {max-height:none;overflow:visible}#unifiedItems .it {padding:10px 6px;border-bottom:1px solid #e6e6e2}#unifiedItems .it .q {background:#fff5a8;color:#25220e;font-weight:700;flex:0 0 64px}#unifiedItems .it .nm {flex:1;min-width:130px}#unifiedItems .it .cut,#unifiedItems .it .film {flex:0 1 130px}#unifiedItems .gh {background:#f5f5f3;padding:9px}#unifiedItems .tools {gap:5px}#unifiedItems .srch input {width:100%}
+#unifiedReferences {border-top:1px solid #ddd;margin-top:20px}#unifiedReferences>.side {display:block}#unifiedPreview {width:100%;overflow:hidden;background:white;border:1px solid #ddd}#unifiedPreview .sheetwrap {overflow:visible}#unifiedAside #sheetTabs {display:flex;flex-wrap:wrap;margin-bottom:12px}#unifiedAside .stab {border:1px solid #ddd;background:white;box-shadow:none}#unifiedAside .svin {min-width:0;max-width:100%}
+#orderLoadStatus {padding:18px 24px;display:flex;gap:15px;align-items:center;font-size:15px;position:relative;z-index:2}#orderLoadStatus[hidden] {display:none}#orderLoadStatus button {padding:8px 14px;background:white;border:1px solid currentColor;border-radius:5px;color:inherit;white-space:nowrap}.order-load-wait {background:#ecece8;color:#333}.order-load-error {background:#fff0f0;color:#a52626;border:2px solid #c33;overflow-wrap:anywhere}
+.unified-mode .card {box-shadow:none;backdrop-filter:none}.unified-mode #scr-settle {padding:20px}.unified-mode #scr-settle .hd {background:#fff;box-shadow:none;color:#222}
+@media(max-width:600px) {#unifiedOrder .to-context label:last-child {width:100%}#unifiedTabs {padding:8px}#unifiedTabs .tab {padding:8px 11px}#unifiedItems .it {flex-wrap:wrap}#unifiedItems .it .nm {flex-basis:100%}#unifiedItems .it .q {margin-left:auto}#unifiedOrder .to-footer {position:static}#orderLoadStatus {padding:12px;font-size:13px;align-items:start;flex-direction:column}#unifiedOrder .to-context label {min-width:0}#unifiedReferences .elev {flex-wrap:wrap}}
+
+#tileOrderApp .to-rail button,#tileOrderApp .to-rail a {background:transparent;border:0;color:white;font-size:12px;padding:4px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -991,7 +1009,8 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-06-tile1';
+var APP_VER = '2026-10-06-unified1';
+var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
   sites: [], items: [], history: [], ranges: {}, site: null, detail: null,
@@ -1092,9 +1111,18 @@ function boot() {
   el('scr-key').classList.add('hide');
   el('scr-input').classList.remove('hide');
   el('whoTxt').textContent = localStorage.getItem(LS_OWNER) || '—';
-  toast('불러오는 중…');
-  api('getOrderInit').then(function (r) {
-    if (!r || !r.ok) return toast('불러오지 못했습니다');
+  const sequence = ++OrderLoad.seq;
+  clearInterval(OrderLoad.ticker);clearTimeout(OrderLoad.timer);
+  OrderLoad.phase='loading';OrderLoad.error='';OrderLoad.started=Date.now();
+  OrderLoad.trace.push({stage:'start',at:Date.now()});if(OrderLoad.trace.length>20)OrderLoad.trace.shift();
+  renderTypes();bar();paintOrderLoad();
+  OrderLoad.ticker=setInterval(paintOrderLoad,1000);
+  Promise.race([api('getOrderInit'),new Promise(function(_,reject){OrderLoad.timer=setTimeout(function(){reject(Error('서버 응답을 65초 동안 받지 못했습니다.'));},65000);})]).then(function (r) {
+    if(sequence!==OrderLoad.seq)return;
+    if (!r || !r.ok) throw Error(r && r.error ? (typeof r.error==='string'?r.error:JSON.stringify(r.error)) : '서버가 초기 자료를 돌려주지 않았습니다.');
+    if(!Array.isArray(r.sites)||!Array.isArray(r.items))throw Error('서버 응답에 현장 또는 품목 목록이 없거나 형식이 다릅니다.');
+    if(!r.sites.length)throw Error('서버가 현장 0개를 돌려줬습니다. 현장 접근 권한 또는 서버 현장 목록을 확인해 주세요.');
+    OrderLoad.phase='ready';clearInterval(OrderLoad.ticker);clearTimeout(OrderLoad.timer);paintOrderLoad();
     S.sites = r.sites || []; S.items = r.items || [];
     // 백엔드가 아직 옛 버전이면 ranges 만 옵니다. 둘 다 받아들입니다.
     S.history = r.history || [];
@@ -1106,6 +1134,7 @@ function boot() {
         else { if (v < g.min) g.min = v; if (v > g.max) g.max = v; }
       });
     });
+    el('histSel').innerHTML='<option value="">비슷한 현장 고르기</option>';
     renderHistory();
     var s = el('siteSel');
     // 다시 그립니다. 덧붙이기만 하면 로그아웃 후 다시 들어올 때 현장이 두 번 생깁니다.
@@ -1122,8 +1151,17 @@ function boot() {
     cardOpen('tile', S.type === '설비·방수' || S.type === '타일');
     renderExp(); renderTile();
     renderItems(); calcPreview(); expPreview(); tilePreview(); draw(); bar(); side();
+    ['calc','exp','tile'].forEach(function(p){cardOpen(p,false);});
+    if(S.site && S.sites.some(function(x){return x.id===S.site.id;})) el('siteSel').value=S.site.id;
+    else if(S.site){S.site=null;S.detail=null;draw();bar();side();}
+    OrderLoad.trace.push({stage:'ready',ms:Date.now()-OrderLoad.started});
     toast('준비됐습니다');
-  }).catch(function () { toast('연결에 실패했습니다'); });
+  }).catch(function (error) {
+    if(sequence!==OrderLoad.seq)return;
+    clearInterval(OrderLoad.ticker);clearTimeout(OrderLoad.timer);
+    OrderLoad.phase='error';OrderLoad.error=error.message||String(error);
+    OrderLoad.trace.push({stage:'failed',ms:Date.now()-OrderLoad.started});paintOrderLoad();bar();
+  });
 }
 
 // ═════ 현장 ═════
@@ -1156,15 +1194,11 @@ function pickSite() {
 // 유형으로 바뀌는데, 탭까지 사라지면 어디에 서 있는지 알 수 없게 됩니다.
 // 마스터에 품목을 채우면 탭은 알아서 다시 나타납니다.
 function renderTypes() {
-  var 보일것 = TYPES.filter(function (t) {
-    return t === '타일' || t === S.type || S.items.some(function (i) { return i.type === t; });
-  });
-  el('typeTabs').innerHTML = 보일것.map(function (t) {
-    var has = t === '타일' || S.items.some(function (i) { return i.type === t; });
-    return '<div class="tab' + (t === S.type ? ' on' : '') + (has ? '' : ' off') + '"'
-      + (has ? ' onclick="setType(\'' + t + '\')"' : '') + '>' + t + '</div>';
+  el('typeTabs').innerHTML = TYPES.map(function(t) {
+    return '<div class="tab'+(t===S.type?' on':'')+'" role="button" tabindex="0" onclick="setType(\''+t+'\')" onkeydown="if(event.key===\'Enter\')setType(\''+t+'\')">'+t+'</div>';
   }).join('');
 }
+
 function setType(t) {
   // 담은 것은 유형을 넘어 유지합니다. 신성목재에 목자재와 단열재를 한 번에 시키니까요.
   // 비우려면 「비우기」를 누르시면 됩니다.
@@ -4163,7 +4197,7 @@ function submit() {
       oldGroups = Object.entries(s.groutOrders).filter(
         ([key, g]) => positive(g.qty) && !g.skip && !currentGroups.some((x) => x.key === key)
       );
-    const tabs = TYPES.filter((t) => t === '타일' || S.items.some((i) => i.type === t))
+    const tabs = TYPES
       .map(
         (t) =>
           `<button data-action="tab" data-value="${html(t)}" class="${t === '타일' ? 'active' : ''}">${html(t)}</button>`
@@ -4175,7 +4209,7 @@ function submit() {
           `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) !== null ? `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>` : '실측·로스율을 확인해 주세요'}</td></tr>` : ''}`
       )
       .join('');
-    root.innerHTML = `<nav class="to-rail"><b>D</b><span>발주</span><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 노란 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
+    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 노란 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
       S.detail?.orders || []
     )
       .filter((o) => (o.type || o.name || '').includes('타일'))
@@ -4859,9 +4893,10 @@ function submit() {
   window.타일발주_재시도 = submitTile;
   const originalApi = api;
   api = function (action, data) {
+    const initSequence = OrderLoad.seq;
     return originalApi(action, data)
       .then((r) => {
-        if (action === 'getOrderInit') {
+        if (action === 'getOrderInit' && initSequence === OrderLoad.seq) {
           initReady = !!r?.ok && Array.isArray(r.items);
           if (!initReady) record('master', 'failed');
         }
@@ -4907,6 +4942,182 @@ function submit() {
     drafts.clear();
     sheetBooks.clear();
   };
+})();
+
+// ═════ 한 화면: 기존 입력 요소와 계산/저장 동작을 새 틀로 이동 ═════
+(function () {
+  const root = document.createElement('section');
+  root.id = 'unifiedOrder';
+  root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${APP_VER}</small></nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="발주서확대()">원래 크기로 보기</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
+  el('scr-input').append(root);
+  function move(id, parent) {
+    parent.append(el(id));
+  }
+  function label(name, id) {
+    const box = document.createElement('label');
+    box.append(document.createTextNode(name));
+    move(id, box);
+    el('unifiedContext').append(box);
+    return box;
+  }
+  label('현장', 'siteSel');
+  label('발주처', 'vendorSel');
+  move('vendorFreeRow', el('unifiedContext'));
+  label('납품 희망일', 'dueIn');
+  label('배송 · 양중', 'shipChips');
+  move('typeTabs', el('unifiedTabs'));
+  ['calcCard', 'expCard', 'tileCard'].forEach((id) => move(id, el('unifiedCalculators')));
+  el('unifiedItems').append(el('itemList').closest('.card'));
+  const references = el('unifiedReferences');
+  references.append(el('siteInfo').closest('.card'), el('noteIn').closest('.card'));
+  document.querySelectorAll('#scr-input > .cols > .colD > .card').forEach((card) => references.append(card));
+  move('dueWarn', el('unifiedMain'));
+  move('shipInfo', el('unifiedMain'));
+  move('sheetTabs', el('unifiedAside'));
+  el('unifiedAside').insertBefore(el('sheetTabs'), el('unifiedPreview'));
+  el('unifiedPreview').append(el('sheet').closest('.sheetwrap'));
+  move('resultNote', el('unifiedAside'));
+  const loading = document.createElement('div');
+  loading.id = 'orderLoadStatus';
+  loading.setAttribute('role', 'status');
+  el('scr-input').prepend(loading);
+  let lastSheet = null;
+  let largePreview = false;
+  window.발주서확대 = function(){largePreview=!largePreview;render();};
+  function render() {
+    const logged = !!localStorage.getItem(LS_KEY),
+      input = !el('scr-input').classList.contains('hide');
+    document.body.classList.toggle('unified-mode', logged);
+    root.hidden = !logged || !input || S.type === '타일';
+    if (root.hidden) return;
+    el('bar').classList.add('hide');
+    el('unifiedTitle').textContent = S.type + ' 주문표';
+    el('unifiedCount').textContent =
+      picked().length + '품목 · ' + sheetsUsed().length + '장 · 현재 ' + S.cur + '장';
+    const button = el('submitBtn');
+    button.disabled =
+      S.busy ||
+      !S.site ||
+      !S.detail ||
+      !pickedOf(S.cur).length ||
+      !!S.done[S.cur] ||
+      OrderLoad.phase !== 'ready';
+    button.textContent = S.busy ? '기록 중…' : S.done[S.cur] ? '기록 완료' : S.cur + '장 발주 기록';
+    if (lastSheet !== S.cur || (S.ven[S.cur] && vendorName() !== S.ven[S.cur])) {
+      lastSheet = S.cur;
+      const vendor = venOf(S.cur);
+      if ([...el('vendorSel').options].some((o) => o.value === vendor)) el('vendorSel').value = vendor;
+      else {
+        el('vendorSel').value = '__free';
+        el('vendorFree').value = vendor;
+      }
+      el('vendorFreeRow').classList.toggle('hide', el('vendorSel').value !== '__free');
+    }
+    const preview = el('unifiedPreview'),
+      scale = largePreview ? 1 : Math.min(1, preview.clientWidth / 720);
+    preview.style.overflowX=largePreview?'auto':'hidden';
+    el('unifiedZoom').textContent=largePreview?'폭에 맞추기':'원래 크기로 보기';
+    el('sheet').style.zoom = String(scale || 1);
+  }
+  window.paintOrderLoad = function () {
+    const s = OrderLoad;
+    loading.hidden = s.phase === 'ready' || s.phase === 'idle';
+    loading.className = s.phase === 'error' ? 'order-load-error' : 'order-load-wait';
+    loading.replaceChildren();
+    el('siteSel').disabled = s.phase === 'loading';
+    if (loading.hidden) return;
+    const msg = document.createElement('span');
+    msg.textContent =
+      s.phase === 'loading'
+        ? '서버 깨우는 중 · ' +
+          Math.floor((Date.now() - s.started) / 1000) +
+          '초 — 배포 직후엔 30초쯤 걸립니다'
+        : s.error;
+    loading.append(msg);
+    if (s.phase === 'error') {
+      const retry = document.createElement('button');
+      retry.textContent = '다시 불러오기';
+      retry.onclick = boot;
+      loading.append(retry);
+    }
+    const select = el('siteSel');
+    select.disabled = s.phase === 'loading';
+    if (!S.sites.length)
+      select.options[0].textContent =
+        s.phase === 'loading' ? '현장 불러오는 중…' : '현장을 불러오지 못했습니다';
+  };
+  const oldDraw = draw;
+  draw = function () {
+    oldDraw();
+    render();
+  };
+  const oldBar = bar;
+  bar = function () {
+    oldBar();
+    render();
+  };
+  const oldType = setType;
+  setType = function (t) {
+    oldType(t);
+    ['calc', 'exp', 'tile'].forEach((p) => cardOpen(p, false));
+    render();
+  };
+  // 별도 유리 화면으로 전환하지 않고 오른쪽 발주서를 그대로 사용합니다.
+  goSheet = function () {
+    if (!S.site) return toast('현장을 먼저 고르세요');
+    if (!picked().length) return toast('품목을 먼저 입력하세요');
+    if (!S.orderNo && S.detail?.orderNo) S.orderNo = S.detail.orderNo;
+    draw();
+    render();
+  };
+  const oldLogout = logout;
+  logout = function () {
+    OrderLoad.seq++;
+    clearInterval(OrderLoad.ticker);
+    clearTimeout(OrderLoad.timer);
+    OrderLoad.phase = 'idle';
+    oldLogout();
+    render();
+  };
+  // 미리보기 축소율이 출력 이미지에 섞이지 않도록 같은 문서의 원래 크기를 캡처합니다.
+  shot = async function () {
+    const copy = el('sheet').cloneNode(true);
+    copy.removeAttribute('id');
+    copy.style.cssText = 'position:absolute;left:-12000px;top:0;zoom:1;width:720px;';
+    document.body.append(copy);
+    try {
+      return await html2canvas(copy, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+    } finally {
+      copy.remove();
+    }
+  };
+  el('vendorSel').onchange = function () {
+    el('vendorFreeRow').classList.toggle('hide', this.value !== '__free');
+    S.ven[S.cur] = vendorName();
+    draw();
+    renderShip();
+  };
+  el('vendorFree').oninput = function () {
+    S.ven[S.cur] = vendorName();
+    draw();
+  };
+  window.addEventListener('resize', render);
+  window.발주초기_점검 = () => ({
+    phase: OrderLoad.phase,
+    elapsed: OrderLoad.started ? Date.now() - OrderLoad.started : 0,
+    error: OrderLoad.error,
+    sites: S.sites.length,
+    items: S.items.length,
+    attempt: OrderLoad.seq,
+    trace: OrderLoad.trace.slice()
+  });
+  window.발주초기_재시도 = boot;
+  renderTypes();
+  renderVendors();
+  renderShip();
+  draw();
+  ['calc', 'exp', 'tile'].forEach((p) => cardOpen(p, false));
+  render();
 })();
 
 // ═════ 진입 ═════
