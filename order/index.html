@@ -1009,7 +1009,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-06-unified3';
+var APP_VER = '2026-10-06-unified4';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -3920,6 +3920,18 @@ function submit() {
       }
     });
   }
+  // 박스당 ㎡ — 대표 기준(10/6): 600×600 · 600×1200 = 1.44. 그 밖의 규격은 모름 → 박스 제안 안 함
+  function boxM2(r) {
+    const d = String(r.spec || '').replace(/\s/g, '').match(/^(\d{2,4})[×xX*](\d{2,4})/);
+    if (!d) return null;
+    const k = [Number(d[1]), Number(d[2])].sort((a, b) => a - b).join('×');
+    return { '600×600': 1.44, '600×1200': 1.44 }[k] || null;
+  }
+  // 단위가 박스면 박스로: 제안㎡ ÷ 박스당㎡ 올림. 박스당을 모르면 null
+  function proposalBox(r, s) {
+    const m = proposal(r, s), b = boxM2(r);
+    return m !== null && b ? Math.ceil(Number((m / b).toFixed(6))) : null;
+  }
   function proposal(r, s) {
     return positive(r.measured) &&
       s.lossRate !== '' &&
@@ -4116,7 +4128,7 @@ function submit() {
     const rows = data.lines
       .map(
         (r) =>
-          `<section class="to-paper-row"><h3>${r.kind === 'tile' ? html(r.space) + ' · ' : r.kind === 'tub' && r.space ? html(r.space) + ' · ' : ''}${html(r.name || '—')}</h3><p>${html(r.spec || '')}${r.color ? ' · ' + html(r.color) : ''}</p><div class="to-amount"><small>${r.kind === 'tile' ? '실측 ' + (positive(r.measured) ? number(r.measured) + '㎡' : '미입력') : r.kind === 'acc' ? '부자재' : '욕조'}</small><strong>주문량 ${positive(r.qty) ? number(r.qty) : '—'} ${html(r.unit)}</strong></div>${r.kind === 'tile' && r.grout?.name ? '<p>줄눈 ' + html(r.grout.name) + ' / ' + html(r.grout.color) + '</p>' : ''}${r.cut ? '<p>재단 ' + html(r.cut) + '</p>' : ''}${r.note ? '<p>' + html(r.note) + '</p>' : ''}</section>`
+          `<section class="to-paper-row"><h3>${r.kind === 'tile' ? html(r.space) + ' · ' : r.kind === 'tub' && r.space ? html(r.space) + ' · ' : ''}${html(r.name || '—')}</h3><p>${html(r.spec || '')}${r.color ? ' · ' + html(r.color) : ''}</p><div class="to-amount"><small>${r.kind === 'tile' ? '실측 ' + (positive(r.measured) ? number(r.measured) + '㎡' : '미입력') : r.kind === 'acc' ? '부자재' : '욕조'}</small><strong>주문량 ${positive(r.qty) ? number(r.qty) : '—'} ${html(r.unit)}${r.kind === 'tile' && r.unit === '박스' && positive(r.qty) && boxM2(r) && Number.isInteger(Number(r.qty)) ? ' <small>(' + number(Number(r.qty) * boxM2(r)) + '㎡)</small>' : ''}</strong>${r.kind === 'tile' && r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? '<b class="to-warning">박스는 정수</b>' : ''}</div>${r.kind === 'tile' && r.grout?.name ? '<p>줄눈 ' + html(r.grout.name) + ' / ' + html(r.grout.color) + '</p>' : ''}${r.cut ? '<p>재단 ' + html(r.cut) + '</p>' : ''}${r.note ? '<p>' + html(r.note) + '</p>' : ''}</section>`
       )
       .join('');
     return `<div class="to-paper-head"><small>${html(CO.en)}</small><h2>타일 발주요청서</h2><p>${html(s.orderNo || '발주번호 · 기록 후 정해집니다')}</p></div><div class="to-paper-meta"><b>${html(ctx.name || '현장 미선택')}</b><p>${html(ctx.address)}</p><p>받는 곳 ${html(vendor || '—')} · 납품 ${html(s.due || '—')}</p><p>${html(s.shipKind || '—')} · ${html(s.liftKind || '—')}</p></div>${rows || '<p class="to-empty">주문할 품목을 입력해 주세요.</p>'}${s.note ? '<div class="to-paper-note"><b>요청사항</b><p>' + html(s.note).replace(/\n/g, '<br>') + '</p></div>' : ''}${ctx.unload ? '<div class="to-paper-note"><b>현장 하차·양중 조건</b><p>' + html(ctx.unload) + '</p></div>' : ''}<div class="to-paper-foot">${html(CO.name)} · 사업자 ${html(CO.biz)}<br>담당 ${html(ctx.owner)} · ${html(CO.tel)}<br>${html(CO.mail)}</div>`;
@@ -4206,7 +4218,7 @@ function submit() {
     const tiles = s.tiles
       .map(
         (r, i) =>
-          `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) !== null ? `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>` : '실측·로스율을 확인해 주세요'}</td></tr>` : ''}`
+          `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) === null ? '실측·로스율을 확인해 주세요' : r.unit === '박스' ? (proposalBox(r, s) !== null ? `제안 ${proposalBox(r, s)}박스 = ${number(proposalBox(r, s) * boxM2(r))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}% → ${number(proposal(r, s))}㎡ ÷ 박스당 ${boxM2(r)}㎡ 올림) · <button data-action="fill" data-index="${i}">채우기</button>` : `제안 ${number(proposal(r, s))}㎡ · <b class="to-warning">이 규격은 박스당 ㎡ 를 몰라 박스로 바꿀 수 없습니다</b> — 박스 수를 직접 넣거나 단위를 ㎡ 로 · <button data-action="fill" data-index="${i}">㎡ 로 채우기</button>`) : `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>`}${r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? ' · <b class="to-warning">박스는 정수로 넣어 주세요</b>' : ''}</td></tr>` : ''}`
       )
       .join('');
     root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 노란 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
@@ -4219,7 +4231,7 @@ function submit() {
       )
       .join(
         ''
-      )}</select></div><div class="to-import"><button data-action="paste">엑셀 타일표 붙여넣기</button><button disabled>스펙북에서 불러오기 · 준비 중</button></div><div id="tileFeedback" role="status"></div><fieldset id="tileFields"><div class="to-settings"><label>로스율 ${field('lossRate', s.lossRate, '로스율')} %</label><small>제안은 ㎡ · 채우면 단위도 ㎡ · 박스 수량은 직접 입력</small></div><div class="to-grid-hint">표를 좌우로 밀면 주문량·줄눈·비고를 입력할 수 있습니다.</div><div class="to-grid"><table><colgroup>${[3, 10, 17, 10, 8, 9, 7, 16, 13, 7].map((w) => `<col style="width:${w}%">`).join('')}</colgroup><thead><tr>${['#', '공간', '제품', '규격', '실측㎡', '주문량', '단위', '줄눈·색', '재단·비고', ''].map((h) => '<th>' + h + '</th>').join('')}</tr></thead><tbody>${tiles}</tbody></table></div><div class="to-row-actions"><button data-action="addTile">＋ 타일 행 추가</button></div><section class="to-subsection"><h3>줄눈 합계 <small>같은 제품·색의 실측만 합산 · 수량 직접 입력</small></h3>${
+      )}</select></div><div class="to-import"><button data-action="paste">엑셀 타일표 붙여넣기</button><button disabled>스펙북에서 불러오기 · 준비 중</button></div><div id="tileFeedback" role="status"></div><fieldset id="tileFields"><div class="to-settings"><label>로스율 ${field('lossRate', s.lossRate, '로스율')} %</label><small>단위 ㎡ 면 ㎡ 로, 박스면 박스로 제안(600×600·600×1200 = 박스당 1.44㎡) · 그 밖의 규격은 박스 수 직접</small></div><div class="to-grid-hint">표를 좌우로 밀면 주문량·줄눈·비고를 입력할 수 있습니다.</div><div class="to-grid"><table><colgroup>${[3, 10, 17, 10, 8, 9, 7, 16, 13, 7].map((w) => `<col style="width:${w}%">`).join('')}</colgroup><thead><tr>${['#', '공간', '제품', '규격', '실측㎡', '주문량', '단위', '줄눈·색', '재단·비고', ''].map((h) => '<th>' + h + '</th>').join('')}</tr></thead><tbody>${tiles}</tbody></table></div><div class="to-row-actions"><button data-action="addTile">＋ 타일 행 추가</button></div><section class="to-subsection"><h3>줄눈 합계 <small>같은 제품·색의 실측만 합산 · 수량 직접 입력</small></h3>${
       currentGroups
         .map((g, i) => {
           const q = s.groutOrders[g.key],
@@ -4543,11 +4555,9 @@ function submit() {
     }
     if (a === 'delTile') s.tiles.splice(i, 1);
     if (a === 'fill') {
-      const n = proposal(s.tiles[i], s);
-      if (n !== null) {
-        s.tiles[i].qty = String(n);
-        s.tiles[i].unit = '㎡';
-      }
+      const r = s.tiles[i], nb = r.unit === '박스' ? proposalBox(r, s) : null, n = proposal(r, s);
+      if (nb !== null) { r.qty = String(nb); r.unit = '박스'; }
+      else if (n !== null) { r.qty = String(n); r.unit = '㎡'; }
     }
     if (a === 'addAcc') s.accessories.push(blankAcc());
     if (a === 'delAcc') s.accessories.splice(i, 1);
