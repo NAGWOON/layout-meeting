@@ -1009,7 +1009,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-06-unified1';
+var APP_VER = '2026-10-06-unified2';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -4332,7 +4332,13 @@ function submit() {
       if (next.tagName === 'INPUT' && pos !== null && next.type !== 'date') next.setSelectionRange(pos, pos);
     }
   }
+  // 한글은 「ㅎ → 허 → 헌」 조합이 이어져야 합니다. 조합 중에 화면을 다시 그리면 자모가 흩어집니다(10/6 대표).
+  // 조합 중에는 아무것도 안 하고, 조합이 끝나면 그때 한 번 처리합니다.
+  root.addEventListener('compositionend', (e) => {
+    if (e.target && e.target.dataset && e.target.dataset.field) e.target.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   root.addEventListener('input', (e) => {
+    if (e.isComposing) return;
     const s = state(),
       t = e.target;
     if (locked(s)) return;
@@ -4371,6 +4377,7 @@ function submit() {
     else refreshPreview();
   });
   root.addEventListener('keydown', (e) => {
+    if (e.isComposing || e.keyCode === 229) return;   // 한글 조합 중 Enter 는 글자 확정용
     if (e.key !== 'Enter' || !e.target.dataset.field?.startsWith('tiles.')) return;
     const k = e.target.dataset.field.split('.');
     k[1] = String(Number(k[1]) + (e.shiftKey ? -1 : 1));
