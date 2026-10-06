@@ -692,7 +692,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-06';
+var APP_VER = '2026-10-06b';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -870,15 +870,20 @@ function prefetchItems() {
 
 // 품목은 펼칠 때만, 그 건만 받아옵니다. 목록을 다시 훑지 않으니 훨씬 가볍습니다.
 function loadOrderItems(id) {
+  var o0 = OD.orders.filter(function (x) { return x.id === id; })[0];
+  if (o0) o0.itemsError = '';
   api('getSiteOrders', { sitePageId: state.site.id, orderPageId: id, itemsOnly: true })
     .then(function (r) {
-      if (!r || !r.ok) return;
-      var o = OD.orders.filter(function (x) { return x.id === (r.orderPageId || id); })[0];
+      var o = OD.orders.filter(function (x) { return x.id === ((r && r.orderPageId) || id); })[0];
       if (!o) return;
+      // 못 읽었을 때 빙글이만 계속 돌면 「느리네」로 끝납니다. 원인을 보여주고 다시 누르게 합니다.
+      if (!r || !r.ok) { o.itemsError = String((r && r.error) || '응답이 없습니다').replace(/^Error:\s*/, ''); renderOrders(); return; }
       o.items = r.items || [];
       renderOrders();
     })
-    .catch(function () { });
+    .catch(function (e) {
+      if (o0) { o0.itemsError = String((e && e.message) || e || '연결이 끊겼습니다'); renderOrders(); }
+    });
 }
 
 function renderOrders() {
@@ -916,6 +921,10 @@ function renderOrders() {
       + '<div class="og">' + (펼침 ? '⌄' : '›') + '</div></div>';
 
     if (!펼침) return 머리 + '</div>';
+    if (!o.items && o.itemsError) {
+      return 머리 + '<div class="obody"><div class="hint">품목을 읽지 못했습니다 — ' + esc(o.itemsError)
+        + '</div><button class="btn line" style="margin-top:9px" onclick="loadOrderItems(\'' + o.id + '\')">다시 불러오기</button></div></div>';
+    }
     if (!o.items) return 머리 + '<div class="obody"><div class="spin"></div></div></div>';
 
     if (!o.items.length) {
@@ -990,7 +999,8 @@ function checkItem(orderId, blockId, checked) {
   api('checkOrderItem', { orderPageId: orderId, blockId: blockId, checked: checked })
     .then(function (r) {
       if (!r || !r.ok) return;
-      if (o) { o.items = r.items; if (r.완료) o.state = '입고완료'; }
+      // 체크는 저장됐지만 목록을 다시 못 읽은 경우(r.items 없음) — 화면의 체크를 그대로 둡니다
+      if (o) { if (r.items) o.items = r.items; if (r.완료) o.state = '입고완료'; }
       renderOrders();
       if (r.완료) alert('검수가 끝났습니다. 사무실에 알림을 보냈습니다.');
     })
