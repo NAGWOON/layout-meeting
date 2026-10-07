@@ -514,7 +514,7 @@ textarea{ width:100%; resize:vertical; min-height:52px; line-height:1.6; }
 .nrm{ margin-inline-start:auto; flex:none; font-size:11.5px; color:var(--txt4);
   cursor:pointer; padding:4px 2px; }
 .nrm:hover{ color:var(--warn); }
-/* v5 승인 타일 화면: 주문량만 연노랑, 오류는 빨간 테두리 */
+/* A4 기준 타일 화면: 주문량만 하늘색, 오류는 빨간 테두리 */
 body.tile-order-mode {padding:0;background:#f6f6f5;color-scheme:light}
 .tile-order-mode #scr-input > .hd,.tile-order-mode #scr-input > .cols {display:none}
 .tile-order-mode #scr-input {max-width:none;width:100%;padding:0;margin:0}
@@ -529,10 +529,10 @@ body.tile-order-mode {padding:0;background:#f6f6f5;color-scheme:light}
 #tileOrderApp input:focus,#tileOrderApp select:focus,#tileOrderApp textarea:focus {border-color:#222;box-shadow:0 0 0 1px #222}
 #tileOrderApp input:disabled,#tileOrderApp select:disabled {opacity:1;color:#555}
 #tileOrderApp label {display:block;font-size:12px;color:#62625f}
-#tileOrderApp h2 {font-size:20px;margin:0}
-#tileOrderApp h3 {font-size:14px;margin:0 0 10px}
-#tileOrderApp p {margin:4px 0}
-#tileOrderApp small {font-size:11px;color:#73736e;font-weight:400}
+#tileOrderApp h2:not(.a4-sheet h2) {font-size:20px;margin:0}
+#tileOrderApp h3:not(.a4-sheet h3) {font-size:14px;margin:0 0 10px}
+#tileOrderApp p:not(.a4-sheet p) {margin:4px 0}
+#tileOrderApp small:not(.a4-sheet small) {font-size:11px;color:#73736e;font-weight:400}
 .to-rail {width:64px;flex-shrink:0;display:flex;align-items:center;gap:26px;padding:22px 8px;background:#202020;color:white;flex-direction:column}
 .to-rail b {font-size:27px}.to-rail small {writing-mode:vertical-rl;margin-top:auto}
 .to-shell {width:calc(100% - 64px);min-width:0}
@@ -553,7 +553,7 @@ body.tile-order-mode {padding:0;background:#f6f6f5;color-scheme:light}
 .to-grid select,.to-grid input {padding:7px 4px!important;border-color:transparent!important;border-radius:3px!important;font-size:12px!important}
 .to-grid td input:focus,.to-grid td select:focus {border-color:#222!important}
 .to-grid td button {padding:5px!important;font-size:11px!important}.to-grid td select+input {margin-top:3px;border-color:#ddd!important}
-#tileOrderApp .to-quantity,.to-paper .to-amount strong {background:#fff5a8;color:#25220e;font-weight:750}
+#tileOrderApp .to-quantity,.to-paper .to-amount strong {background:#dcecfb;color:#0b3a66;font-weight:750}
 .to-grid .to-suggest td {padding:2px 5px 8px;font-size:11px;color:#777;border:0}.to-grid .to-suggest button {border:0!important;text-decoration:underline;background:transparent!important}
 .to-row-actions {margin-top:10px}.to-subsection {border-top:1px solid #e7e7e3;padding-top:18px;margin-top:20px}.to-subsection h3 small {margin-left:10px}
 .to-grout {display:grid;grid-template-columns:minmax(160px,1fr) 95px 75px 135px;gap:10px;align-items:center;padding:12px;background:#f7f7f5;margin:8px 0;border-radius:6px}.to-grout small {display:block}
@@ -589,13 +589,69 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 #unifiedTabs {background:#fff;border-bottom:1px solid #ddd;padding:10px 24px}#unifiedTabs .tabs {margin:0;gap:6px;flex-wrap:nowrap;overflow:auto}#unifiedTabs .tab {flex:0 0 auto;padding:9px 18px;background:white;border:0;border-radius:6px;font-size:13px}#unifiedTabs .tab.on {background:#222;color:white}
 #unifiedOrder .card,.unified-mode .mask .modal {background:#fff;border:1px solid #e1e1de;box-shadow:none;backdrop-filter:none;border-radius:7px}#unifiedOrder .card::before {display:none}#unifiedOrder .card {margin:12px 0;padding:14px}#unifiedItems>.card {border:0;padding:0}
 #unifiedTitle {font-size:20px;margin:0 0 14px}#unifiedCalculators .card {margin:7px 0}#unifiedCalculators .ch {margin:0;padding:7px 0}#unifiedCalculators [id$="Body"]:not(.hide) {padding-top:14px}
-#unifiedItems .items {max-height:none;overflow:visible}#unifiedItems .it {padding:10px 6px;border-bottom:1px solid #e6e6e2}#unifiedItems .it .q {background:#fff5a8;color:#25220e;font-weight:700;flex:0 0 64px}#unifiedItems .it .nm {flex:1;min-width:130px}#unifiedItems .it .cut,#unifiedItems .it .film {flex:0 1 130px}#unifiedItems .gh {background:#f5f5f3;padding:9px}#unifiedItems .tools {gap:5px}#unifiedItems .srch input {width:100%}
+#unifiedItems .items {max-height:none;overflow:visible}#unifiedItems .it {padding:10px 6px;border-bottom:1px solid #e6e6e2}#unifiedItems .it .q {background:#dcecfb;color:#0b3a66;font-weight:700;flex:0 0 64px}#unifiedItems .it .nm {flex:1;min-width:130px}#unifiedItems .it .cut,#unifiedItems .it .film {flex:0 1 130px}#unifiedItems .gh {background:#f5f5f3;padding:9px}#unifiedItems .tools {gap:5px}#unifiedItems .srch input {width:100%}
 #unifiedReferences {border-top:1px solid #ddd;margin-top:20px}#unifiedReferences>.side {display:block}#unifiedPreview {width:100%;overflow:hidden;background:white;border:1px solid #ddd}#unifiedPreview .sheetwrap {overflow:visible}#unifiedAside #sheetTabs {display:flex;flex-wrap:wrap;margin-bottom:12px}#unifiedAside .stab {border:1px solid #ddd;background:white;box-shadow:none}#unifiedAside .svin {min-width:0;max-width:100%}
 #orderLoadStatus {padding:18px 24px;display:flex;gap:15px;align-items:center;font-size:15px;position:relative;z-index:2}#orderLoadStatus[hidden] {display:none}#orderLoadStatus button {padding:8px 14px;background:white;border:1px solid currentColor;border-radius:5px;color:inherit;white-space:nowrap}.order-load-wait {background:#ecece8;color:#333}.order-load-error {background:#fff0f0;color:#a52626;border:2px solid #c33;overflow-wrap:anywhere}
 .unified-mode .card {box-shadow:none;backdrop-filter:none}.unified-mode #scr-settle {padding:20px}.unified-mode #scr-settle .hd {background:#fff;box-shadow:none;color:#222}
 @media(max-width:600px) {#unifiedOrder .to-context label:last-child {width:100%}#unifiedTabs {padding:8px}#unifiedTabs .tab {padding:8px 11px}#unifiedItems .it {flex-wrap:wrap}#unifiedItems .it .nm {flex-basis:100%}#unifiedItems .it .q {margin-left:auto}#unifiedOrder .to-footer {position:static}#orderLoadStatus {padding:12px;font-size:13px;align-items:start;flex-direction:column}#unifiedOrder .to-context label {min-width:0}#unifiedReferences .elev {flex-wrap:wrap}}
 
 #tileOrderApp .to-rail button,#tileOrderApp .to-rail a {background:transparent;border:0;color:white;font-size:12px;padding:4px;text-decoration:none}
+/* v5: 계산기는 주문표 위의 독립 창, 도기·도어는 같은 틀의 입력 영역 */
+#calcFloat {position:fixed;z-index:180;left:90px;top:100px;width:min(900px,calc(100vw - 110px));height:640px;min-width:580px;min-height:300px;max-width:calc(100vw - 20px);max-height:calc(100dvh - 30px);resize:both;overflow:hidden;background:#fff;color:#171717;border:1px solid #aaa;box-shadow:0 20px 70px #0003;border-radius:12px;display:flex;flex-direction:column}
+#calcFloat[hidden]{display:none}#calcFloat header{background:#171717;color:white;padding:12px 16px;cursor:move;display:flex;justify-content:space-between;touch-action:none}#calcFloat header button{color:white;background:transparent;border:1px solid #888;padding:5px 12px;border-radius:5px}
+.calc-layout{display:grid;grid-template-columns:145px minmax(230px,1fr) minmax(250px,.9fr);flex:1;min-height:0}.calc-layout>nav,.calc-input,.calc-results{overflow:auto;padding:16px}.calc-layout>nav{border-right:1px solid #ddd;background:#f8f8f8}.calc-layout>nav button{display:block;width:100%;padding:12px 6px;margin-bottom:8px;background:white;border:1px solid #ddd;border-radius:5px;text-align:left}.calc-layout>nav button.on{background:#222;color:white}.calc-results{border-left:1px solid #ddd}.calc-results article{border-bottom:1px solid #ddd;padding:12px 0}.calc-results select{max-width:100%;margin:5px 0;padding:7px}.calc-results .qty{background:#dcecfb;padding:3px 7px}.calc-results small{display:block;color:#666;margin:5px 0}.calc-results button{padding:12px;border:0;background:#171717;color:white;width:100%}.calc-input .card{box-shadow:none;border:0;background:white;padding:0}.calc-input .crow{flex-wrap:wrap}.calc-input .ch{display:none}.calc-input [id$="Body"]{display:block!important}.calc-input .bprimary{display:none}#calcPill{position:fixed;bottom:78px;left:80px;z-index:181;border:1px solid #aaa;background:#171717;color:white;border-radius:24px;padding:12px 20px;box-shadow:0 5px 20px #0002}#calcPill[hidden]{display:none}
+.v5-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.v5-buttons button,.v5-card button{border:1px solid #ccc;background:white;padding:8px 12px;border-radius:5px}.v5-card{border:1px solid #ddd;border-radius:8px;padding:18px;margin-bottom:16px;background:white}.v5-card h3{margin:0 0 16px}.v5-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.v5-fields label{font-size:11px;color:#666;display:flex;flex-direction:column;gap:5px}.v5-fields input,.v5-fields select,#structuredEditor input,#structuredEditor select{min-width:0;max-width:100%;width:100%;padding:9px;border:1px solid #d3d3d3;border-radius:4px;background:white;color:#171717;font:inherit}#structuredEditor .v5-slot{display:grid;grid-template-columns:90px minmax(120px,2fr) minmax(70px,1fr) 62px 60px;align-items:center;gap:7px;padding:9px 0;border-bottom:1px solid #eee}.v5-slot>span{font-size:12px}#structuredEditor .v5-qty.has-value,#tileOrderApp .to-quantity.has-value{background:#dcecfb;color:#0b3a66;font-weight:750}#tileOrderApp .to-quantity:not(.has-value){background:white!important}#unifiedOrder [aria-invalid="true"]{border:2px solid #c62828}.v5-error{background:#fff1f1;color:#a51b1b;border:1px solid #d55;padding:12px;margin:12px 0}.v5-error:empty{display:none}.v5-paper{width:720px;min-height:1018px;padding:35px;background:white;color:#171717;box-sizing:border-box}.v5-paper h1{font-size:26px}.v5-paper header{border-bottom:2px solid black;padding-bottom:14px}.v5-door-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.v5-door-print{border:1px solid #aaa;padding:12px;break-inside:avoid;min-height:252px}.v5-door-print svg{width:105px;height:136px;float:left;margin-right:8px}.v5-door-print p{font-size:11px;line-height:1.7}.v5-paper .v5-amount{background:#dcecfb;font-weight:bold;padding:4px 8px}.v5-paper table{width:100%;border-collapse:collapse;margin-top:15px}.v5-paper td,.v5-paper th{border-bottom:1px solid #ddd;padding:10px;font-size:12px;text-align:left}.v5-page{min-height:930px;page-break-after:always}.v5-page+.v5-page{border-top:2px dashed #aaa;padding-top:30px}#structuredPreview{overflow:hidden}#structuredSheets button{padding:8px;border:1px solid #bbb;background:white}#structuredSheets button.on{background:#222;color:white}.v5-foot{font-size:12px;color:#666;margin:12px 0}.v5-direct{margin-top:5px}.v5-card fieldset{border:0;padding:0;margin:0}.v5-door-line{display:grid;grid-template-columns:100px 1fr;gap:15px}.v5-door-line svg{width:100%;height:160px}#unifiedCalculators{display:none!important}
+@media(max-width:700px){#calcFloat{left:0!important;top:auto!important;bottom:0;width:100%!important;min-width:0;height:78dvh;max-height:92dvh;border-radius:12px 12px 0 0;resize:vertical}.calc-layout{grid-template-columns:1fr;display:block;overflow:auto}.calc-layout>nav{display:flex;gap:6px;overflow:auto;padding:8px;position:sticky;top:0;z-index:1}.calc-layout>nav button{white-space:nowrap;width:auto;margin:0}.calc-input,.calc-results{overflow:visible}.v5-fields{grid-template-columns:repeat(2,minmax(0,1fr))}#structuredEditor .v5-slot{grid-template-columns:72px minmax(0,1fr) 55px}#structuredEditor .v5-slot input[data-prop="size"],#structuredEditor .v5-slot input[data-prop="unit"]{grid-column:auto}.v5-card{padding:12px}.v5-door-line{grid-template-columns:1fr}.v5-door-line svg{height:120px;width:85px}#calcPill{left:12px;bottom:74px}}
+
+
+#unifiedOrder [hidden],#structuredContext[hidden],#structuredFooter[hidden]{display:none!important}
+#unifiedItems .it .q:not(.has){background:white;font-weight:400}
+#structuredContext{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 1fr;gap:12px;padding:18px 24px;background:white;border-bottom:1px solid #ddd}
+#structuredContext label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#666;min-width:0}
+#structuredContext input,#structuredContext select{width:100%;min-width:0;background:white;border:1px solid #ddd;padding:9px;border-radius:4px;color:#171717}
+#structuredFooter button{padding:8px 12px;border:1px solid #ccc;background:white;border-radius:5px}
+#structuredFooter button[data-action="submit"]{background:#171717;color:white}
+#unifiedOrder .to-shell{position:relative}
+@media(max-width:700px){#structuredContext{grid-template-columns:1fr 1fr;padding:12px}#structuredFooter{flex-wrap:wrap}}
+.v5-slot-color{grid-column:2/-1;display:flex;align-items:center;gap:8px;font-size:11px;color:#777}.v5-slot-color select{max-width:130px!important;padding:4px!important}
+
+#calcInputs #calcOut,#calcInputs #expOut,#calcInputs #tileOut,#calcInputs #expCut,#calcInputs #tileCut,
+#calcInputs [onclick="applyCalc()"],#calcInputs [onclick="applyExp()"],#calcInputs [onclick="applyTile()"]{display:none!important}
+@media(max-width:700px){#calcFloat{max-width:100vw}}
+
+.a4-preview{width:100%;overflow:hidden;background:white}.sheet.a4-sheet{width:720px;height:1018px;min-height:1018px;box-sizing:border-box;overflow-wrap:anywhere;flex:none}.a4-sheet>*{flex-shrink:0}.a4-sheet .grow{flex:1}.a4-sheet .stbl{table-layout:fixed}.a4-sheet .stbl td{vertical-align:top}.a4-sheet .stbl .space{font-size:11px;padding-right:8px}.a4-sheet .stbl .nm small{display:block;font-size:10px;font-weight:500}.sheet .stbl .qt{background:#dcecfb;color:#0b3a66;font-weight:800;padding-left:6px;padding-right:6px}.sheet .stbl .qt small{display:block;font-size:10px;font-weight:500;white-space:nowrap}.a4-sheet+.a4-sheet{margin-top:12px}.a4-sheet .v5-door-grid{gap:10px;margin-top:8px}.a4-sheet .v5-door-print{min-height:0;padding:8px}.a4-sheet .v5-door-print p{font-size:10px;line-height:1.45;margin:4px 0}.a4-sheet .v5-door-print svg{width:80px;height:110px}.a4-sheet .v5-door-print b{font-size:11px}
+
+@font-face{font-family:DFA4;font-style:normal;font-weight:400;font-display:block;src:url('assets/fonts/Pretendard-Regular.woff2') format('woff2')}
+@font-face{font-family:DFA4;font-style:normal;font-weight:600;font-display:block;src:url('assets/fonts/Pretendard-SemiBold.woff2') format('woff2')}
+@font-face{font-family:DFA4;font-style:normal;font-weight:800;font-display:block;src:url('assets/fonts/Pretendard-ExtraBold.woff2') format('woff2')}
+.sheet.a4-sheet{padding:40px 44px 30px;font-family:DFA4,sans-serif;font-synthesis:none;font-size:11.5px;line-height:1.35;color:#1b1b1f}
+.sheet.a4-sheet .nhead{padding:0 0 10px;align-items:flex-end;gap:8px;border-bottom:2px solid #1b1b1f}
+.sheet.a4-sheet .nhead .me .nm{font-size:13px;font-weight:800}.sheet.a4-sheet .nhead .biz{font-size:9.5px;line-height:1.5;margin-top:3px;color:#8a8a92;white-space:nowrap}
+.sheet.a4-sheet .nhead .ttl{flex:none}.sheet.a4-sheet .nhead .ttl h2{font-family:DFA4,sans-serif;font-size:20px;letter-spacing:.3em;line-height:1.2;color:#1b1b1f}
+.sheet.a4-sheet .nhead .ttl .no{font-family:DFA4,sans-serif;font-size:10px;font-weight:400;color:#6a6a72;letter-spacing:0;margin-top:3px;white-space:nowrap}
+.sheet.a4-sheet .nto{display:flex;align-items:baseline;gap:10px;margin:12px 0 8px;padding:0;border:0}.sheet.a4-sheet .nto .who{font-size:15px;font-weight:800}.sheet.a4-sheet .nto .sub{font-size:11px;color:#777;margin:0}
+.sheet.a4-sheet .ngrid{display:grid;grid-template-columns:auto 1fr auto 1fr auto 1fr;margin:0;border-top:1px solid #d9d9dd;border-bottom:1px solid #d9d9dd;font-size:11.5px}
+.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .ngrid dd{margin:0;padding:6px 8px;border-bottom:1px solid #eee;letter-spacing:0;line-height:1.35}
+.sheet.a4-sheet .ngrid dt{font-size:10px;color:#8a8a92;background:#f7f7f8;white-space:nowrap;font-weight:400}.sheet.a4-sheet .ngrid dd{font-size:11.5px;font-weight:600;color:#1b1b1f;min-width:0}
+.sheet.a4-sheet .ngrid .addr{grid-column:4 / -1;font-size:11.5px;font-weight:600}
+.sheet.a4-sheet .sfoot{display:flex;gap:8px;margin:8px 0 2px;padding:6px 10px;border:0;border-left:3px solid #1b1b1f;border-radius:0;background:#f7f7f8;font-size:11px}
+.sheet.a4-sheet .sfoot b{font-size:11px;font-weight:800;color:#1b1b1f;margin:0;white-space:nowrap;letter-spacing:0}.sheet.a4-sheet .sfoot p{font-size:11px;color:#1b1b1f;line-height:1.35;margin:0}
+.sheet.a4-sheet .pad{padding:0}.sheet.a4-sheet .stbl{margin-top:10px;font-size:11.5px;table-layout:fixed}
+.sheet.a4-sheet .stbl th{font-size:9.5px;color:#8a8a92;font-weight:600;letter-spacing:.06em;padding:6px;border-bottom:1.5px solid #1b1b1f}
+.sheet.a4-sheet .stbl th.r{color:#1b1b1f;font-weight:800;font-size:10.5px}
+.sheet.a4-sheet .stbl tbody tr:not(.cat){height:28px}.sheet.a4-sheet .stbl td{padding:4px 6px;border-bottom:1px solid #ececef;vertical-align:middle}
+.sheet.a4-sheet .stbl .no{color:#b0b0b8;font-family:DFA4,sans-serif;font-size:9.5px}.sheet.a4-sheet .stbl .space{font-size:11.5px;color:#55555c}
+.sheet.a4-sheet .stbl .nm{font-size:11.5px;font-weight:600;color:#1b1b1f;letter-spacing:0}.sheet.a4-sheet .stbl .nm i{white-space:pre-line;display:inline;margin-left:8px;font-size:10.5px;font-weight:400;color:#8a8a92;font-family:DFA4,sans-serif}
+.sheet.a4-sheet .stbl .nm small{font-size:10.5px;line-height:1.35;color:#1b1b1f;font-weight:400}.sheet.a4-sheet .stbl .un{font-size:10.5px;color:#8a8a92}
+.sheet.a4-sheet .stbl .qt{background:transparent;color:#1b1b1f;font-size:14px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums lining-nums}
+.sheet.a4-sheet .stbl .qt b{font-weight:800}.sheet.a4-sheet .stbl .qt small{display:inline;font-size:9.5px;font-weight:400;color:#9a9aa2;margin-right:7px;font-variant-numeric:normal}
+.sheet.a4-sheet .stbl tr.cat td{padding:9px 6px 3px;border-bottom:1px solid #1b1b1f}.sheet.a4-sheet .stbl tr.cat span{display:block;background:none;border-radius:0;margin:0;padding:0;font-size:10px;font-weight:800;letter-spacing:.08em;color:#1b1b1f}
+.sheet.a4-sheet .ntot{margin:8px 0 0;padding:0;border:0;font-size:10.5px;color:#1b1b1f}.sheet.a4-sheet .ntot b{font-weight:800}
+.sheet.a4-sheet .a4-reference{font-size:9px;color:#8a8a92;margin:6px 0 0}.sheet.a4-sheet .nfoot{margin:0;padding:8px 0 0;border-top:1px solid #d9d9dd;font-size:9px;color:#9a9aa2;letter-spacing:.08em;font-weight:400}
+.a4-cont-head,.a4-cont-meta{display:none}.a4-continuation .nhead,.a4-continuation .nto,.a4-continuation .ngrid,.a4-continuation .sfoot{display:none!important}
+.a4-continuation .a4-cont-head{display:flex;justify-content:space-between;gap:15px;padding-bottom:8px;border-bottom:1.5px solid #1b1b1f;font-size:11px}.a4-continuation .a4-cont-head b{font-weight:800}
+.a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
+
 </style>
 </head>
 <body>
@@ -993,6 +1049,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 
 <div id="toast"></div>
 
+<script src="calc.js?v=2026-10-06"></script>
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
 var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner';
@@ -1009,7 +1066,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-06-unified4';
+var APP_VER = '2026-10-07-a4final2';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -1027,7 +1084,7 @@ var S = {
   exp:   [{ n: '', a: '', d: '' }], expOpen: true,   // 확장부 바닥 (설비·방수)
   tile:  [{ n: '', a: '', d: '' }], tileOpen: true   // 타일 바닥 (설비·방수 · 타일)
 };
-var TYPES = ['목자재', '도어', '타일', '도기', '조명·스위치', '설비·방수'];
+var TYPES = ['목자재', '설비·방수', '타일', '도기', '도어', '조명·스위치'];
 
 // ═════ 공통 ═════
 // 부를 때마다 얼마나 걸렸는지 남깁니다. 「느리다」는 말을 들었을 때
@@ -1280,33 +1337,10 @@ var 각재분류 = { '각재':1 };
 //   「1M×450×28장」 묶음 (그라스울)          → 0.45㎡ × 28 = 12.6㎡
 // 계수표를 코드에 들고 있으면 품목이 늘 때마다 여기도 고쳐야 하고,
 // 고치는 걸 잊으면 새 자재가 계산기에서 조용히 빠집니다.
-function 치수m(tok) {
-  var m = String(tok).match(/^([0-9.]+)/);
-  if (!m) return null;
-  var v = Number(m[1]);
-  if (!isFinite(v) || v <= 0) return null;
-  if (/^[0-9.]+M$/i.test(tok)) return v;          // 1M
-  if (v >= 100) return v / 1000;                  // 450 · 1000 · 2440 → mm
-  if (v <= 12)  return v * 0.3;                   // 3 · 4 · 6 · 8 → 자
-  return null;
-}
-function 장당면적(spec) {
-  if (!spec) return null;
-  var s = String(spec).replace(/\s/g, '').toUpperCase();
-  var 묶음 = s.match(/[×X*](\d+)장/);              // 한 묶음에 몇 장인지
-  var 배수 = 묶음 ? Number(묶음[1]) : 1;
-  var 몸 = s.replace(/[×X*]\d+장/, '');
-  var 변 = [];
-  몸.split(/[×X*]/).forEach(function (t) {
-    if (/T$/.test(t)) return;                     // 두께(9.5T)는 면적과 무관합니다
-    var v = 치수m(t);
-    if (v != null) 변.push(v);
-  });
-  if (변.length < 2) return null;
-  return 변[0] * 변[1] * 배수;
-}
-// 계산기 드롭다운에 올릴 품목. 마스터에서 그대로 가져옵니다.
-// 쓸만한지는 자재군마다 다릅니다 — 판은 면적이, 몰딩은 길이가 읽혀야 합니다.
+function 치수m(tok) { return window.DFCalc ? DFCalc.규격.치수m(tok) : null; }
+
+function 장당면적(spec) { return window.DFCalc ? DFCalc.규격.장당면적(spec) : null; }
+
 function 자재후보(분류표, 쓸만한가) {
   var 본 = {}, out = [];
   S.items.forEach(function (i) {
@@ -1321,12 +1355,8 @@ function 자재후보(분류표, 쓸만한가) {
 function 면재후보() { return 자재후보(면재분류, function (i) { return 장당면적(i.spec) != null; }); }
 function 단열후보() { return 자재후보(단열분류, function (i) { return 장당면적(i.spec) != null; }); }
 // 몰딩은 길이만 있으면 됩니다. 「2440×9×30」의 맨 앞이 길이입니다.
-function 몰딩길이m(spec) {
-  if (!spec) return null;
-  var 첫 = String(spec).replace(/\s/g, '').split(/[×X*]/)[0];
-  var v = 치수m(첫);
-  return (v && v > 0.5) ? v : null;                 // 0.5m 미만은 길이가 아닙니다
-}
+function 몰딩길이m(spec) { return window.DFCalc ? DFCalc.규격.몰딩길이m(spec) : null; }
+
 function 몰딩후보() { return 자재후보(몰딩분류, function (i) { return 몰딩길이m(i.spec) != null; }); }
 // 상 자재는 단 단위라 규격에서 읽을 게 없습니다. 각재면 다 올립니다.
 function 상자재후보() { return 자재후보(각재분류, null); }
@@ -1518,58 +1548,8 @@ function 첫단열() { return 첫자재(단열후보(), ['아이소핑크 30T (�
 function addIns() { S.ins.push({ v:'', mode:'벽', mat:첫단열() }); renderIns(); }
 function delIns(i) { S.ins.splice(i,1); renderIns(); calcPreview(); }
 
-function calc() {
-  var f = 1 + S.loss / 100, acc = {};
-  function add(n, q) { if (!n || !q) return; acc[n] = (acc[n] || 0) + q; }
-  // 면재 한 겹은 그 자재의 장당 면적으로 나눕니다.
-  // 벽은 겹마다 한면(2.4㎡/m)·양면(4.8㎡/m)을 골라 잡습니다.
-  function 겹더하기(이름, 면적) {
-    var a = 면적of(이름);
-    if (a) add(이름, 면적 / a);
-  }
+function calc() { return Object.fromEntries(v5Wood().줄.map(x => [x.name, x.qty])); }
 
-  S.walls.forEach(function (w) {
-    var m = Number(w.m) || 0;
-    if (!m) return;
-    var d = PITCH[w.pitch];
-    if (d) add(S.studMat || T.d, m * d);
-    (w.plies || []).forEach(function (p) {
-      겹더하기(p.n, m * 벽높이 * (Number(p.s) === 1 ? 1 : 2));
-    });
-  });
-
-  var c2 = Number(S.ceil.m2) || 0;
-  if (c2) {
-    add(S.studMat || T.d, c2 * CEIL_D);
-    (S.ceil.plies || []).forEach(function (nm) { 겹더하기(nm, c2); });
-  }
-
-  var 단열장 = 0;
-  S.ins.forEach(function (x) {
-    var v = Number(x.v) || 0;
-    if (!v || !x.mat) return;
-    var a = 면적of(x.mat);
-    if (!a) return;
-    // 단열은 벽 한 면만 채웁니다 — 면재처럼 양면이 아닙니다.
-    var 장 = (x.mode === '벽' ? v * 벽높이 : v) / a;
-    add(x.mat, 장);
-    단열장 += 장;
-  });
-  // 폼본드는 붙이는 면적으로 잡습니다. 확장부 계산기와 같은 기준값을 씁니다.
-  if (단열장) {
-    var 폼당 = Number((el('x_foamyield') || {}).value) || 5;
-    add(T.f, (단열장 * INS_SHEET) / 폼당 / (1 + S.loss / 100));
-  }
-  // 몰딩 한 장 길이는 규격 맨 앞에 적혀 있습니다 (2440×9×30 → 2.44m).
-  S.mold.forEach(function (x) {
-    var v = Number(x.m) || 0;
-    if (!v || !x.mat) return;
-    var L = 몰딩길이m((품목찾기(x.mat, S.type) || {}).spec);
-    if (L) add(x.mat, v / L);
-  });
-  var out = {}; Object.keys(acc).forEach(function (k) { out[k] = Math.ceil(acc[k] * f); });
-  return out;
-}
 function calcPreview() {
   var r = calc(), names = Object.keys(r);
   el('calcSum').textContent = names.length ? names.length + '품목 산출됨' : (S.calcOpen ? '' : '접힘');
@@ -1649,56 +1629,7 @@ function xcombo(T) {
   return out;
 }
 
-function expCalc() {
-  var 모르타르 = Number(el('x_mortar').value) || 0,
-      수평   = Number(el('x_level').value)  || 0,
-      편차   = Number(el('x_dev').value)    || 0,
-      폼여유  = Number(el('x_foam').value)   || 0,
-      포당   = Number(el('x_yield').value)  || 14,
-      레미포당 = Number(el('x_myield').value) || 21,
-      폼당   = Number(el('x_foamyield').value) || 5,
-      로스   = (Number(el('x_loss').value)  || 0) / 100;
-
-  var 면적 = 0, 시트 = {}, 접착 = 0, 부피 = 0, cuts = [], warn = [];
-
-  S.exp.forEach(function (x, i) {
-    var A = Number(x.a) || 0, D = Number(x.d) || 0;
-    if (!A || !D) return;
-    var 이름 = (x.n || '').trim() || ('구간 ' + (i + 1));
-    var c = xcombo(Math.max(0, D - 모르타르 - 수평 - 폼여유));
-    var 단열 = c.reduce(function (p, q) { return p + q; }, 0);
-    if (!단열) { warn.push(이름 + ' — 깊이가 얕아 단열재가 안 들어갑니다'); return; }
-
-    // 규격이 띄엄띄엄해서 남는 높이는 모르타르가 먹습니다. 설계값보다 두꺼워질 수 있습니다.
-    var 실모르타르 = D - 단열 - 수평;
-    if (실모르타르 < 40) warn.push(이름 + ' — 모르타르가 ' + 실모르타르 + 'mm 로 얇습니다. 배관 피복을 확인하세요');
-
-    면적 += A;
-    접착 += A * c.length;          // 복층이면 겹마다 한 번씩 붙습니다
-    부피 += A * 실모르타르;
-    c.forEach(function (s) { 시트[s] = (시트[s] || 0) + A; });
-
-    cuts.push({ 이름: 이름,
-      글: D + ' = ' + (c.length > 1 ? 단열 + 'T (' + c.join('+') + ')' : 단열 + 'T')
-          + ' + 모르타르 ' + 실모르타르 + ' + 수평몰탈 ' + 수평 });
-  });
-
-  var out = [];
-  XSIZE.forEach(function (s) {
-    if (시트[s]) out.push([XN.i + s + 'T' + XN.iz, Math.ceil(시트[s] * (1 + 로스) / XSHEET)]);
-  });
-  if (접착) out.push([XN.f, Math.ceil(접착 / 폼당), '붙이는 면적 ' + (Math.round(접착 * 10) / 10) + '㎡']);
-  if (부피) out.push([XN.m, Math.ceil(부피 / 레미포당),
-    '평균 ' + (Math.round(부피 / 면적 * 10) / 10) + 'mm · ' + (Math.round(면적 * 10) / 10) + '㎡']);
-  // 설계두께가 아니라 평균두께로 뽑습니다. 바탕이 고르지 않으면 얇은 데와 두꺼운 데가 생기고,
-  // 설계값으로만 뽑으면 현장에서 모자랍니다 (2026-09-16 · 미장팀 실측과 대조).
-  var 평균 = 수평 + 편차 / 2;
-  if (면적) out.push([XN.l, Math.ceil(면적 * 평균 / 포당),
-    '평균 ' + (Math.round(평균 * 10) / 10) + 'mm · ' + (Math.round(면적 * 10) / 10) + '㎡']);
-  if (면적) out.push([XN.p, Math.max(1, Math.ceil(면적 / 100))]);
-
-  return { out: out, cuts: cuts, warn: warn, 면적: Math.round(면적 * 10) / 10 };
-}
+function expCalc() { var r=v5Extension();return {out:r.줄.map(x=>[x.name,x.qty,x.근거]),cuts:r.단면,warn:r.경고,면적:r.면적}; }
 
 function expPreview() {
   var r = expCalc();
@@ -1788,55 +1719,7 @@ function toggleTileK(i) { S.tile[i].k = (S.tile[i].k === 'tile') ? '' : 'tile'; 
 function addTile() { S.tile.push({ n:'', a:'', d:'' }); renderTile(); tilePreview(); }
 function delTile(i) { S.tile.splice(i, 1); renderTile(); tilePreview(); }
 
-function tileCalc() {
-  var 액방 = Number(el('t_liq').value)  || 0,
-      시멘계수 = Number(el('t_cem').value) || 0,
-      도막 = Number(el('t_mem').value)  || 0,
-      타일 = Number(el('t_tile').value) || 0,
-      레미포당 = Number(el('t_myield').value) || 21;
-
-  var 면적 = 0, 방수면적 = 0, 액방부피 = 0, 쭈부피 = 0, cuts = [], warn = [];
-
-  S.tile.forEach(function (x, i) {
-    var A = Number(x.a) || 0, D = Number(x.d) || 0;
-    if (!A || !D) return;
-    var 이름 = (x.n || '').trim() || ('구간 ' + (i + 1));
-    var 방수 = (x.k !== 'tile');
-    var a1 = 방수 ? 액방 : 0, m1 = 방수 ? 도막 : 0;
-    var 쭈 = D - a1 - m1 - 타일;
-
-    if (쭈 <= 0) { warn.push(이름 + ' — 깊이가 얕아 쭈꾸미 자리가 없습니다 (' + 쭈 + 'mm)'); return; }
-    if (쭈 < 20) warn.push(이름 + ' — 쭈꾸미가 ' + 쭈 + 'mm 로 얇습니다');
-
-    면적 += A;
-    쭈부피 += A * 쭈;
-    if (방수) { 방수면적 += A; 액방부피 += A * 액방; }
-
-    cuts.push({ 이름: 이름, 깊이: D,
-      글: (방수 ? '액방 ' + 액방 + ' + 도막 ' + 도막 + ' + ' : '')
-          + '쭈꾸미 ' + 쭈 + ' + 타일 ' + 타일 });
-  });
-
-  // 시멘트는 액방 도포에만 씁니다. 두께에서 역산하지 않고 면적당 실측 계수로 잡습니다 —
-  // 액방층 20mm 를 통째로 배합으로 보면 시멘트가 두 배 넘게 나옵니다 (2026-09-16).
-  var 시멘포 = Math.ceil(방수면적 * 시멘계수);
-
-  // 액방층에서 시멘트가 차지하고 남는 부피는 레미탈입니다.
-  var 액방포 = 액방부피 / 레미포당;
-  var 방수레미 = Math.max(0, Math.ceil(액방포 - 시멘포));
-  var 타일레미 = Math.ceil(쭈부피 / 레미포당);
-
-  var out = [];
-  if (시멘포) out.push([TN.c, 시멘포]);
-  // 한쪽이 0이면 굳이 나눠 적지 않습니다 — 「방수용 0」은 읽을 게 없는 줄입니다.
-  if (방수레미 + 타일레미) out.push([TN.m, 방수레미 + 타일레미,
-    (방수레미 && 타일레미) ? ('방수용 ' + 방수레미 + ' · 타일용 ' + 타일레미) : '']);
-  // 방수액은 현장당 한 통이면 끝납니다. 면적으로 나눠 봐야 늘 1이 나옵니다.
-  // 도막방수는 1액형·2액형을 대표가 직접 고르므로 여기서 뽑지 않습니다 (높이만 차지합니다).
-  if (방수면적) out.push([TN.s, 1]);
-
-  return { out: out, cuts: cuts, warn: warn, 면적: Math.round(면적 * 10) / 10 };
-}
+function tileCalc() { var r=v5Bath();return {out:r.줄.map(x=>[x.name,x.qty,x.근거]),cuts:r.단면,warn:r.경고,면적:r.면적}; }
 
 function tilePreview() {
   var r = tileCalc();
@@ -2676,6 +2559,286 @@ function bar() {
     : '<div class="btn" onclick="goSettle()">🧾 명세서</div>'
       + '<div class="btn pri' + (all.length ? '' : ' dis') + '" onclick="goSheet()">발주서 보기 ›</div>';
 }
+
+// A4 출력 한 벌: 화면 축소는 원본/캡처와 분리. 페이지마다 원래 머리와 이름표를 반복합니다.
+var A4Preview = (() => {
+  let popup = null,
+    scheduled = false,
+    last = '';
+  const status = { phase: 'idle', pages: 0, width: 0, height: 0, error: '' };
+  function pages(markup) {
+    const host = document.createElement('div');
+    host.style.cssText =
+      'position:absolute;left:-16000px;top:0;width:720px;zoom:1;visibility:hidden';
+    host.innerHTML = markup;
+    document.body.append(host);
+    const output = [];
+    try {
+      for (const original of [...host.querySelectorAll('.sheet')]) {
+        original.classList.add('a4-sheet');
+        original.style.zoom = '1';
+        original.removeAttribute('id');
+        original.querySelectorAll('.a4-page-number').forEach(x=>x.textContent='');
+        const table = original.querySelector('.stbl'),
+          grid = original.querySelector('.v5-door-grid');
+        const source = table?.querySelector('tbody') || grid;
+        if (!source) {
+          output.push(original.outerHTML);
+          continue;
+        }
+        const units = [...source.children].map((x) => x.cloneNode(true));
+        source.replaceChildren();
+        const template = original.outerHTML;
+        let page = original,
+          target = source,
+          count = 0,
+          cat = null,
+          activeCat = null;
+        const finish = () => {
+          if (page.scrollHeight > 1018)
+            throw Error(
+              '특기사항 또는 품목이 A4 한 장보다 깁니다. 내용을 줄이거나 발주서를 나눠 주세요.'
+            );
+          output.push(page.outerHTML);
+        };
+        const fresh = () => {
+          host.insertAdjacentHTML('beforeend', template);
+          page = host.lastElementChild;
+          page.classList.add('a4-continuation');
+          target = page.querySelector('.stbl tbody') || page.querySelector('.v5-door-grid');
+          count = 0;
+        };
+        for (let i = 0; i < units.length; i++) {
+          const unit = units[i];
+          if (unit.classList.contains('cat')) {
+            cat = unit;
+            activeCat = unit;
+            continue;
+          }
+          let heading;
+          if (cat) {
+            heading = cat.cloneNode(true);
+            target.append(heading);
+          }
+          target.append(unit);
+          // 고정 높이 밖으로 늘어나는 품목을 실제 스크롤 높이로 확인합니다.
+          if (page.scrollHeight > 1018 && count) {
+            unit.remove();
+            heading?.remove();
+            finish();
+            fresh();
+            if (activeCat) target.append(activeCat.cloneNode(true));
+            target.append(unit);
+          }
+          if (page.scrollHeight > 1018)
+            throw Error(
+              '한 품목 또는 특기사항이 A4 한 장보다 깁니다. 내용을 줄이거나 발주서를 나눠 주세요.'
+            );
+          count++;
+          cat = null;
+        }
+        finish();
+      }
+      return output.map((markup,i)=>{
+        const box=document.createElement('div');box.innerHTML=markup;
+        box.querySelectorAll('.a4-page-number').forEach(x=>x.textContent=(i+1)+' / '+output.length);
+        return box.innerHTML;
+      }).join('');
+    } finally {
+      host.remove();
+    }
+  }
+  function prepare(node) {
+    if (!node) return;
+    try {
+      node.innerHTML = pages(node.innerHTML);
+      node.dataset.a4Error = '';
+    } catch (e) {
+      node.dataset.a4Error = e.message;
+      const error = document.createElement('div');
+      error.className = 'to-error';
+      error.textContent = e.message;
+      node.prepend(error);
+    }
+    const scale = Math.min(1, node.clientWidth / 720) || 1;
+    node.querySelectorAll('.sheet').forEach((x) => (x.style.zoom = String(scale)));
+    sync();
+  }
+  async function capture(markup) {
+    status.phase = 'capture';
+    status.error = '';
+    try {await Promise.all([400,600,800].map(w=>document.fonts.load(w+' 14px DFA4', '수량 17')));}catch(e){status.phase='error';status.error='발주서 글꼴 파일을 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.';throw Error(status.error);}
+    if(![400,600,800].every(w=>document.fonts.check(w+' 14px DFA4','수량 17')))throw Error('발주서 글꼴을 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+    await document.fonts.ready;
+    const host = document.createElement('div');
+    host.style.cssText = 'position:absolute;left:-16000px;top:0;width:720px;background:white';
+    try {
+      host.innerHTML = pages(markup);
+      document.body.append(host);
+      const result = [];
+      for (const page of host.children)
+        result.push(
+          await html2canvas(page, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            windowWidth: 1200
+          })
+        );
+      Object.assign(status, {
+        phase: 'ready',
+        pages: result.length,
+        width: 1440,
+        height: 2036,
+        at: new Date().toISOString()
+      });
+      return result;
+    } catch (e) {
+      status.phase = 'error';
+      status.error = e.message;
+      throw e;
+    } finally {
+      host.remove();
+    }
+  }
+  function current() {
+    if (!el('tileOrderApp')?.hidden && S.type === '타일') return el('tilePaper');
+    if (['도어', '도기'].includes(S.type)) return el('structuredPreview');
+    return el('sheet');
+  }
+  function sync() {
+    if (!popup || popup.closed) return;
+    if (!localStorage.getItem(LS_KEY)) {
+      popup.document.getElementById('a4-window-pages').textContent = '접속이 종료됐습니다.';
+      last = '';
+      return;
+    }
+    const node = current();
+    if (!node) return;
+    let markup = node.innerHTML;
+    // 옆 모니터 창에는 사이드바 축소율을 복사하지 않습니다.
+    const box = document.createElement('div');
+    box.innerHTML = markup;
+    box.querySelectorAll('[style]').forEach((x) => {
+      x.style.zoom = '';
+    });
+    markup = box.innerHTML;
+    if (markup === last) return;
+    last = markup;
+    const scroll = popup.scrollY;
+    try {
+      popup.document.getElementById('a4-window-pages').innerHTML = pages(markup);
+      popup.scrollTo(0, scroll);
+    } catch (e) {
+      popup.document.getElementById('a4-window-pages').textContent = e.message;
+    }
+  }
+  function open() {
+    if (popup && !popup.closed) {
+      last = '';
+      sync();
+      popup.focus();
+      return;
+    }
+    popup = window.open(
+      '',
+      'dasifill-a4-preview',
+      'popup,width=860,height=1040,resizable=yes,scrollbars=yes'
+    );
+    if (!popup) {
+      toast('새 창이 차단됐습니다. 브라우저에서 팝업을 허용한 뒤 다시 눌러 주세요.');
+      return;
+    }
+    // 본창에서 검증한 동일 글꼴을 새 창에도 등록합니다.
+    const styles = [...document.querySelectorAll('style')]
+      .map((x) => x.outerHTML)
+      .join('')
+      .replace(/@font-face\{font-family:DFA4;[^}]+\}/g, '');
+    popup.document.open();
+    popup.document.write(
+      '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>발주서 A4 미리보기</title>' +
+        '<base href="'+esc(document.baseURI)+'">'+styles +
+        '<style>body{margin:0;padding:20px;background:#eceff2;color:#222}#a4-window-pages{width:210mm;margin:auto}.sheet.a4-sheet{zoom:1.10236!important;margin:0 0 20px}.a4-window-hint{font:13px sans-serif;margin:0 auto 16px;max-width:794px}@media print{body{padding:0;background:white}.a4-window-hint{display:none}.sheet.a4-sheet{margin:0;break-after:page}@page{size:A4;margin:0}}</style></head><body><p class="a4-window-hint">A4 크기 · 입력하면 바로 바뀝니다. 이 창을 옆 모니터로 옮겨 두세요.</p><main id="a4-window-pages"></main></body></html>'
+    );
+    popup.document.close();
+    const target = popup;
+    Promise.all([400, 600, 800].map(w => document.fonts.load(w + ' 14px DFA4', '수량 17')))
+      .then(() => {
+        if (target.closed) return;
+        for (const font of document.fonts) {
+          if (font.family === 'DFA4') target.document.fonts.add(font);
+        }
+      })
+      .catch(() => {
+        if (!target.closed) target.document.querySelector('.a4-window-hint').textContent = '발주서 글꼴을 불러오지 못했습니다. 새로고침 후 다시 열어 주세요.';
+      });
+    last = '';
+    sync();
+  }
+  function download(images, name) {
+    let dialog;
+    if(images.length>1){
+      dialog=document.createElement('dialog');dialog.id='a4Downloads';
+      dialog.style.cssText='max-width:90vw;padding:24px;border:1px solid #bbb;border-radius:10px;background:white;color:#222';
+      const title=document.createElement('h3');title.textContent='발주서 '+images.length+'장 내려받기';dialog.append(title);
+      const help=document.createElement('p');help.textContent='각 장을 눌러 저장해 주세요.';dialog.append(help);
+    }
+    images.forEach((image,i)=>{
+      const a=document.createElement('a');a.download=name+(images.length>1?'_'+(i+1):'')+'.png';
+      a.href='data:image/png;base64,'+image;
+      if(dialog){a.textContent=(i+1)+'장 PNG 저장';a.style.cssText='display:block;padding:10px;color:#0b3a66;text-decoration:underline';dialog.append(a);}else a.click();
+    });
+    if(dialog){
+      const close=document.createElement('button');close.textContent='닫기';close.onclick=()=>dialog.close();dialog.append(close);
+      dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
+    }
+  }
+  function watch() {
+    new MutationObserver(() => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        sync();
+      });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    window.addEventListener('resize', () => {
+      const n = current();
+      if (n && n.id !== 'sheet')
+        n.querySelectorAll('.a4-sheet').forEach(
+          (x) => (x.style.zoom = String(Math.min(1, n.clientWidth / 720) || 1))
+        );
+    });
+    window.addEventListener('beforeunload', () => {
+      if (popup && !popup.closed) popup.close();
+    });
+  }
+  return {
+    pages,
+    prepare,
+    capture,
+    open,
+    sync,
+    download,
+    watch,
+    check: () => ({ ...status, popupOpen: !!popup && !popup.closed })
+  };
+})();
+
+function a4Frame(m, body) {
+  const h=esc,due=m.due||'',name=(m.site||'—').replace(/\s*PROJECT\s*$/,'');
+  const box=document.createElement('div');box.innerHTML=body;
+  box.querySelectorAll('.ntot').forEach(x=>x.remove());
+  const count=m.count??(box.querySelectorAll('.stbl tbody tr:not(.cat)').length||box.querySelectorAll('.v5-door-print').length);
+  const reference=!!box.querySelector('.approx');
+  return '<div class="nhead"><div class="me"><div class="nm">'+h(CO.name)+'</div><div class="biz">사업자 '+h(CO.biz)+' · 담당 '+h(m.owner||localStorage.getItem(LS_OWNER)||'')+' '+h(CO.tel)+' · '+h(CO.mail)+'</div></div><div class="ttl"><h2>발 주 서</h2><div class="no">'+h(m.no||'')+' · '+h(m.date||ymd(new Date())).replace(/-/g,'. ')+'</div></div></div>'
+    +'<div class="nto"><div class="who">'+h(m.vendor||'—')+' 귀중</div><div class="sub">아래와 같이 발주합니다.</div></div>'
+    +'<dl class="ngrid"><dt>현장</dt><dd>'+h(name)+'</dd><dt>납품요청</dt><dd class="big">'+(due?h(due.slice(5).replace('-','. '))+dow(due):'—')+'</dd><dt>배송</dt><dd>'+h(m.ship||'—')+'</dd><dt>양중</dt><dd>'+h(m.lift||'—')+'</dd><dt>현장주소</dt><dd class="addr">'+h(m.address||'—')+'</dd></dl>'
+    +'<div class="sfoot"><b>특기사항</b><p>'+(m.notes||[]).filter(Boolean).map(x=>h(x).replace(/\n/g,'<br>')).join(' · ')+'</p></div>'
+    +'<div class="a4-cont-head"><b>'+h(CO.name)+' · 발주서 계속</b><b>'+h(m.no||'')+' · <span class="a4-page-number"></span></b></div>'
+    +'<div class="a4-cont-meta"><span>'+h(m.vendor||'—')+' 귀중 · '+h(name)+'</span><span>납품요청 '+h(due)+dow(due)+' · 상세 조건은 1장 참조</span></div>'
+    +'<div class="pad a4-body">'+box.innerHTML+(reference?'<p class="a4-reference">≈ m² 는 박스당 1.44m² 기준 참고값입니다</p>':'')+'<div class="ntot"><span></span><b>품목 '+count+'건</b></div></div><div class="grow"></div><div class="nfoot"><span>'+h(CO.en||CO.name)+'</span><span>'+h(m.no||'')+' · <span class="a4-page-number"></span></span></div>';
+}
 function draw() {
   var d = S.detail, lines = 합치기(pickedOf(S.cur)), due = el('dueIn').value;
   el('cntTxt').textContent = picked().length + '건';
@@ -2721,48 +2884,11 @@ function draw() {
     return '· ' + (key ? '<span class="key">' + esc(t) + '</span>' : esc(t));
   });
 
-  var biz = [];
-  if (CO.biz) biz.push('사업자등록번호 ' + CO.biz);
-  biz.push('담당 ' + esc(localStorage.getItem(LS_OWNER) || '') + (CO.tel ? ' · ' + CO.tel : ''));
-  if (CO.mail) biz.push(CO.mail);
-
-  var 오늘 = ymd(new Date());
-
-  el('sheet').innerHTML =
-    '<div class="nhead">'
-    + '<div class="me"><div class="nm">' + CO.name + '</div>'
-    + (CO.en ? '<div class="en">' + CO.en + '</div>' : '')
-    + '<div class="biz">' + biz.join('<br>') + '</div></div>'
-    + '<div class="ttl"><h2>발 주 서</h2>'
-    + '<div class="no">' + esc(S.orderNo || '') + '</div>'
-    + '<div class="dt">' + 오늘.replace(/-/g, '. ') + '</div></div></div>'
-
-    + '<div class="nto"><div class="who">' + esc(venOf(S.cur) || '—')
-    + ' <span>귀중</span></div>'
-    + '<div class="sub">아래와 같이 발주합니다.</div></div>'
-
-    + '<dl class="ngrid">'
-    + '<div><dt>현　장</dt><dd>' + (d ? esc(d.name.replace(/\s*PROJECT\s*$/, '')) : '—') + '</dd></div>'
-    + '<div><dt>납품요청</dt><dd class="big">' + (due ? due.slice(5).replace('-', '. ') + dow(due) : '—') + '</dd></div>'
-    + '<div><dt>배　송</dt><dd>' + esc(shipOf(S.cur)) + '</dd></div>'
-    + '<div><dt>양　중</dt><dd>' + esc(liftOf(S.cur)) + '</dd></div>'
-    + '<div class="addr"><dt>현장주소</dt><dd>' + (d && d.address ? esc(d.address) : '—') + '</dd></div>'
-    + '</dl>'
-
-    + '<div class="sfoot"><b>📌 특기사항</b><p>' + (foot.length ? foot.join('<br>') : '—') + '</p></div>'
-
-    + '<div class="pad">'
-    + '<table class="stbl"><thead><tr><th class="no">NO</th><th>품　명</th>'
-    + (hasCut ? '<th class="c">재단</th>' : '')
-    + '<th class="c">단위</th><th class="r">수량</th></tr></thead>'
-    + '<tbody>' + rows + '</tbody></table>'
-    + '<div class="ntot"><span class="l">TOTAL</span>'
-    + '<span class="v">' + n + ' 품목 · ' + 총수량.toLocaleString('ko-KR') + ' EA</span></div>'
-    + '</div>'
-
-    + '<div class="grow"></div>'
-    + '<div class="nfoot"><span>' + (CO.en || CO.name) + '</span>'
-    + '<span>' + esc(S.orderNo || '') + '</span></div>';
+  el('sheet').innerHTML = a4Frame({count:n,no:S.orderNo, vendor:venOf(S.cur), site:d?.name, address:d?.address, due, ship:shipOf(S.cur), lift:liftOf(S.cur), notes:footLines()},
+    '<table class="stbl"><thead><tr><th class="no">NO</th><th>품　명</th>'+(hasCut?'<th class="c">재단</th>':'')+'<th class="c">단위</th><th class="r">수량</th></tr></thead><tbody>'+rows+'</tbody></table><div class="ntot"><span class="l">TOTAL</span><span class="v">'+n+' 품목 · '+총수량.toLocaleString('ko-KR')+' EA</span></div>');
+  el('sheet').classList.remove('sheet');
+  try { el('sheet').dataset.a4Error=''; el('sheet').innerHTML=A4Preview.pages('<section class="sheet a4-sheet">'+el('sheet').innerHTML+'</section>'); }
+  catch(e){el('sheet').dataset.a4Error=e.message;toast(e.message);}
 }
 
 // ═════ 엘리베이터 양중 점검 ═════
@@ -2813,37 +2939,10 @@ function elevParse(t) {
 //                                카 안 대각선에만 걸립니다.
 var LONG_GROUPS = { '각재':1, '몰딩':1, '철물·레일':1 };
 
-function liftMax() {
-  var n = elevNums();
-  if (!n.d) return null;                       // 깊이가 없으면 계산이 안 됩니다
-  var box = (n.w && n.h) ? Math.sqrt(n.w*n.w + n.d*n.d + n.h*n.h) : null;   // 카 대각선
-  var thru = n.dh ? Math.sqrt(n.dh*n.dh + n.d*n.d) : null;                  // 세워서 진입
-  if (!box && !thru) return null;
+function liftMax() { return window.DFCalc ? DFCalc.반입(Object.assign(elevNums(), {여유:S.safe}), pickedOf(S.cur)) : null; }
 
-  var panelRaw = Math.min.apply(null, [box, thru].filter(Boolean));
-  var longRaw  = box || thru;                  // 장척은 카 대각선이 기준입니다
-  var f = 1 - S.safe / 100;
-  return {
-    panelRaw: Math.floor(panelRaw), panel: Math.floor(panelRaw * f),
-    longRaw:  Math.floor(longRaw),  long:  Math.floor(longRaw * f),
-    // 문 폭은 판재의 긴 변이 아니라 「짧은 변」을 막습니다. 길이 재단으로는 못 풉니다.
-    doorW: n.dw || null,
-    bind: (thru && thru <= (box || Infinity)) ? '문으로 진입' : '카 대각선'
-  };
-}
-// 규격에서 짧은 변을 뽑습니다 — 문 폭에 걸리는 건 이쪽입니다
-function specWidth(spec) {
-  if (!spec) return null;
-  var s = String(spec).replace(/\s/g, '');
-  var mm = s.match(/\d{3,4}/g);
-  if (mm && mm.length >= 2) {
-    var two = mm.map(Number).filter(function (v) { return v >= 300; }).sort(function (a,b){ return a-b; });
-    if (two.length >= 2) return two[0];
-  }
-  var ja = s.match(/^(\d+)[×x*](\d+)/);        // 3×6, 4×8 — 앞이 폭입니다
-  if (ja) { var m = Math.min(+ja[1], +ja[2]); return JA[m] || m * 305; }
-  return null;
-}
+function specWidth(spec) { return window.DFCalc ? DFCalc.규격.짧은변mm(spec) : null; }
+
 function isLong(x) { return !!LONG_GROUPS[x.group]; }
 
 // 판재는 거래처가 잘라 보냅니다 — 재단비 항목도 따로 있습니다.
@@ -2882,20 +2981,8 @@ function 장척안들어감() {
 function toggleCutNote() { S.cutNote = el('cutNoteChk').checked; draw(); }
 
 // 규격에서 가장 긴 변을 뽑습니다. 확신이 안 서면 null 을 돌려 경고하지 않습니다.
-function specLen(spec) {
-  if (!spec) return null;
-  var s = String(spec).replace(/\s/g, '');
-  var mm = s.match(/\d{3,4}/g);                       // 2440×9×30 처럼 mm 로 적힌 것
-  if (mm) { var big = Math.max.apply(null, mm.map(Number)); if (big >= 300) return big; }
-  var ja = s.match(/^(\d+)[×x*](\d+)/);               // 3×6, 4×8 처럼 자로 적힌 것
-  if (ja) {
-    var m = Math.max(+ja[1], +ja[2]);
-    return JA[m] || m * 305;
-  }
-  var j2 = s.match(/(\d+)자/);                        // 「8자」
-  if (j2) return JA[+j2[1]] || (+j2[1]) * 305;
-  return null;
-}
+function specLen(spec) { return window.DFCalc ? DFCalc.규격.긴변mm(spec) : null; }
+
 function setSafe(v) { S.safe = v; elevCalc(); }
 
 function elevCalc() {
@@ -3425,8 +3512,7 @@ function textVersion() {
   t += CO.en + ' · 사업자 ' + CO.biz + '\n──────────────\n';
   t += '수신 : ' + (venOf(S.cur) || '—') + '\n';
   t += '현장 : ' + (d ? d.name.replace(/\s*PROJECT\s*$/, '') : '—') + '\n';
-  if (d && d.address) t += '주소 : ' + d.address + '\n';
-  t += '납품요청 : ' + (due || '미정') + dow(due) + '\n배송 : ' + shipOf(S.cur) + '\n──────────────\n';
+  t += '납품요청 : ' + (due || '미정') + dow(due) + '\n배송 : ' + shipOf(S.cur) + '\n양중 : '+liftOf(S.cur)+'\n현장주소 : '+(d?.address||'—')+'\n──────────────\n';
   var group = null, n = 0;
   lines.forEach(function (x) {
     if (x.group !== group) { group = x.group; t += '[' + (group || '기타') + ']\n'; }
@@ -3456,11 +3542,45 @@ function saveImage() {
     var a = document.createElement('a');
     var many = sheetsUsed().length > 1, vnm = (S.ven[S.cur] || '').trim();
     a.download = '발주서_' + (many ? (vnm || S.cur + '장') + '_' : '') + (S.detail ? S.detail.name.replace(/\s*PROJECT\s*$/, '') : '') + '_' + ymd(new Date()) + '.png';
-    a.href = c.toDataURL('image/png'); a.click(); toast('저장했습니다');
+    A4Preview.download((c.a4Pages||[c]).map(x=>x.toDataURL('image/png').split(',')[1]),a.download.replace(/\.png$/,'')); toast('저장했습니다');
   }).catch(function () { toast('이미지를 만들지 못했습니다'); });
 }
 
 // ═════ 제출 ═════
+var legacyImageJobs = [];
+async function retryLegacyImages() {
+  const job = legacyImageJobs[0];
+  if (!job || job.busy) return;
+  job.busy = true;
+  try {
+    for (; job.next < job.images.length; job.next++) {
+      const r = await api('saveOrderImage', {
+        orderPageId: job.pageId,
+        image: job.images[job.next]
+      });
+      if (!r?.ok) throw Error(r?.error || '응답을 확인하지 못했습니다');
+    }
+    legacyImageJobs.shift();
+    toast(job.no + ' 나머지 발주서 이미지도 저장했습니다');
+  } catch (e) {
+    toast(job.no + ' ' + (job.next + 1) + '장 이미지 저장 실패 — ' + e.message);
+  } finally {
+    job.busy = false;
+    paintLegacyImageRetry();
+  }
+}
+function paintLegacyImageRetry() {
+  let button = el('legacyImageRetry');
+  if (!button) {
+    button = document.createElement('button');
+    button.id = 'legacyImageRetry';
+    button.onclick = retryLegacyImages;
+    el('unifiedAside').append(button);
+  }
+  button.hidden = !legacyImageJobs.length;
+  if (legacyImageJobs.length)
+    button.textContent = legacyImageJobs[0].no + ' 남은 이미지 저장 재시도 · 이 창을 닫지 마세요';
+}
 function submit() {
   if (S.busy) return;
   var lines = 합치기(pickedOf(S.cur));
@@ -3471,7 +3591,9 @@ function submit() {
   S.busy = true;
   var b = el('submitBtn'); if (b) { b.classList.add('dis'); b.textContent = '등록 중…'; }
 
-  shot().catch(function () { return null; }).then(function (c) {
+  let outputPages=[];
+  shot().then(function (c) {
+    outputPages=(c.a4Pages||[c]).map(x=>x.toDataURL('image/png').split(',')[1]);
     var img = null;
     try { if (c) img = c.toDataURL('image/png').split(',')[1]; } catch (e) { img = null; }
     return api('submitOrder', {
@@ -3480,7 +3602,7 @@ function submit() {
       note: (noteOf(S.cur).trim() || el('noteIn').value.trim()),
       notes: footLines(), items: lines, image: img
     });
-  }).then(function (r) {
+  }).then(async function (r) {
     S.busy = false;
     if (!r || !r.ok) { bar(); return toast('등록에 실패했습니다 — ' + ((r && r.error) || '')); }
     el('resultNote').innerHTML = '✅ <b>' + esc(r.orderNo) + '</b> 등록됨 · ' + r.count + '품목'
@@ -3488,6 +3610,11 @@ function submit() {
       + (r.fileUrl ? ' · <a href="' + r.fileUrl + '" target="_blank" style="color:var(--accent)">드라이브 발주서</a>' : '')
       // 드라이브 저장이 조용히 실패하면 없어진 줄도 모릅니다
       + (r.fileError ? '<div class="warn">⚠ 드라이브에 발주서를 남기지 못했습니다 — ' + esc(r.fileError) + '</div>' : '');
+    if(outputPages.length>1){
+      const id=(r.pageUrl||'').match(/([0-9a-f]{32}|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})(?:[/?#]|$)/i)?.[1];
+      if(id){legacyImageJobs.push({pageId:id,no:r.orderNo,images:outputPages,next:r.fileError?0:1});await retryLegacyImages();}
+      else el('resultNote').innerHTML+='<div class="warn">추가 페이지를 저장할 발주 주소를 확인하지 못했습니다. 이미지를 내려받아 주세요.</div>';
+    }
     toast(r.orderNo + ' 등록했습니다');
     S.done[S.cur] = r.orderNo;
     S.orderNo = '';
@@ -3504,7 +3631,7 @@ function submit() {
       el('sheetSub').textContent = venOf(S.cur) || '발주처 미지정';
     }
     pickSite(); draw(); bar();
-  }).catch(function () { S.busy = false; bar(); toast('연결에 실패했습니다'); });
+  }).catch(function (e) { S.busy = false; bar(); toast('발주 처리를 마치지 못했습니다 — '+e.message); });
 }
 
 // ═════ v5 타일 주문 — 기존 목자재/설비 상태와 분리 ═════
@@ -3531,7 +3658,7 @@ function submit() {
   const uid = (prefix) =>
     prefix +
     '-' +
-    (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+    (crypto.randomUUID ? (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Array.from(crypto.getRandomValues(new Uint32Array(2))).join('')) : Date.now().toString(36) + Math.random().toString(36).slice(2));
   const blankTile = () => ({
     id: uid('t'),
     kind: 'tile',
@@ -3896,8 +4023,10 @@ function submit() {
         });
       const g = out.get(key);
       g.rows.push(i + 1);
-      if (positive(r.measured)) g.area += Number(r.measured);
-      else g.missing++;
+      const same = s.tiles.filter(x => x.grout && keyFor(x.grout) === key);
+      const sum = window.DFCalc?.줄눈합계(same)[0];
+      g.area = sum?.면적 || 0;
+      g.missing = sum?.면적빠짐 || 0;
     });
     return [...out.values()];
   }
@@ -3920,7 +4049,14 @@ function submit() {
       }
     });
   }
-  // 박스당 ㎡ — 대표 기준(10/6): 600×600 · 600×1200 = 1.44. 그 밖의 규격은 모름 → 박스 제안 안 함
+  function proposal(r, s) {
+    return positive(r.measured) &&
+      s.lossRate !== '' &&
+      Number.isFinite(Number(s.lossRate)) &&
+      Number(s.lossRate) >= 0
+      ? (window.DFCalc ? DFCalc.타일제안(r.measured, s.lossRate) : null)
+      : null;
+  }
   function boxM2(r) {
     const d = String(r.spec || '').replace(/\s/g, '').match(/^(\d{2,4})[×xX*](\d{2,4})/);
     if (!d) return null;
@@ -3932,16 +4068,8 @@ function submit() {
     const m = proposal(r, s), b = boxM2(r);
     return m !== null && b ? Math.ceil(Number((m / b).toFixed(6))) : null;
   }
-  function proposal(r, s) {
-    return positive(r.measured) &&
-      s.lossRate !== '' &&
-      Number.isFinite(Number(s.lossRate)) &&
-      Number(s.lossRate) >= 0
-      ? Number((Number(r.measured) * (1 + Number(s.lossRate) / 100)).toFixed(3))
-      : null;
-  }
   function field(path, value, placeholder, options, quantity = false) {
-    const cls = quantity ? ' class="to-quantity"' : '';
+    const cls = quantity ? ' class="to-quantity'+(Number(value)>0?' has-value':'')+'"' : '';
     if (options)
       return `<select data-field="${path}" aria-label="${html(placeholder)}"${cls}><option value="">선택</option>${options
         .map((o) => {
@@ -4025,6 +4153,7 @@ function submit() {
       ...clone(s.sourceData || {}),
       v: 1,
       type: '타일',
+      calc: window.계산입력_보관 ? 계산입력_보관() : null,
       lossRate: Number(s.lossRate),
       lines: [...tiles, ...grout, ...acc, ...tubs],
       header: {
@@ -4123,71 +4252,109 @@ function submit() {
       unload: S.detail?.unload || ''
     };
   }
-  function paper(s, data = build(s), ctx = s.savedContext || context()) {
-    const vendor = s.vendor === '그 외' ? s.otherVendor : s.vendor;
-    const rows = data.lines
-      .map(
-        (r) =>
-          `<section class="to-paper-row"><h3>${r.kind === 'tile' ? html(r.space) + ' · ' : r.kind === 'tub' && r.space ? html(r.space) + ' · ' : ''}${html(r.name || '—')}</h3><p>${html(r.spec || '')}${r.color ? ' · ' + html(r.color) : ''}</p><div class="to-amount"><small>${r.kind === 'tile' ? '실측 ' + (positive(r.measured) ? number(r.measured) + '㎡' : '미입력') : r.kind === 'acc' ? '부자재' : '욕조'}</small><strong>주문량 ${positive(r.qty) ? number(r.qty) : '—'} ${html(r.unit)}${r.kind === 'tile' && r.unit === '박스' && positive(r.qty) && boxM2(r) && Number.isInteger(Number(r.qty)) ? ' <small>(' + number(Number(r.qty) * boxM2(r)) + '㎡)</small>' : ''}</strong>${r.kind === 'tile' && r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? '<b class="to-warning">박스는 정수</b>' : ''}</div>${r.kind === 'tile' && r.grout?.name ? '<p>줄눈 ' + html(r.grout.name) + ' / ' + html(r.grout.color) + '</p>' : ''}${r.cut ? '<p>재단 ' + html(r.cut) + '</p>' : ''}${r.note ? '<p>' + html(r.note) + '</p>' : ''}</section>`
-      )
-      .join('');
-    return `<div class="to-paper-head"><small>${html(CO.en)}</small><h2>타일 발주요청서</h2><p>${html(s.orderNo || '발주번호 · 기록 후 정해집니다')}</p></div><div class="to-paper-meta"><b>${html(ctx.name || '현장 미선택')}</b><p>${html(ctx.address)}</p><p>받는 곳 ${html(vendor || '—')} · 납품 ${html(s.due || '—')}</p><p>${html(s.shipKind || '—')} · ${html(s.liftKind || '—')}</p></div>${rows || '<p class="to-empty">주문할 품목을 입력해 주세요.</p>'}${s.note ? '<div class="to-paper-note"><b>요청사항</b><p>' + html(s.note).replace(/\n/g, '<br>') + '</p></div>' : ''}${ctx.unload ? '<div class="to-paper-note"><b>현장 하차·양중 조건</b><p>' + html(ctx.unload) + '</p></div>' : ''}<div class="to-paper-foot">${html(CO.name)} · 사업자 ${html(CO.biz)}<br>담당 ${html(ctx.owner)} · ${html(CO.tel)}<br>${html(CO.mail)}</div>`;
-  }
-  function text(s = state()) {
-    const data = build(s),
-      ctx = s.savedContext || context();
-    return (
-      '[타일 발주요청서] ' +
-      CO.name +
-      '\n' +
-      (s.orderNo || '발주번호: 기록 후 정해집니다') +
-      '\n현장: ' +
-      ctx.name +
-      '\n주소: ' +
-      ctx.address +
-      '\n수신: ' +
-      (s.vendor === '그 외' ? s.otherVendor : s.vendor) +
-      '\n납품: ' +
-      s.due +
-      '\n배송: ' +
-      s.shipKind +
-      ' / ' +
-      s.liftKind +
-      '\n\n' +
-      data.lines
-        .map(
-          (r, i) =>
-            i +
-            1 +
-            '. ' +
-            (r.space ? r.space + ' / ' : '') +
-            r.name +
-            (r.spec ? ' / ' + r.spec : '') +
-            (r.color ? ' / ' + r.color : '') +
-            '\n' +
-            (r.kind === 'tile'
-              ? '   실측 ' + (positive(r.measured) ? number(r.measured) + '㎡' : '미입력') + '\n'
-              : '') +
-            '【주문량 ' +
-            (positive(r.qty) ? number(r.qty) : '—') +
-            ' ' +
-            r.unit +
-            '】' +
-            (r.grout?.name ? '\n줄눈 ' + r.grout.name + ' / ' + r.grout.color : '') +
-            (r.cut ? '\n재단 ' + r.cut : '') +
-            (r.note ? '\n' + r.note : '')
-        )
-        .join('\n\n') +
-      (s.note ? '\n\n요청사항: ' + s.note : '') +
-      (ctx.unload ? '\n\n현장 하차·양중: ' + ctx.unload : '') +
-      '\n\n담당 ' +
-      ctx.owner +
-      ' · ' +
-      CO.tel +
-      '\n' +
-      CO.mail
-    );
-  }
+function paper(s, data = build(s), ctx = s.savedContext || context()) {
+  let group = '',
+    rows = '';
+  data.lines.forEach((r, i) => {
+    const cat = { tile: '타일', acc: '부자재', tub: '욕조' }[r.kind];
+    if (cat !== group) {
+      group = cat;
+      rows += '<tr class="cat"><td colspan="5"><span>' + html(cat) + '</span></td></tr>';
+    }
+    const notes = [
+      r.grout?.name ? '줄눈 ' + r.grout.name + ' / ' + r.grout.color : '',
+      r.cut ? '재단 ' + r.cut : '',
+      r.note
+    ].filter(Boolean);
+    rows +=
+      '<tr><td class="no">' +
+      String(i + 1).padStart(2, '0') +
+      '</td><td class="space">' +
+      html(r.space || '') +
+      '</td><td class="nm">' +
+      html(r.name || '—') +
+      // 규격·색·비고는 품명 옆 회색 한 줄로(10/7 대표 견본). 품명에 규격이 이미 있으면 다시 안 씀
+      '<i>' +
+      html([r.spec && !String(r.name || '').includes(r.spec) ? r.spec : '', r.color].concat(notes).filter(Boolean).join(' · ')) +
+      '</i>' +
+      '</td><td class="un">' +
+      html(r.unit) +
+      '</td><td class="qt">' +
+      (r.kind === 'tile' &&
+      r.unit === '박스' &&
+      positive(r.qty) &&
+      boxM2(r) &&
+      Number.isInteger(Number(r.qty))
+        ? '<small class="approx">≈\u00a0' + number(r.qty * boxM2(r)) + 'm²</small>'
+        : '') + '<b>'+(positive(r.qty)?number(r.qty):'—')+'</b>' +
+      '</td></tr>';
+  });
+  return (
+    '<section class="sheet a4-sheet">' +
+    a4Frame(
+      {
+        no: s.orderNo,
+        vendor: s.vendor === '그 외' ? s.otherVendor : s.vendor,
+        site: ctx.name,
+        address: ctx.address,
+        owner: ctx.owner,
+        due: s.due,
+        ship: s.shipKind,
+        lift: s.liftKind,
+        notes: [s.note, ctx.unload ? '현장 하차·양중 조건: ' + ctx.unload : '']
+      },
+      '<table class="stbl"><colgroup><col style="width:34px"><col style="width:128px"><col><col style="width:40px"><col style="width:118px"></colgroup><thead><tr><th>NO</th><th>공간</th><th>품명 · 규격</th><th class="c">단위</th><th class="r">수량</th></tr></thead><tbody>' +
+        rows +
+        '</tbody></table><div class="ntot"><span class="l">TOTAL</span><span class="v">' +
+        data.lines.length +
+        ' 품목</span></div>'
+    ) +
+    '</section>'
+  );
+}
+function text(s = state()) {
+  const data = build(s),
+    ctx = s.savedContext || context();
+  return [
+    '[발 주 서] ' + CO.name,
+    s.orderNo || '발주번호: 기록 후 정해집니다',
+    (s.vendor === '그 외' ? s.otherVendor : s.vendor) + ' 귀중',
+    '현장: ' + ctx.name,
+    '납품요청: ' + s.due + dow(s.due),
+    '배송: ' + s.shipKind,
+    '양중: ' + s.liftKind,
+    '현장주소: ' + ctx.address,
+    '',
+    ...data.lines.map(
+      (r, i) =>
+        i +
+        1 +
+        '. [' +
+        { tile: '타일', acc: '부자재', tub: '욕조' }[r.kind] +
+        '] ' +
+        [r.space, r.name, r.spec, r.color].filter(Boolean).join(' / ') +
+        '\n【주문량 ' +
+        number(r.qty) +
+        ' ' +
+        r.unit +
+        '】' +
+        (r.kind === 'tile' && r.unit === '박스' && boxM2(r) && Number.isInteger(Number(r.qty))
+          ? ' ≈ ' + number(r.qty * boxM2(r)) + '㎡'
+          : '') +
+        (r.grout?.name ? '\n줄눈 ' + r.grout.name + ' / ' + r.grout.color : '') +
+        (r.cut ? '\n재단 ' + r.cut : '') +
+        (r.note ? '\n' + r.note : '')
+    ),
+    '',
+    data.lines.some(r=>r.kind==='tile'&&r.unit==='박스'&&boxM2(r))?'≈ ㎡ 는 박스당 1.44㎡ 기준 참고값입니다':'',
+    '특기사항: ' + (s.note || '—'),
+    ctx.unload ? '현장 하차·양중 조건: ' + ctx.unload : '',
+    '담당 ' + ctx.owner + ' · ' + CO.tel,
+    CO.mail
+  ]
+    .filter((x) => x !== undefined)
+    .join('\n');
+}
   function locked(s) {
     return (
       busy ||
@@ -4221,7 +4388,7 @@ function submit() {
           `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) === null ? '실측·로스율을 확인해 주세요' : r.unit === '박스' ? (proposalBox(r, s) !== null ? `제안 ${proposalBox(r, s)}박스 = ${number(proposalBox(r, s) * boxM2(r))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}% → ${number(proposal(r, s))}㎡ ÷ 박스당 ${boxM2(r)}㎡ 올림) · <button data-action="fill" data-index="${i}">채우기</button>` : `제안 ${number(proposal(r, s))}㎡ · <b class="to-warning">이 규격은 박스당 ㎡ 를 몰라 박스로 바꿀 수 없습니다</b> — 박스 수를 직접 넣거나 단위를 ㎡ 로 · <button data-action="fill" data-index="${i}">㎡ 로 채우기</button>`) : `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>`}${r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? ' · <b class="to-warning">박스는 정수로 넣어 주세요</b>' : ''}</td></tr>` : ''}`
       )
       .join('');
-    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 노란 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
+    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
       S.detail?.orders || []
     )
       .filter((o) => (o.type || o.name || '').includes('타일'))
@@ -4240,7 +4407,8 @@ function submit() {
         })
         .join('') ||
       '<p>공간 줄에서 제품·색을 고르면 면적 합계가 나타납니다. 소요량 제안은 하지 않습니다.</p>'
-    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside><h2>발주서 미리보기</h2>${renderSheetChoices()}<div id="tilePaper" class="to-paper">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose">점검 기록</button><button data-action="copy">텍스트 복사</button><button data-action="download">이미지 내려받기</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
+    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside><h2>발주서 미리보기</h2>${renderSheetChoices()}<button type="button" onclick="A4Preview.open()">발주서 새 창으로</button><div id="tilePaper" class="a4-preview">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose">점검 기록</button><button data-action="copy">텍스트 복사</button><button data-action="download">이미지 내려받기</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
+    A4Preview.prepare(el('tilePaper'));
     renderStatus();
   }
   function renderStatus() {
@@ -4319,7 +4487,7 @@ function submit() {
   }
   function refreshPreview() {
     const s = state();
-    if (el('tilePaper')) el('tilePaper').innerHTML = paper(s);
+    if (el('tilePaper')) { el('tilePaper').innerHTML = paper(s); A4Preview.prepare(el('tilePaper')); }
     persist();
     renderStatus();
   }
@@ -4344,12 +4512,15 @@ function submit() {
       if (next.tagName === 'INPUT' && pos !== null && next.type !== 'date') next.setSelectionRange(pos, pos);
     }
   }
-  // 한글은 「ㅎ → 허 → 헌」 조합이 이어져야 합니다. 치는 칸을 다시 그리면 자모가 흩어집니다(10/6 대표).
-  // 맥 한글 입력기는 한 글자가 끝나자마자 다음 글자 조합을 시작하므로, 「조합이 끝나면 다시 그리기」도 끊깁니다.
-  // 그래서 글자 칸은 치는 동안 값만 담고(미리보기만 고침) 화면은 다시 그리지 않습니다. 칸을 벗어날 때(change) 한 번 정리합니다.
-  const 글자칸 = (t, keys) => t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && t.type !== 'number' && t.type !== 'date'
-    && ['space', 'name', 'spec', 'memo', 'color', 'note', 'otherVendor'].includes(keys.at(-1)));
+  // Claude unified3: 한 글자 조합이 끝나도 다음 글자 조합이 이어집니다.
+  // 글자 칸은 입력 중 값을 보관하고 미리보기만 바꿉니다.
+  const 글자칸=(t,keys)=>t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&t.type!=='number'&&t.type!=='date'&&['space','name','spec','memo','color','note','otherVendor'].includes(keys.at(-1)));
+
+  root.addEventListener('compositionend', e => {
+    if(e.target?.dataset?.field)e.target.dispatchEvent(new Event('input',{bubbles:true}));
+  });
   root.addEventListener('input', (e) => {
+    if(e.isComposing)return;
     const s = state(),
       t = e.target;
     if (locked(s)) return;
@@ -4383,13 +4554,13 @@ function submit() {
     syncGrout(s);
     persist();
     if (s.attempted) validate(s);
-    if (글자칸(t, keys)) { refreshPreview(); return; }
+    if(글자칸(t,keys)){refreshPreview();return;}
     if (path.startsWith('tiles.') || path === 'lossRate' || path === 'vendor' || keys.at(-1) === 'materialId')
       preserveRender(t);
     else refreshPreview();
   });
   root.addEventListener('keydown', (e) => {
-    if (e.isComposing || e.keyCode === 229) return;   // 한글 조합 중 Enter 는 글자 확정용
+    if(e.isComposing||e.keyCode===229)return;
     if (e.key !== 'Enter' || !e.target.dataset.field?.startsWith('tiles.')) return;
     const k = e.target.dataset.field.split('.');
     k[1] = String(Number(k[1]) + (e.shiftKey ? -1 : 1));
@@ -4400,24 +4571,21 @@ function submit() {
     }
   });
   root.addEventListener('change', (e) => {
-    // 글자 칸을 벗어나면 그때 한 번 다시 그려 줄눈 합계·검사 표시를 맞춥니다 (다음 칸으로 포커스는 그대로)
-    if (e.target.dataset && e.target.dataset.field && 글자칸(e.target, e.target.dataset.field.split('.'))) {
-      // 포커스가 다음 칸으로 옮겨진 뒤에 다시 그리고, 그 칸으로 포커스를 돌려줍니다
-      setTimeout(() => {
-        const 지금 = document.activeElement, 칸 = 지금 && 지금.dataset ? 지금.dataset.field : '';
-        if (칸 && 글자칸(지금, 칸.split('.'))) return;   // 다른 글자 칸으로 옮겼으면 거기서 치는 중일 수 있어 그리지 않음
-        render();
-        const 찾음 = 칸 && [...root.querySelectorAll('[data-field]')].find((x) => x.dataset.field === 칸);
-        if (찾음) 찾음.focus();
-      }, 0);
-      return;
-    }
     if (e.target.id === 'tileSite') {
       el('siteSel').value = e.target.value;
       pickSite();
       render();
     }
     if (e.target.id === 'tilePast' && e.target.value) openOrder(e.target.value);
+    if(e.target.dataset?.field&&글자칸(e.target,e.target.dataset.field.split('.'))){
+      setTimeout(()=>{
+        const active=document.activeElement,path=active?.dataset?.field;
+        if(path&&글자칸(active,path.split('.')))return;
+        // 클릭을 앞둔 버튼까지 다시 만들면 첫 클릭을 삼킵니다.
+        if(active?.closest('button,[data-action]'))return;
+        if(!root.hidden){render();const next=path&&[...root.querySelectorAll('[data-field]')].find(x=>x.dataset.field===path);if(next)next.focus();}
+      },0);
+    }
   });
   root.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-action]');
@@ -4490,11 +4658,8 @@ function submit() {
           render();
           return;
         }
-        const image = await capture(s);
-        const link = document.createElement('a');
-        link.download = (s.orderNo || '타일_검토용_초안') + '.png';
-        link.href = 'data:image/png;base64,' + image;
-        link.click();
+        const images = await capture(s);
+        A4Preview.download(images, s.orderNo || '타일_검토용_초안');
       } catch (e) {
         s.message = '이미지를 만들지 못했습니다 — ' + e.message;
         renderStatus();
@@ -4649,26 +4814,7 @@ function submit() {
     dialog.showModal();
   }
   async function capture(s) {
-    if (typeof html2canvas !== 'function')
-      throw Error('이미지 도구를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.');
-    const host = document.createElement('div');
-    host.className = 'to-paper to-capture';
-    host.style.cssText =
-      'position:absolute;left:-12000px;top:0;width:820px;padding:32px;background:white;color:#222;';
-    host.innerHTML = paper(s, s.pending?.payload?.data || build(s), s.savedContext || context());
-    document.body.appendChild(host);
-    try {
-      if (document.fonts?.ready) await document.fonts.ready;
-      const canvas = await html2canvas(host, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        windowWidth: 1200
-      });
-      return canvas.toDataURL('image/png').split(',')[1];
-    } finally {
-      host.remove();
-    }
+    return (await A4Preview.capture(paper(s, s.pending?.payload?.data || build(s), s.savedContext || context()))).map(c=>c.toDataURL('image/png').split(',')[1]);
   }
   async function storeImage(s) {
     s.phase = 'imagePending';
@@ -4676,10 +4822,14 @@ function submit() {
     render();
     if (s._storageKey && s._storageKey !== scope())
       throw Error('접속 또는 현장이 바뀌었습니다. 원래 현장에서 이미지 저장을 재시도해 주세요.');
-    const image = await capture(s),
-      r = await request('saveOrderImage', { orderPageId: s.orderPageId, image });
-    if (!r?.ok) throw Error(r?.error || '이미지 저장 응답을 확인하지 못했습니다.');
-    s.imageUrl = r.fileUrl || '';
+    const signature=JSON.stringify([s.orderNo,build(s),s.note,s.due,s.shipKind,s.liftKind]);
+    if(s.imageSignature!==signature){s.imageSignature=signature;s.imagePageDone=0;}
+    const images = await capture(s);
+    for (let i=s.imagePageDone || 0;i<images.length;i++) {
+      const r=await request('saveOrderImage',{orderPageId:s.orderPageId,image:images[i]});
+      if(!r?.ok) throw Error((i+1)+'장 이미지 저장 실패 — '+(r?.error || '응답을 확인하지 못했습니다.'));
+      s.imageUrl=r.fileUrl || ''; s.imagePageDone=i+1; persist(s);
+    }
     s.phase = 'saved';
     s.message = '발주 기록과 이미지를 저장했습니다. 대표가 카톡으로 전달해 주세요.';
     persist(s);
@@ -4910,6 +5060,27 @@ function submit() {
     };
   }
   window.TileOrder = {
+    calculatorRows() { return clone(state().tiles); },
+    applyMeasured(index, measured, loss, method) {
+      const s=state();if(!['draft','edit'].includes(s.phase))throw Error('타일 발주가 잠겨 있습니다. 새 발주를 여세요');
+      const r=s.tiles[index];if(!r)throw Error('타일 줄을 먼저 만드세요');
+      if(!Number.isFinite(Number(measured))||Number(measured)<=0||!Number.isFinite(Number(loss))||Number(loss)<0)throw Error('실측은 0보다 크게, 로스는 0 이상으로 넣으세요');
+      const qty=DFCalc.타일제안(measured,loss);if(!(qty>0))throw Error('실측을 먼저 넣으세요');
+      const plan=DFCalc.담기계획({줄:[{itemId:r.id,qty}]},{[r.id]:r.unit==='㎡'?Number(r.qty)||0:0},method==='바꾸기'?{[r.id]:true}:{})[0];
+      r.measured=measured;r.qty=plan.뒤;r.unit='㎡';s.lossRate=loss;render();persist(s);
+    },
+    receiveCalculated(rows) {
+      const s = state();
+      if (!['draft','edit'].includes(s.phase)) throw Error('타일 발주가 잠겨 있습니다. 새 발주를 먼저 여세요');
+      rows.forEach(r => {
+        let line = s.accessories.find(x => x.calculationKey === r.key);
+        if (!line) { line = blankAcc(); line.calculationKey = r.key; s.accessories.push(line); }
+        Object.assign(line, {name:r.name, materialId:r.itemId || '', spec:r.spec || '', unit:r.unit, qty:r.qty});
+      });
+      render();
+      persist(s);
+    },
+    calculatedQty(key) { return Number(state().accessories.find(x=>x.calculationKey===key)?.qty)||0; },
     render,
     submit: submitTile,
     retry: submitTile,
@@ -4977,7 +5148,7 @@ function submit() {
 (function () {
   const root = document.createElement('section');
   root.id = 'unifiedOrder';
-  root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${APP_VER}</small></nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="발주서확대()">원래 크기로 보기</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
+  root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${APP_VER}</small></nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
   el('scr-input').append(root);
   function move(id, parent) {
     parent.append(el(id));
@@ -5045,7 +5216,7 @@ function submit() {
     const preview = el('unifiedPreview'),
       scale = largePreview ? 1 : Math.min(1, preview.clientWidth / 720);
     preview.style.overflowX=largePreview?'auto':'hidden';
-    el('unifiedZoom').textContent=largePreview?'폭에 맞추기':'원래 크기로 보기';
+    el('unifiedZoom').textContent='발주서 새 창으로';
     el('sheet').style.zoom = String(scale || 1);
   }
   window.paintOrderLoad = function () {
@@ -5110,15 +5281,9 @@ function submit() {
   };
   // 미리보기 축소율이 출력 이미지에 섞이지 않도록 같은 문서의 원래 크기를 캡처합니다.
   shot = async function () {
-    const copy = el('sheet').cloneNode(true);
-    copy.removeAttribute('id');
-    copy.style.cssText = 'position:absolute;left:-12000px;top:0;zoom:1;width:720px;';
-    document.body.append(copy);
-    try {
-      return await html2canvas(copy, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
-    } finally {
-      copy.remove();
-    }
+    const canvases=await A4Preview.capture(el('sheet').innerHTML);
+    canvases[0].a4Pages=canvases;
+    return canvases[0];
   };
   el('vendorSel').onchange = function () {
     el('vendorFreeRow').classList.toggle('hide', this.value !== '__free');
@@ -5148,6 +5313,2057 @@ function submit() {
   ['calc', 'exp', 'tile'].forEach((p) => cardOpen(p, false));
   render();
 })();
+
+// ═════ v5 전체 — 계산은 Claude의 DFCalc만, 창과 주문표 연결은 여기 ═════
+function v5Number(id) {
+  return Number(el(id).value);
+}
+function v5Wood() {
+  return window.DFCalc
+    ? DFCalc.목공(
+        {
+          loss: S.loss,
+          상자재: S.studMat,
+          폼당: v5Number('x_foamyield'),
+          walls: S.walls,
+          ceil: S.ceil,
+          ins: S.ins,
+          mold: S.mold
+        },
+        S.items
+      )
+    : { 줄: [], 경고: ['계산 모듈을 불러오지 못했습니다. 새로고침해 주세요'], 단면: [] };
+}
+function v5Extension() {
+  return window.DFCalc
+    ? DFCalc.확장부(
+        {
+          구간: S.exp.map((x) => ({ ...x, name: x.n })),
+          기준: {
+            모르타르최소: v5Number('x_mortar'),
+            수평: v5Number('x_level'),
+            편차: v5Number('x_dev'),
+            폼여유: v5Number('x_foam'),
+            수평포당: v5Number('x_yield'),
+            레미포당: v5Number('x_myield'),
+            폼당: v5Number('x_foamyield'),
+            로스: v5Number('x_loss')
+          }
+        },
+        S.items
+      )
+    : v5Wood();
+}
+function v5Bath() {
+  return window.DFCalc
+    ? DFCalc.욕실바닥(
+        {
+          구간: S.tile.map((x) => ({ ...x, name: x.n, 방수: x.k !== 'tile' })),
+          기준: {
+            액방: v5Number('t_liq'),
+            시멘계수: v5Number('t_cem'),
+            도막: v5Number('t_mem'),
+            타일: v5Number('t_tile'),
+            레미포당: v5Number('t_myield')
+          }
+        },
+        S.items
+      )
+    : v5Wood();
+}
+(function () {
+  const safe = (x) =>
+    String(x ?? '').replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+    );
+  const win = document.createElement('section');
+  win.id = 'calcFloat';
+  win.hidden = true;
+  win.setAttribute('aria-label', '떠 있는 계산기');
+  win.innerHTML =
+    '<header><b>계산기 · 주문표와 함께 사용</b><button id="calcMin">최소화</button></header><div class="calc-layout"><nav id="calcNav"></nav><div class="calc-input" id="calcInputs"></div><div class="calc-results" id="calcResults"></div></div>';
+  document.body.append(win);
+  const pill = document.createElement('button');
+  pill.id = 'calcPill';
+  pill.textContent = '계산기 열기';
+  pill.onclick = () => open();
+  document.body.append(pill);
+  const modes = [
+    ['목공', '벽·천장 목공', 'calcCard'],
+    ['확장부', '확장부 바닥', 'expCard'],
+    ['욕실바닥', '욕실 바닥 방수', 'tileCard'],
+    ['타일', '타일 물량', 'calcTileInput'],
+    ['반입', '반입 점검', 'calcLiftInput']
+  ];
+  const extra = document.createElement('div');
+  extra.id = 'calcTileInput';
+  extra.innerHTML =
+    '<h3>타일 물량</h3><label>실측 ㎡<input id="calcMeasured" type="number" min="0" step="any"></label><label>로스 %<input id="calcLoss" type="number" min="0" value="20"></label><label>담을 타일 줄<select id="calcTileRow"></select></label><label>담는 방법<select id="calcTileMethod"><option>더하기</option><option>바꾸기</option></select></label><p>주문량은 ㎡로 제안합니다. 제품·공간은 타일 주문표에서 확인하세요.</p>';
+  el('calcInputs').append(extra);
+  const liftShortcut = document.createElement('button');
+  liftShortcut.textContent = '반입 점검 열기';
+  liftShortcut.onclick = () => open('반입');
+  el('siteInfo').after(liftShortcut);
+  const lift = document.createElement('div');
+  lift.id = 'calcLiftInput';
+  lift.innerHTML = '<h3>엘리베이터 반입</h3>';
+  el('calcInputs').append(lift);
+  // 현장 정보의 반입 입력을 이동합니다. 현장 정보와 저장 버튼은 주문표에 유지합니다.
+
+  const liftControls = el('siteEdit');
+  if (liftControls) lift.append(liftControls);
+  lift.append(el('liftCard'));
+  modes.slice(0, 3).forEach((m) => el('calcInputs').append(el(m[2])));
+  const foam = document.createElement('label');
+  foam.className = 'crow';
+  foam.innerHTML =
+    '폼본드 1개당 ㎡ <input id="woodFoamYield" type="number" min="0.1" step="any" aria-label="목공 폼본드 1개당 면적">';
+  el('calcBody').prepend(foam);
+  el('woodFoamYield').oninput = () => {
+    el('x_foamyield').value = el('woodFoamYield').value;
+  };
+  const warning = document.createElement('div');
+  warning.id = 'v5LiftWarnings';
+  warning.className = 'v5-error';
+  warning.hidden = true;
+  el('unifiedItems').before(warning);
+
+  let mode = localStorage.getItem('dsf-calc-mode') || '목공',
+    result = { 줄: [], 경고: [] },
+    choices = {},
+    previous = {},
+    siteId = '',
+    visible = false;
+  try {
+    const pos = JSON.parse(localStorage.getItem('dsf-calc-window') || 'null');
+    if (pos) {
+      win.style.left = Math.max(0, Math.min(pos.x, innerWidth - 300)) + 'px';
+      win.style.top = Math.max(0, Math.min(pos.y, innerHeight - 150)) + 'px';
+      win.style.width = Math.min(pos.w, innerWidth - 20) + 'px';
+      win.style.height = Math.min(pos.h, innerHeight - 30) + 'px';
+    }
+  } catch {}
+  function remember() {
+    const r = win.getBoundingClientRect();
+    if (innerWidth > 700)
+      localStorage.setItem('dsf-calc-window', JSON.stringify({ x: r.x, y: r.y, w: r.width, h: r.height }));
+  }
+  win.querySelector('header').onpointerdown = (e) => {
+    if (e.target.closest('button') || innerWidth < 701) return;
+    const r = win.getBoundingClientRect(),
+      x = e.clientX - r.x,
+      y = e.clientY - r.y;
+    win.querySelector('header').setPointerCapture(e.pointerId);
+    win.querySelector('header').onpointermove = (p) => {
+      win.style.left = Math.max(0, Math.min(innerWidth - 180, p.clientX - x)) + 'px';
+      win.style.top = Math.max(0, Math.min(innerHeight - 60, p.clientY - y)) + 'px';
+    };
+    win.querySelector('header').onpointerup = () => {
+      win.querySelector('header').onpointermove = null;
+      remember();
+    };
+  };
+  new ResizeObserver(() => {
+    if (visible) remember();
+  }).observe(win);
+  el('calcMin').onclick = () => {
+    visible = false;
+    win.hidden = true;
+    pill.hidden = false;
+    pill.textContent = '계산기 · ' + (result.줄?.length || 0) + '품목';
+  };
+  function open(next) {
+    if (!localStorage.getItem(LS_KEY)) return;
+    if (next) mode = next;
+    else if (!localStorage.getItem('dsf-calc-mode'))
+      mode = S.type === '타일' ? '타일' : S.type === '설비·방수' ? '확장부' : '목공';
+    visible = true;
+    win.hidden = false;
+    pill.hidden = true;
+    paint();
+  }
+  function rowKey(r) {
+    return mode + '|' + r.name + '|' + (r.film || '');
+  }
+  function selected(r) {
+    const k = rowKey(r);
+    return (
+      choices[k] ||
+      (choices[k] = {
+        type: r.type || '목자재',
+        method: previous[k] ? '바꾸기' : '더하기',
+        include: true,
+        unit: r.unit || ''
+      })
+    );
+  }
+  function current(r, c) {
+    const key = rowKey(r);
+    if (c.type === '타일') return TileOrder.calculatedQty(key);
+    const ex = S.extra.find((x) => x.calculationKey === key && x.type === c.type && !S.done[sheetOf(x)]);
+    return ex
+      ? Number(ex.qty) || 0
+      : r.type === c.type && !r.film
+        ? S.done[sheetOf(S.items.find((x) => x.id === r.itemId) || {})]
+          ? 0
+          : Number(S.qty[r.itemId]) || 0
+        : 0;
+  }
+  function plan(r, c) {
+    const id = rowKey(r),
+      line = { ...r, itemId: id };
+    return DFCalc.담기계획(
+      { 줄: [line] },
+      { [id]: current(r, c) },
+      c.method === '바꾸기' ? { [id]: true } : {}
+    )[0];
+  }
+  function compute() {
+    if (!window.DFCalc) return v5Wood();
+    const pane = el(modes.find((x) => x[0] === mode)?.[2] || 'calcCard');
+    if ([...pane.querySelectorAll('input[type=number]')].some((x) => Number(x.value) < 0))
+      return { 줄: [], 경고: ['음수로 입력한 칸을 0 이상으로 고쳐 주세요'] };
+    if (mode === '목공') return v5Wood();
+    if (mode === '확장부') return v5Extension();
+    if (mode === '욕실바닥') return v5Bath();
+    if (mode === '타일') {
+      const a = v5Number('calcMeasured'),
+        loss = v5Number('calcLoss');
+      return {
+        줄: [],
+        경고: a < 0 || loss < 0 ? ['실측과 로스는 0 이상으로 넣으세요'] : [],
+        proposal: DFCalc.타일제안(a, loss)
+      };
+    }
+    const r = DFCalc.반입({ ...elevNums(), 여유: S.safe }, picked());
+    return { 줄: [], 경고: [], lift: r };
+  }
+  function paintResults() {
+    result = compute();
+    el('calcResults').innerHTML =
+      '<h3>산출 결과</h3>' +
+      (result.단면 || []).map((x) => '<small>' + safe(x.이름) + ' · ' + safe(x.글) + '</small>').join('') +
+      (result.경고 || []).map((x) => '<p class="v5-error">' + safe(x) + '</p>').join('') +
+      (mode === '타일'
+        ? '<p><b>' +
+          safe(result.proposal ?? '—') +
+          '㎡</b> 제안</p>' +
+          (window.DFCalc?.줄눈합계(TileOrder.calculatorRows()) || [])
+            .map(
+              (g) =>
+                '<p>' +
+                safe(g.name) +
+                ' · ' +
+                safe(g.color) +
+                ' · ' +
+                g.면적 +
+                '㎡' +
+                (g.면적빠짐 ? ' · 실측 없는 줄 ' + g.면적빠짐 : '') +
+                '</p>'
+            )
+            .join('') +
+          '<button onclick="계산타일담기()">타일 주문표에 담기</button>'
+        : '') +
+      (mode === '반입'
+        ? result.lift
+          ? '<p>판재 ' +
+            result.lift.panel +
+            'mm · 장척 ' +
+            result.lift.long +
+            'mm</p>' +
+            [...result.lift.판재초과, ...result.lift.장척초과, ...result.lift.폭초과]
+              .map((x) => '<p class="v5-error">' + safe(x.name) + ' · 반입 치수 초과</p>')
+              .join('')
+          : '<p>엘리베이터 치수를 먼저 넣으세요.</p>'
+        : '') +
+      (result.줄 || [])
+        .map((r, i) => {
+          const c = selected(r),
+            p = plan(r, c),
+            rg = S.ranges[r.name];
+          return (
+            '<article><label><input type="checkbox" data-result="' +
+            i +
+            '" data-choice="include" ' +
+            (c.include ? 'checked' : '') +
+            '> 담기</label> <b>' +
+            safe(r.name) +
+            '</b> <span class="qty">' +
+            r.qty +
+            ' ' +
+            safe(r.unit) +
+            '</span>' +
+            (r.film ? '<small>필름 ' + safe(r.film) + '</small>' : '') +
+            '<small>' +
+            safe([S.items.find((x) => x.id === r.itemId)?.spec, r.근거].filter(Boolean).join(' · ')) +
+            '</small>' +
+            (rg
+              ? '<small' +
+                (DFCalc.범위밖(r.qty, rg) ? ' class="v5-error"' : '') +
+                '>지난 현장 ' +
+                rg.min +
+                '–' +
+                rg.max +
+                (DFCalc.범위밖(r.qty, rg) ? ' · 범위 밖' : '') +
+                '</small>'
+              : '') +
+            '<label>담을 탭 <select data-result="' +
+            i +
+            '" data-choice="type">' +
+            ['목자재', '설비·방수', '타일', '조명·스위치']
+              .map((t) => '<option' + (c.type === t ? ' selected' : '') + '>' + safe(t) + '</option>')
+              .join('') +
+            '</select></label> <select aria-label="더하기 또는 바꾸기" data-result="' +
+            i +
+            '" data-choice="method">' +
+            ['더하기', '바꾸기']
+              .map((t) => '<option' + (c.method === t ? ' selected' : '') + '>' + t + '</option>')
+              .join('') +
+            '</select><small>지금 ' +
+            p.지금 +
+            ' → 담은 뒤 ' +
+            p.뒤 +
+            ' ' +
+            safe(r.unit) +
+            '</small>' +
+            (!r.itemId
+              ? '<small class="v5-error">마스터에 없음 · 임시 품목으로 담습니다.</small><label>단위<input data-result="' +
+                i +
+                '" data-choice="unit" value="' +
+                safe(c.unit) +
+                '"></label>'
+              : '') +
+            '</article>'
+          );
+        })
+        .join('') +
+      ((result.줄 || []).length ? '<button id="calcApply">주문표에 담기</button>' : '');
+    if (el('calcApply')) el('calcApply').onclick = apply;
+  }
+  function paint() {
+    el('woodFoamYield').value = el('x_foamyield').value;
+    if (mode === '반입') el('siteEdit').classList.remove('hide');
+    if (mode === '타일') {
+      const selected = el('calcTileRow').value;
+      el('calcTileRow').innerHTML = TileOrder.calculatorRows()
+        .map(
+          (r, i) =>
+            '<option value="' +
+            i +
+            '">' +
+            safe(r.space || '공간 미입력') +
+            ' · ' +
+            safe(r.name || '제품 미입력') +
+            '</option>'
+        )
+        .join('');
+      if (selected) el('calcTileRow').value = selected;
+    }
+    el('calcNav').innerHTML = modes
+      .map(
+        (m) =>
+          '<button data-mode="' + m[0] + '" class="' + (mode === m[0] ? 'on' : '') + '">' + m[1] + '</button>'
+      )
+      .join('');
+    modes.forEach((m) => {
+      el(m[2]).style.display = m[0] === mode ? 'block' : 'none';
+      if (m[0] === mode && ['calcCard', 'expCard', 'tileCard'].includes(m[2]))
+        cardOpen(m[2].replace('Card', ''), true);
+    });
+    paintResults();
+  }
+  function apply() {
+    if (!S.site || !S.detail) return toast('현장을 먼저 고르세요');
+    if (!window.DFCalc) return toast('계산 모듈을 불러오지 못했습니다');
+    if (S.busy) return toast('발주 기록 중에는 계산 결과를 담을 수 없습니다');
+    result = compute();
+    result.줄 = result.줄
+      .filter((r) => selected(r).include)
+      .map((r) => ({ ...r, unit: selected(r).unit || r.unit }));
+    if (result.줄.some((r) => !r.unit))
+      return toast('단위를 모르는 품목이 있습니다. 마스터의 단위를 먼저 확인해 주세요');
+    const tileRows = [];
+    const updates = result.줄.map((r) => {
+      const c = selected(r);
+      return { r, c, qty: plan(r, c).뒤, key: rowKey(r) };
+    });
+    updates
+      .filter((x) => x.c.type === '타일')
+      .forEach((x) =>
+        tileRows.push({
+          ...x.r,
+          qty: x.qty,
+          key: x.key,
+          spec: S.items.find((i) => i.id === x.r.itemId)?.spec || ''
+        })
+      );
+    try {
+      if (tileRows.length) {
+        TileOrder.receiveCalculated(tileRows);
+        tileRows.forEach((r) => {
+          previous[r.key] = r.qty;
+          choices[r.key].method = '바꾸기';
+        });
+      }
+    } catch (e) {
+      return toast(e.message);
+    }
+    updates
+      .filter((x) => x.c.type !== '타일')
+      .forEach(({ r, c, qty, key }) => {
+        let item;
+        if (
+          r.itemId &&
+          r.type === c.type &&
+          !r.film &&
+          !S.done[sheetOf(S.items.find((x) => x.id === r.itemId))]
+        ) {
+          S.qty[r.itemId] = qty;
+          S.calcQty[r.itemId] = r.qty;
+          item = S.items.find((x) => x.id === r.itemId);
+        } else {
+          item = S.extra.find((x) => x.calculationKey === key && x.type === c.type && !S.done[sheetOf(x)]);
+          if (!item) {
+            item = {
+              id:
+                'calc-' +
+                (crypto.randomUUID
+                  ? crypto.randomUUID()
+                  : Date.now().toString(36) +
+                    Array.from(crypto.getRandomValues(new Uint32Array(2))).join('')),
+              name: r.name,
+              spec: S.items.find((x) => x.id === r.itemId)?.spec || '',
+              unit: r.unit,
+              type: c.type,
+              group: '계산 결과',
+              calculationKey: key
+            };
+            S.extra.push(item);
+          }
+          Object.assign(item, { qty, film: r.film || '', calc: r.qty });
+        }
+        let sheet = sheetsUsed().find((n) => typeOf(n) === c.type && !S.done[n]);
+        if (!sheet) {
+          sheet = Math.max(...sheetsUsed()) + 1;
+        }
+        S.typeBy[sheet] = c.type;
+        S.sheetNo[keyOf(item)] = sheet;
+        if (!S.ven[sheet]) S.ven[sheet] = S.items.find((x) => x.id === r.itemId)?.vendor || '';
+        previous[key] = r.qty;
+        choices[key].method = '바꾸기';
+      });
+    renderItems();
+    draw();
+    bar();
+    side();
+    paintResults();
+    saveInputs();
+    toast(updates.length + '품목을 주문표에 담았습니다');
+  }
+  el('calcNav').onclick = (e) => {
+    const b = e.target.closest('[data-mode]');
+    if (b) {
+      mode = b.dataset.mode;
+      localStorage.setItem('dsf-calc-mode', mode);
+      paint();
+    }
+  };
+  el('calcResults').onchange = (e) => {
+    if (e.target.dataset.result !== undefined) {
+      const r = result.줄[Number(e.target.dataset.result)];
+      selected(r)[e.target.dataset.choice] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      paintResults();
+    }
+  };
+  el('calcInputs').addEventListener('input', () => {
+    if (visible) paintResults();
+  });
+  el('calcInputs').addEventListener('change', (e) => {
+    // 숫자 칸의 blur/change 때 결과 버튼을 다시 만들면 첫 클릭이 사라집니다.
+    if (visible && e.target.tagName === 'SELECT') paintResults();
+  });
+  el('calcInputs').addEventListener('click', () => {
+    if (visible) paintResults();
+  });
+  // 벽 높이와 몰딩 필름은 별개 입력이며 결과에도 보존합니다.
+  const walls = renderWalls;
+  renderWalls = function () {
+    walls();
+    [...el('wallRows').children]
+      .filter((x) => x.querySelector('[oninput^="setWall"]'))
+      .forEach((row, i) => {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.step = '0.1';
+        input.value = S.walls[i].h || 2.4;
+        input.setAttribute('aria-label', '벽 ' + (i + 1) + ' 높이 m');
+        input.title = '벽 높이 m';
+        input.placeholder = '높이 m';
+        input.oninput = () => {
+          S.walls[i].h = input.value;
+          calcPreview();
+          paintResults();
+        };
+        const name = document.createElement('input');
+        name.type = 'text';
+        name.placeholder = '벽 이름';
+        name.value = S.walls[i].name || '';
+        name.setAttribute('aria-label', '벽 ' + (i + 1) + ' 이름');
+        name.oninput = () => {
+          S.walls[i].name = name.value;
+          paintResults();
+        };
+        row.prepend(name, input);
+      });
+  };
+  const molds = renderMold;
+  renderMold = function () {
+    molds();
+    [...el('moldRows').children].forEach((row, i) => {
+      const input = document.createElement('input');
+      input.placeholder = '필름';
+      input.value = S.mold[i].film || '';
+      input.oninput = () => {
+        S.mold[i].film = input.value;
+        paintResults();
+      };
+      row.append(input);
+    });
+  };
+  applyCalc = () => open('목공');
+  applyExp = () => open('확장부');
+  applyTile = () => open('욕실바닥');
+  const inputDefaults = JSON.parse(
+    JSON.stringify({
+      walls: S.walls,
+      ceil: S.ceil,
+      ins: S.ins,
+      mold: S.mold,
+      exp: S.exp,
+      tile: S.tile,
+      loss: S.loss,
+      studMat: S.studMat
+    })
+  );
+  const standardIds = [
+    'x_mortar',
+    'x_level',
+    'x_dev',
+    'x_foam',
+    'x_yield',
+    'x_myield',
+    'x_foamyield',
+    'x_loss',
+    't_liq',
+    't_cem',
+    't_mem',
+    't_tile',
+    't_myield',
+    'calcMeasured',
+    'calcLoss'
+  ];
+  const standardDefaults = Object.fromEntries(standardIds.map((id) => [id, el(id).value]));
+  let inputSite = '',
+    restoring = false;
+  function inputKey(id) {
+    let hash = 2166136261;
+    for (const c of localStorage.getItem(LS_KEY) || '') hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
+    return 'dsf-calc-input-' + (hash >>> 0) + '-' + id;
+  }
+  function snapshot() {
+    return {
+      values: Object.fromEntries(Object.keys(inputDefaults).map((k) => [k, S[k]])),
+      standards: Object.fromEntries(standardIds.map((id) => [id, el(id).value])),
+      previous,
+      choices
+    };
+  }
+  function saveInputs() {
+    if (inputSite && !restoring) {
+      try {
+        localStorage.setItem(inputKey(inputSite), JSON.stringify(snapshot()));
+      } catch {
+        toast('계산 입력을 보관하지 못했습니다. 이 창을 닫지 마세요');
+      }
+    }
+  }
+  function restoreInputs() {
+    const next = S.site?.id || '';
+    if (next === inputSite) return;
+    saveInputs();
+    inputSite = next;
+    let saved;
+    try {
+      saved = JSON.parse(localStorage.getItem(inputKey(next)) || 'null');
+    } catch {}
+    restoring = true;
+    Object.assign(S, JSON.parse(JSON.stringify(saved?.values || inputDefaults)));
+    Object.entries(saved?.standards || standardDefaults).forEach(([id, value]) => {
+      if (el(id)) el(id).value = value;
+    });
+    previous = saved?.previous || {};
+    choices = saved?.choices || {};
+    기본자재채우기();
+    renderWalls();
+    renderCeil();
+    renderIns();
+    renderMold();
+    renderStud();
+    renderLoss();
+    renderExp();
+    renderTile();
+    restoring = false;
+  }
+  ['input', 'change', 'click'].forEach((name) =>
+    el('calcInputs').addEventListener(name, () => {
+      saveInputs();
+    })
+  );
+  el('calcResults').addEventListener('change', saveInputs);
+  window.addEventListener('beforeunload', saveInputs);
+  window.계산입력_보관 = () => JSON.parse(JSON.stringify(snapshot()));
+  window.계산입력_복원 = (data) => {
+    if (!S.site || !data?.values) return;
+    saveInputs();
+    localStorage.setItem(inputKey(S.site.id), JSON.stringify(data));
+    inputSite = '';
+    restoreInputs();
+    open();
+  };
+
+  const change = setType;
+  setType = function (t) {
+    change(t);
+    if (visible) paint();
+  };
+  const oldDraw = draw;
+  draw = function () {
+    oldDraw();
+    win.hidden = !visible || !localStorage.getItem(LS_KEY) || el('scr-input').classList.contains('hide');
+    pill.hidden = visible || !localStorage.getItem(LS_KEY) || el('scr-input').classList.contains('hide');
+    if (siteId !== (S.site?.id || '')) {
+      siteId = S.site?.id || '';
+      restoreInputs();
+    }
+    if (visible) paint();
+    const liftState = window.DFCalc?.반입({ ...elevNums(), 여유: S.safe }, pickedOf(S.cur));
+    const liftProblems = liftState ? [...liftState.판재초과, ...liftState.장척초과, ...liftState.폭초과] : [];
+    warning.hidden = !['목자재', '설비·방수'].includes(S.type) || !liftProblems.length;
+    warning.textContent = liftProblems.length
+      ? '반입 치수 확인 — ' +
+        [...new Set(liftProblems.map((x) => x.name))].join(' · ') +
+        ' / 계산기에서 반입 점검을 여세요'
+      : '';
+    document
+      .querySelectorAll('.to-quantity,.v5-qty')
+      .forEach((x) => x.classList.toggle('has-value', Number(x.value) > 0));
+  };
+  window.계산타일담기 = () => {
+    try {
+      TileOrder.applyMeasured(
+        Number(el('calcTileRow').value),
+        v5Number('calcMeasured'),
+        v5Number('calcLoss'),
+        el('calcTileMethod').value
+      );
+      toast('타일 주문량을 ㎡로 담았습니다');
+    } catch (e) {
+      toast(e.message);
+    }
+  };
+  const leaveForRecords = goSettle;
+  goSettle = function () {
+    saveInputs();
+    visible = false;
+    win.hidden = true;
+    pill.hidden = true;
+    return leaveForRecords();
+  };
+  const leaveAccount = logout;
+  logout = function () {
+    saveInputs();
+    visible = false;
+    win.hidden = true;
+    pill.hidden = true;
+    inputSite = '';
+    siteId = '';
+    previous = {};
+    choices = {};
+    return leaveAccount();
+  };
+  window.계산기열기 = open;
+  window.계산기최소화 = () => el('calcMin').click();
+  window.계산기_점검 = () => ({ mode, visible, module: !!window.DFCalc, result, choices });
+})();
+// ═════ 도기·도어: 같은 주문 화면, 장별 초안과 서버 원본 보존 ═════
+(function () {
+  const h = (x) =>
+    String(x ?? '').replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+    );
+  const clone = (x) => JSON.parse(JSON.stringify(x)),
+    uid = () =>
+      crypto.randomUUID
+        ? crypto.randomUUID()
+        : Date.now().toString(36) + Array.from(crypto.getRandomValues(new Uint32Array(2))).join('');
+  const groups = [
+    '양변기',
+    '비데',
+    '세면대',
+    '세면수전',
+    '샤워수전',
+    '슬라이드바',
+    '수건걸이',
+    '옷걸이',
+    '휴지걸이',
+    '욕실장',
+    '기타'
+  ];
+  const handles = [
+    { id: 'YDHS-034S', name: '영림 YDHS-034S', note: '손잡이 타공 2번 체크하세요!' },
+    { id: 'YDHS-035S', name: '영림 YDHS-035S', note: '타공 특이사항 미등록' },
+    { id: 'LU-491', name: '루체 LU-491', note: '타공 특이사항 미등록' }
+  ];
+  const designs = ['9mm문선', '무문선', '스텝도어', '히든도어', '타공도어'];
+  const books = new Map(),
+    trace = [];
+  let rendering = false,
+    activeKey = '',
+    current = null;
+  const editor = document.createElement('div');
+  editor.id = 'structuredEditor';
+  el('unifiedMain').insertBefore(editor, el('unifiedItems'));
+  const structuredContext = document.createElement('header');
+  structuredContext.id = 'structuredContext';
+  structuredContext.hidden = true;
+  el('unifiedTabs').before(structuredContext);
+  const structuredFooter = document.createElement('footer');
+  structuredFooter.id = 'structuredFooter';
+  structuredFooter.className = 'to-footer';
+  structuredFooter.hidden = true;
+  el('unifiedOrder').querySelector('.to-shell').append(structuredFooter);
+  const preview = document.createElement('div');
+  preview.id = 'structuredPreview';
+  el('unifiedAside').append(preview);
+  function scope() {
+    let hash = 2166136261;
+    for (const c of localStorage.getItem(LS_KEY) || '') hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
+    return 'dsf-structured-v5-' + (hash >>> 0).toString(36) + '-' + (S.site?.id || 'none') + '-' + S.type;
+  }
+  function fresh() {
+    return {
+      id: uid(),
+      siteName: S.site?.name || '',
+      type: S.type,
+      requestId: uid(),
+      phase: 'draft',
+      vendor: '',
+      due: '',
+      shipKind: '업체 배송',
+      liftKind: '양중 없음',
+      note: '',
+      data: {
+        v: 1,
+        rooms: [],
+        common: {
+          brand: '영림',
+          spec: '35mm ABS 도어',
+          design: '9mm문선',
+          finish: '필름',
+          film: { front: '', back: null },
+          handle: clone(handles[0]),
+          hinge: '이지경첩',
+          shoulder: { on: false, w: 2, h: 10 }
+        },
+        lines: []
+      },
+      errors: [],
+      message: '',
+      orderNo: '',
+      orderPageId: ''
+    };
+  }
+  function room(name) {
+    return { id: uid(), name: name || '공용욕실', color: 'N' };
+  }
+  function fillRoom(s, r) {
+    groups.forEach((group) =>
+      s.data.lines.push({
+        id: uid(),
+        roomId: r.id,
+        room: r.name,
+        group,
+        name: '',
+        size: '',
+        qty: '',
+        unit: '개',
+        color: r.color,
+        materialId: '',
+        note: ''
+      })
+    );
+  }
+  function door() {
+    return {
+      id: uid(),
+      loc: '',
+      open: '여닫이',
+      w: '',
+      h: '',
+      striker: { from: '상부', mm: '' },
+      swing: '밀실우',
+      design: null,
+      finish: null,
+      film: null,
+      handle: null,
+      shoulder: null,
+      hinge: null,
+      note: ''
+    };
+  }
+  function initial() {
+    const s = fresh();
+    if (S.type === '도기') {
+      const r = room();
+      s.data.rooms.push(r);
+      fillRoom(s, r);
+    } else s.data.lines.push(door());
+    return s;
+  }
+  function book() {
+    const key = scope();
+    if (!books.has(key)) {
+      let b;
+      try {
+        b = JSON.parse(sessionStorage.getItem(key) || 'null');
+      } catch {}
+      if (!b || !Array.isArray(b.sheets) || !b.sheets.length) b = { active: 0, sheets: [initial()] };
+      b.sheets.forEach((s) => {
+        s.imageBusy = false;
+        if (s.phase === 'sending')
+          s.phase = s.pending?.action === 'updateOrder' ? 'updateUncertain' : 'uncertain';
+      });
+      books.set(key, b);
+    }
+    activeKey = key;
+    return books.get(key);
+  }
+  function state() {
+    const b = book();
+    current = b.sheets[b.active];
+    return current;
+  }
+  function persist() {
+    for (const [key, value] of books) {
+      try {
+        sessionStorage.setItem(key, JSON.stringify(value));
+      } catch {
+        if (current)
+          current.message = '이 브라우저에 초안을 보관하지 못했습니다. 화면을 닫기 전에 기록해 주세요';
+      }
+    }
+  }
+
+  function log(action, status) {
+    trace.push({ at: new Date().toISOString(), action, status });
+    if (trace.length > 60) trace.shift();
+  }
+  function editable(s) {
+    return ['draft', 'edit'].includes(s.phase);
+  }
+  function input(path, val, label, opts, type = 'text') {
+    if (opts)
+      return (
+        '<label>' +
+        h(label) +
+        '<select data-path="' +
+        path +
+        '">' +
+        opts
+          .map((o) => {
+            const v = typeof o === 'string' ? o : o.value,
+              n = typeof o === 'string' ? o : o.label;
+            return (
+              '<option value="' +
+              h(v) +
+              '"' +
+              (String(v) === String(val) ? ' selected' : '') +
+              '>' +
+              h(n) +
+              '</option>'
+            );
+          })
+          .join('') +
+        '</select></label>'
+      );
+    return (
+      '<label>' +
+      h(label) +
+      '<input data-path="' +
+      path +
+      '" aria-label="' +
+      h(label) +
+      '" type="' +
+      type +
+      '"' +
+      (type === 'number' ? ' min="0" step="any"' : '') +
+      ' value="' +
+      h(val) +
+      '"></label>'
+    );
+  }
+  function setPath(obj, path, value) {
+    const parts = path.split('.');
+    let o = obj;
+    parts.slice(0, -1).forEach((k) => (o = o[k]));
+    o[parts.at(-1)] = value;
+  }
+  function commonFields(c, p) {
+    return (
+      input(p + '.design', c.design || '', '도어 디자인', [
+        ...designs,
+        ...(!designs.includes(c.design) && c.design ? [c.design] : []),
+        '직접 입력'
+      ]) +
+      (c.design === '직접 입력' ? input(p + '.designText', c.designText || '', '디자인 직접 입력') : '') +
+      input(p + '.finish', c.finish, '마감', ['필름', '백골']) +
+      (c.finish === '필름' ? input(p + '.film.front', c.film?.front || '', '필름 (기본 양면 같음)') : '') +
+      input(p + '.handle.id', c.handle?.id || '', '손잡이', [
+        ...(!c.handle?.id ? [{ value: '', label: c.handle?.name || '확인 못 함' }] : []),
+        ...handles.map((x) => ({ value: x.id, label: x.name }))
+      ]) +
+      input(p + '.hinge', c.hinge || '', '경첩') +
+      input(p + '.shoulder.on', String(!!c.shoulder?.on), '어깨가공', [
+        { value: 'false', label: '없음' },
+        { value: 'true', label: '있음' }
+      ]) +
+      (c.shoulder?.on
+        ? input(p + '.shoulder.w', c.shoulder.w, '어깨 너비 mm', null, 'number') +
+          input(p + '.shoulder.h', c.shoulder.h, '어깨 높이 mm', null, 'number')
+        : '')
+    );
+  }
+  function effective(s, r) {
+    const c = s.data.common;
+    const get = (k) => (r[k] === null || r[k] === undefined || r[k] === '' ? c[k] : r[k]);
+    return {
+      ...r,
+      design: get('design') === '직접 입력' ? r.designText || c.designText || '' : get('design'),
+      finish: get('finish'),
+      film: get('film'),
+      handle: get('handle'),
+      hinge: get('hinge'),
+      shoulder: get('shoulder')
+    };
+  }
+  function drawing(r) {
+    const right = r.swing === '밀실우',
+      hasSwing = r.open !== '미닫이' && ['밀실좌', '밀실우'].includes(r.swing);
+    return (
+      '<svg viewBox="0 0 110 145" aria-label="도어 치수 도식"><rect x="22" y="15" width="64" height="108" fill="#fafafa" stroke="#222"/><path d="M' +
+      (right ? '22 15 L86 69 L22 123' : '86 15 L22 69 L86 123') +
+      '" visibility="' +
+      (hasSwing ? 'visible' : 'hidden') +
+      '" fill="none" stroke="#aaa" stroke-dasharray="3 2"/><circle visibility="' +
+      (hasSwing ? 'visible' : 'hidden') +
+      '" cx="' +
+      (right ? 76 : 32) +
+      '" cy="76" r="3" fill="#222"/><path d="M22 130H86 M15 15V123" stroke="#222"/><path d="M94 ' +
+      (r.striker?.from === '하부' ? '123' : '15') +
+      'V76" stroke="#555"/><text x="102" y="65" font-size="8" transform="rotate(-90 102 65)">' +
+      h(r.striker?.mm || '스트라이커') +
+      '</text><text x="54" y="142" font-size="9" text-anchor="middle">' +
+      h(r.w || '폭') +
+      '</text><text x="9" y="74" font-size="9" transform="rotate(-90 9 74)" text-anchor="middle">' +
+      h(r.h || '높이') +
+      '</text></svg>'
+    );
+  }
+  function sanitaryHtml(s) {
+    return s.data.rooms
+      .map(
+        (r, i) =>
+          '<section class="v5-card"><div class="v5-fields">' +
+          input('data.rooms.' + i + '.name', r.name, '욕실 이름') +
+          input('data.rooms.' + i + '.color', r.color, '욕실 공통 색', [
+            { value: 'N', label: 'N · 니켈' },
+            { value: 'B', label: 'B · 블랙' }
+          ]) +
+          '</div><div class="v5-buttons">' +
+          (i ? '<button data-action="copy-room" data-room="' + i + '">이전 욕실과 같게</button>' : '') +
+          '<button data-action="remove-room" data-room="' +
+          i +
+          '">욕실 삭제</button><button data-action="extra-room" data-room="' +
+          i +
+          '">＋ 기타 품목</button></div>' +
+          s.data.lines
+            .filter((x) => x.roomId === r.id)
+            .map((x) => {
+              const index = s.data.lines.indexOf(x),
+                pool = S.items.filter(
+                  (m) =>
+                    m.type === '도기' &&
+                    (x.group === '기타' ? ['기타', '기타 도기'].includes(m.group) : m.group === x.group)
+                );
+              return (
+                '<div class="v5-slot" data-line="' +
+                index +
+                '"><span>' +
+                h(x.group) +
+                '</span><select aria-label="' +
+                h(r.name + ' ' + x.group) +
+                '" data-line="' +
+                index +
+                '" data-prop="materialId"><option value="">비움</option>' +
+                (!pool.some((m) => m.id === x.materialId) && x.name
+                  ? '<option value="' +
+                    h(x.materialId || '__custom') +
+                    '" selected>' +
+                    h(x.name) +
+                    '</option>'
+                  : '') +
+                pool
+                  .map(
+                    (m) =>
+                      '<option value="' +
+                      h(m.id) +
+                      '"' +
+                      (x.materialId === m.id ? ' selected' : '') +
+                      '>' +
+                      h(m.name) +
+                      '</option>'
+                  )
+                  .join('') +
+                '<option value="__custom">직접 입력</option></select><input aria-label="' +
+                h(x.group + ' 규격') +
+                '" data-line="' +
+                index +
+                '" data-prop="size" placeholder="규격" value="' +
+                h(x.size) +
+                '"><input class="v5-qty' +
+                (Number(x.qty) > 0 ? ' has-value' : '') +
+                '" aria-label="' +
+                h(x.group + ' 수량') +
+                '" type="number" min="0" step="any" data-line="' +
+                index +
+                '" data-prop="qty" value="' +
+                h(x.qty) +
+                '"><input aria-label="' +
+                h(x.group + ' 단위') +
+                '" data-line="' +
+                index +
+                '" data-prop="unit" value="' +
+                h(x.unit) +
+                '">' +
+                '<label class="v5-slot-color">이 품목 색 <select data-line="' +
+                index +
+                '" data-prop="colorOverride">' +
+                [
+                  { value: '', label: '욕실 공통' },
+                  { value: '__none', label: '색 없음' },
+                  { value: 'N', label: 'N · 니켈' },
+                  { value: 'B', label: 'B · 블랙' }
+                ]
+                  .map(
+                    (c) =>
+                      '<option value="' +
+                      c.value +
+                      '"' +
+                      ((x.colorOverride || (x.preserveNoColor ? '__none' : '')) === c.value
+                        ? ' selected'
+                        : '') +
+                      '>' +
+                      c.label +
+                      '</option>'
+                  )
+                  .join('') +
+                '</select></label>' +
+                (x.materialId === '__custom'
+                  ? '<input class="v5-direct" aria-label="직접 품목명" data-line="' +
+                    index +
+                    '" data-prop="name" value="' +
+                    h(x.name) +
+                    '" placeholder="품목명">'
+                  : '') +
+                '</div>'
+              );
+            })
+            .join('') +
+          '</section>'
+      )
+      .join('');
+  }
+  function doorHtml(s) {
+    return (
+      '<section class="v5-card"><h3>도어 공통값</h3><div class="v5-fields">' +
+      input('data.common.brand', s.data.common.brand, '브랜드') +
+      input('data.common.spec', s.data.common.spec, '도어 규격') +
+      commonFields(s.data.common, 'data.common') +
+      '</div><p class="v5-foot">' +
+      h(s.data.common.handle.note) +
+      '</p></section>' +
+      s.data.lines
+        .map((r, i) => {
+          const e = effective(s, r),
+            p = 'data.lines.' + i;
+          return (
+            '<section class="v5-card"><h3>' +
+            String(i + 1).padStart(2, '0') +
+            ' 짝 <button data-action="remove-door" data-line="' +
+            i +
+            '">삭제</button></h3><div class="v5-door-line">' +
+            drawing(r) +
+            '<div class="v5-fields">' +
+            input(p + '.loc', r.loc, '위치') +
+            input(p + '.open', r.open, '여는 방식', ['여닫이', '미닫이']) +
+            input(p + '.w', r.w, '폭 mm', null, 'number') +
+            input(p + '.h', r.h, '높이 mm', null, 'number') +
+            input(p + '.striker.from', r.striker.from, '스트라이커 기준', ['상부', '하부']) +
+            input(p + '.striker.mm', r.striker.mm, '스트라이커 mm', null, 'number') +
+            input(p + '.swing', r.swing, '방향', ['밀실좌', '밀실우', '없음']) +
+            '</div></div><div class="v5-buttons"><button data-action="override-door" data-line="' +
+            i +
+            '">' +
+            (r.finish !== null ? '공통값으로 되돌리기' : '이 짝만 공통값 바꾸기') +
+            '</button>' +
+            (e.finish === '필름'
+              ? '<button data-action="different-film" data-line="' +
+                i +
+                '">' +
+                (r.film?.back != null ? '앞·뒤 같음으로' : '앞·뒤 다름') +
+                '</button>'
+              : '') +
+            '</div>' +
+            (r.finish !== null ? '<div class="v5-fields">' + commonFields(r, p) + '</div>' : '') +
+            (r.film?.back != null
+              ? '<div class="v5-fields">' +
+                input(p + '.film.front', r.film.front, '앞 필름') +
+                input(p + '.film.back', r.film.back, '뒤 필름') +
+                '</div>'
+              : '') +
+            input(p + '.note', r.note, '짝 특이사항') +
+            '<p class="v5-foot">' +
+            h(e.handle?.note || '타공 특이사항 미등록') +
+            '</p></section>'
+          );
+        })
+        .join('')
+    );
+  }
+  function build(s) {
+    const d = clone(s.data);
+    if (window.계산입력_보관) d.calc = 계산입력_보관();
+    d.header = { vendor: s.vendor, due: s.due, shipKind: s.shipKind, liftKind: s.liftKind, note: s.note };
+    if (s.type === '도기') {
+      d.lines = d.lines
+        .filter((x) => x.name || (x.qty !== '' && x.qty != null))
+        .map((x) => {
+          const r = d.rooms.find((r) => r.id === x.roomId);
+          return {
+            ...x,
+            materialId: x.materialId === '__custom' ? '' : x.materialId,
+            room: r?.name || x.room,
+            color: x.colorOverride || (x.preserveNoColor ? '' : r?.color || x.color),
+            qty: Number(x.qty)
+          };
+        });
+    } else {
+      d.common.design = d.common.design === '직접 입력' ? d.common.designText : d.common.design;
+      d.lines = d.lines.map((x) => ({ ...x, design: x.design === '직접 입력' ? x.designText : x.design }));
+    }
+    return d;
+  }
+  function validate(s) {
+    const errors = [];
+    if (!S.site || !S.detail) errors.push('현장을 먼저 고르세요');
+    if (!s.vendor.trim()) errors.push('발주처를 넣으세요');
+    const d = build(s);
+    if (!d.lines.length) errors.push('주문할 품목을 넣으세요');
+    d.lines.forEach((r, i) => {
+      const n = i + 1 + '번째 줄 — ';
+      if (s.type === '도기') {
+        if (!r.room?.trim()) errors.push(n + '욕실 이름이 비었습니다');
+        if (!r.name?.trim()) errors.push(n + r.group + ' 모델이 비었습니다');
+        if (!(r.qty > 0) && Number.isFinite(r.qty)) errors.push(n + '수량은 0보다 커야 합니다');
+        if (!Number.isFinite(r.qty)) errors.push(n + '수량을 확인하세요');
+        if (!r.unit?.trim()) errors.push(n + '단위가 비었습니다');
+      } else {
+        const e = effective(s, r);
+        ['loc', 'w', 'h'].forEach((k) => {
+          if (k === 'loc' ? !r.loc?.trim() : !(Number(r[k]) > 0))
+            errors.push(n + { loc: '위치', w: '폭', h: '높이' }[k] + '를 넣으세요');
+        });
+        if (!(Number(r.striker?.mm) > 0)) errors.push(n + '스트라이커 치수를 넣으세요');
+        if (e.finish === '필름' && !e.film?.front?.trim()) errors.push(n + '앞 필름이 비었습니다');
+        if (e.film?.back !== null && e.film?.back !== undefined && !e.film.back.trim())
+          errors.push(n + '뒤 필름이 비었습니다');
+        if (e.shoulder?.on && (!(Number(e.shoulder.w) > 0) || !(Number(e.shoulder.h) > 0)))
+          errors.push(n + '어깨가공 치수를 넣으세요');
+      }
+    });
+    return errors;
+  }
+function paper(s) {
+  const d = build(s);
+  let body = '';
+  if (s.type === '도어')
+    body =
+      '<div class="v5-door-grid">' +
+      d.lines
+        .map((r, j) => {
+          const e = effective(s, r);
+          return (
+            '<article class="v5-door-print"><b>' +
+            String(j + 1).padStart(2, '0') +
+            ' ' +
+            h(r.loc || '위치') +
+            '</b><div>' +
+            drawing(r) +
+            '<p>' +
+            h(e.design) +
+            '<br>' +
+            h(r.open) +
+            ' · ' +
+            h(r.swing) +
+            '<br><b>' +
+            h(r.w) +
+            ' × ' +
+            h(r.h) +
+            ' mm</b><br>스트라이커 ' +
+            h(r.striker.from) +
+            ' ' +
+            h(r.striker.mm) +
+            'mm<br>' +
+            h(e.finish) +
+            (e.finish === '필름'
+              ? '<br>앞 ' + h(e.film?.front) + '<br>뒤 ' + h(e.film?.back || e.film?.front)
+              : '') +
+            '<br>' +
+            h(e.handle?.name) +
+            '<br>' +
+            h(e.handle?.note || '타공 특이사항 미등록') +
+            '<br>' +
+            h(e.hinge) +
+            '<br>어깨 ' +
+            (e.shoulder?.on ? h(e.shoulder.w) + '×' + h(e.shoulder.h) + 'mm' : '없음') +
+            '</p></div><p>' +
+            h(r.note) +
+            '</p></article>'
+          );
+        })
+        .join('') +
+      '</div>';
+  else {
+    let rows = '',
+      n = 0;
+    d.rooms.forEach((room) => {
+      const lines = d.lines.filter((x) => x.roomId === room.id);
+      if (!lines.length) return;
+      rows +=
+        '<tr class="cat"><td colspan="5"><span>' +
+        h(room.name) +
+        ' · ' +
+        h(room.color === 'N' ? '니켈' : '블랙') +
+        '</span></td></tr>';
+      lines.forEach((x) => {
+        rows +=
+          '<tr><td class="no">' +
+          ++n +
+          '</td><td class="space">' +
+          h(x.group) +
+          '</td><td class="nm">' +
+          h(x.name) +
+          '<i>' +
+          h(
+            [x.size, x.colorOverride === 'N' ? '니켈' : x.colorOverride === 'B' ? '블랙' : '']
+              .filter(Boolean)
+              .join(' · ')
+          ) +
+          '</i></td><td class="un">' +
+          h(x.unit) +
+          '</td><td class="qt">' +
+          h(x.qty) +
+          '</td></tr>';
+      });
+    });
+    body =
+      '<table class="stbl"><colgroup><col style="width:34px"><col style="width:80px"><col><col style="width:40px"><col style="width:66px"></colgroup><thead><tr><th class="no">NO</th><th>분류</th><th>품명 · 규격</th><th class="c">단위</th><th class="r">수량</th></tr></thead><tbody>' +
+      rows +
+      '</tbody></table>';
+  }
+  return (
+    '<div id="structuredPaper"><section class="sheet a4-sheet">' +
+    a4Frame(
+      {
+        no: s.orderNo,
+        vendor: s.vendor,
+        site: s.siteName || S.site?.name,
+        address: s.address || S.detail?.address,
+        due: s.due,
+        ship: s.shipKind,
+        lift: s.liftKind,
+        notes: [
+          s.type === '도어' ? [d.common.brand, d.common.spec].filter(Boolean).join(' · ') : '',
+          s.note,
+          S.detail?.unload ? '현장 하차·양중 조건: ' + S.detail.unload : ''
+        ]
+      },
+      body
+    ) +
+    '</section></div>'
+  );
+}
+function paintPaper(s) {
+  preview.innerHTML = paper(s);
+  A4Preview.prepare(preview);
+}
+  function render() {
+    if (rendering) return;
+    rendering = true;
+    try {
+      const enabled = ['도기', '도어'].includes(S.type);
+      editor.hidden = !enabled;
+      preview.hidden = !enabled;
+      structuredContext.hidden = !enabled;
+      structuredFooter.hidden = !enabled;
+      [
+        'unifiedItems',
+        'unifiedReferences',
+        'unifiedPreview',
+        'sheetTabs',
+        'unifiedZoom',
+        'dueWarn',
+        'shipInfo',
+        'resultNote'
+      ].forEach((id) => (el(id).hidden = enabled));
+      const footer = el('unifiedOrder').querySelector('.to-footer:not(#structuredFooter)');
+      footer.hidden = enabled;
+      if (!enabled) return;
+      const s = state(),
+        b = book(),
+        locked = !editable(s);
+      if (s.type === '도기')
+        s.data.rooms.forEach((r) =>
+          groups.forEach((group) => {
+            if (!s.data.lines.some((x) => x.roomId === r.id && x.group === group))
+              s.data.lines.push({
+                id: uid(),
+                roomId: r.id,
+                room: r.name,
+                group,
+                name: '',
+                size: '',
+                qty: '',
+                unit: '개',
+                color: r.color,
+                materialId: '',
+                note: ''
+              });
+          })
+        );
+      el('unifiedTitle').textContent = s.type === '도기' ? '욕실별 도기 주문' : '도어 공통값 · 짝 주문';
+      el('unifiedContext').hidden = true;
+      editor.innerHTML =
+        '<div class="v5-buttons"><button onclick="계산기열기()">계산기</button><button data-action="new">＋ 새 발주 장</button><select id="structuredPast"><option value="">지난 ' +
+        s.type +
+        ' 발주 열기</option>' +
+        (S.detail?.orders || [])
+          .filter((x) => x.type === s.type)
+          .map((x) => '<option value="' + h(x.id) + '">' + h(x.no || x.name || x.id) + '</option>')
+          .join('') +
+        '</select></div><div id="structuredSheets">' +
+        b.sheets
+          .map(
+            (x, i) =>
+              '<button class="' +
+              (i === b.active ? 'on' : '') +
+              '" data-action="sheet" data-sheet="' +
+              i +
+              '">' +
+              (i + 1) +
+              '장 · ' +
+              h(x.vendor || '발주처 미정') +
+              '</button>'
+          )
+          .join('') +
+        '</div><div id="structuredHeaderFields" class="v5-fields">' +
+        input('site', S.site?.id || '', '현장', [
+          { value: '', label: '현장 선택' },
+          ...S.sites.map((x) => ({ value: x.id, label: x.name }))
+        ]) +
+        input('vendor', s.vendor, '발주처') +
+        input('due', s.due, '납품 희망일', null, 'date') +
+        input(
+          'shipKind',
+          s.shipKind,
+          '배송',
+          s.shipKind ? SHIPS : [{ value: '', label: '확인 못 함' }, ...SHIPS]
+        ) +
+        input(
+          'liftKind',
+          s.liftKind,
+          '양중',
+          s.liftKind ? LIFTS : [{ value: '', label: '확인 못 함' }, ...LIFTS]
+        ) +
+        '</div><div class="v5-error" role="alert">' +
+        s.errors.map(h).join('<br>') +
+        '</div><p role="status">' +
+        h(s.message) +
+        '</p><fieldset id="structuredFields" ' +
+        (locked ? 'disabled' : '') +
+        ' style="border:0;padding:0;margin:0">' +
+        (s.type === '도기' ? sanitaryHtml(s) : doorHtml(s)) +
+        '<div class="v5-buttons"><button data-action="add">' +
+        (s.type === '도기' ? '＋ 욕실' : '＋ 짝') +
+        '</button><button data-action="split">줄마다 장 나누기</button><button data-action="clear">비우기</button></div>' +
+        input('note', s.note, '이 장 특기사항') +
+        '</fieldset><div id="structuredActions" class="v5-buttons"><button data-action="copy">카톡 글 복사</button><button data-action="image">발주서 이미지 내려받기</button><button data-action="submit" ' +
+        (['sending', 'readonly', 'saved'].includes(s.phase) ? 'disabled' : '') +
+        '>' +
+        (s.phase === 'imagePending'
+          ? '이미지만 다시 저장'
+          : s.phase === 'uncertain'
+            ? '같은 요청 다시 시도'
+            : s.phase === 'updateUncertain'
+              ? '서버 기록 확인'
+              : s.phase === 'edit'
+                ? '수정 기록'
+                : '발주 기록') +
+        '</button>' +
+        (s.phase === 'updateUncertain' ? '<button data-action="recover">서버 기록 새로 열기</button>' : '') +
+        (s.data.calc ? '<button data-action="restore-calc">이 발주의 계산 불러오기</button>' : '') +
+        (s.phase === 'saved' ? '<button data-action="edit">이 발주 수정</button>' : '') +
+        '</div>';
+      structuredContext.replaceChildren(...el('structuredHeaderFields').children);
+      el('structuredHeaderFields').remove();
+      structuredFooter.replaceChildren(el('structuredActions'));
+      el('unifiedOrder')
+        .querySelectorAll('[data-path]')
+        .forEach((e) => {
+          if (
+            e.dataset.path !== 'site' &&
+            (locked || (s.orderPageId && ['vendor', 'due', 'shipKind', 'liftKind'].includes(e.dataset.path)))
+          )
+            e.disabled = true;
+        });
+      markInvalid(s);
+      paintPaper(s);
+      persist();
+    } finally {
+      rendering = false;
+    }
+  }
+
+  function markInvalid(s) {
+    if (!s.attempted && !s.errors.length) return;
+    const root = el('unifiedOrder');
+    function mark(path) {
+      const node = root.querySelector('[data-path="' + path + '"]');
+      if (node) node.setAttribute('aria-invalid', 'true');
+    }
+    if (!s.vendor.trim()) mark('vendor');
+    if (s.type === '도어')
+      s.data.lines.forEach((r, i) => {
+        const p = 'data.lines.' + i,
+          e = effective(s, r);
+        if (!r.loc.trim()) mark(p + '.loc');
+        ['w', 'h'].forEach((k) => {
+          if (!(Number(r[k]) > 0)) mark(p + '.' + k);
+        });
+        if (!(Number(r.striker.mm) > 0)) mark(p + '.striker.mm');
+        if (e.finish === '필름' && !e.film?.front?.trim()) mark((r.film ? p : 'data.common') + '.film.front');
+        if (r.film?.back != null && !r.film.back.trim()) mark(p + '.film.back');
+      });
+    else
+      s.data.lines.forEach((r, i) => {
+        if (!r.name && !r.qty) return;
+        for (const prop of ['materialId', 'qty', 'unit']) {
+          if (prop === 'materialId' ? !!r.name : prop === 'qty' ? Number(r.qty) > 0 : !!r.unit) continue;
+          root
+            .querySelector('[data-line="' + i + '"][data-prop="' + prop + '"]')
+            ?.setAttribute('aria-invalid', 'true');
+        }
+      });
+  }
+
+  el('unifiedOrder').addEventListener('compositionend', (e) => {
+    if (e.target?.dataset?.path || e.target?.dataset?.prop)
+      e.target.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  el('unifiedOrder').addEventListener('input', (e) => {
+    if (e.isComposing) return;
+    const s = state();
+    if (!editable(s)) return;
+    const path = e.target.dataset.path,
+      index = e.target.dataset.line,
+      prop = e.target.dataset.prop;
+    if (path && path !== 'site' && e.target.tagName !== 'SELECT') {
+      setPath(s, path, e.target.value);
+      e.target.removeAttribute('aria-invalid');
+      paintPaper(s);
+      persist();
+    }
+    if (index !== undefined && prop && e.target.tagName !== 'SELECT') {
+      s.data.lines[Number(index)][prop] = e.target.value;
+      e.target.classList.toggle('has-value', Number(e.target.value) > 0);
+      paintPaper(s);
+      persist();
+    }
+  });
+  el('unifiedOrder').addEventListener('change', async (e) => {
+    const s = state(),
+      path = e.target.dataset.path;
+    if (e.target.id === 'structuredPast' && e.target.value) return openOrder(e.target.value);
+    if (path === 'site') {
+      el('siteSel').value = e.target.value;
+      await pickSite(e.target.value);
+      return render();
+    }
+    if (!editable(s)) return;
+    if (path && e.target.tagName === 'SELECT') {
+      let value = e.target.value;
+      if (path.endsWith('.shoulder.on')) value = value === 'true';
+      setPath(s, path, value);
+      if (path.endsWith('.handle.id')) {
+        const parent = path.replace('.id', '');
+        setPath(s, parent, clone(handles.find((x) => x.id === value)));
+      }
+      render();
+    }
+    if (e.target.dataset.prop === 'colorOverride') {
+      const line = s.data.lines[Number(e.target.dataset.line)];
+      line.colorOverride = e.target.value === '__none' ? '' : e.target.value;
+      line.preserveNoColor = e.target.value === '__none';
+      render();
+    }
+    if (e.target.dataset.prop === 'materialId') {
+      const r = s.data.lines[Number(e.target.dataset.line)],
+        id = e.target.value,
+        m = S.items.find((x) => x.id === id);
+      if (m)
+        Object.assign(r, {
+          materialId: id,
+          name: m.name,
+          size: m.spec || '',
+          unit: m.unit || '개',
+          qty: r.qty || 1
+        });
+      else if (id === '__custom') Object.assign(r, { materialId: id, name: '', qty: r.qty || 1 });
+      else Object.assign(r, { materialId: '', name: '', qty: '' });
+      render();
+    }
+  });
+  function split(s) {
+    if (!editable(s)) return;
+    const b = book();
+    const box = document.createElement('dialog');
+    box.innerHTML =
+      '<h3>줄마다 발주 장 선택</h3>' +
+      s.data.lines
+        .map(
+          (r, i) =>
+            '<label style="display:block;padding:8px">' +
+            h(r.loc || r.name || r.group || '빈 줄') +
+            ' <select data-index="' +
+            i +
+            '">' +
+            b.sheets
+              .map(
+                (_, j) =>
+                  '<option value="' +
+                  j +
+                  '"' +
+                  (j === b.active ? ' selected' : '') +
+                  '>' +
+                  (j + 1) +
+                  '장</option>'
+              )
+              .join('') +
+            '<option value="new">새 장</option></select></label>'
+        )
+        .join('') +
+      '<button id="splitStructuredApply">장 나누기</button><button id="splitStructuredCancel">취소</button>';
+    document.body.append(box);
+    box.showModal();
+    box.querySelector('#splitStructuredCancel').onclick = () => box.remove();
+    box.querySelector('#splitStructuredApply').onclick = () => {
+      const selections = [...box.querySelectorAll('select')];
+      if (selections.some((x) => x.value !== 'new' && !editable(b.sheets[Number(x.value)]))) {
+        toast('기록된 장에는 옮길 수 없습니다');
+        return;
+      }
+      let newIndex = null;
+      const moved = [];
+      selections.forEach((sel) => {
+        if (sel.value === String(b.active)) return;
+        let target;
+        if (sel.value === 'new') {
+          if (newIndex === null) {
+            const n = fresh();
+            n.data.common = clone(s.data.common);
+            b.sheets.push(n);
+            newIndex = b.sheets.length - 1;
+          }
+          target = b.sheets[newIndex];
+        } else target = b.sheets[Number(sel.value)];
+        const line = s.data.lines[Number(sel.dataset.index)];
+        if (s.type === '도어') {
+          const value = effective(s, line);
+          target.data.lines.push(clone(value));
+        } else {
+          const r = s.data.rooms.find((x) => x.id === line.roomId);
+          if (r && !target.data.rooms.some((x) => x.id === r.id)) target.data.rooms.push(clone(r));
+          target.data.lines.push(clone(line));
+        }
+        moved.push(line.id);
+      });
+      s.data.lines = s.data.lines.filter((x) => !moved.includes(x.id));
+      box.remove();
+      render();
+    };
+  }
+  el('unifiedOrder').addEventListener('click', async (e) => {
+    const button = e.target.closest('[data-action]');
+    if (!button) return;
+    const s = state(),
+      b = book(),
+      action = button.dataset.action,
+      index = Number(button.dataset.line),
+      ri = Number(button.dataset.room);
+    if (action === 'sheet') {
+      b.active = Number(button.dataset.sheet);
+      return render();
+    }
+    if (action === 'new') {
+      b.sheets.push(initial());
+      b.active = b.sheets.length - 1;
+      return render();
+    }
+    if (action === 'copy') {
+      try {
+        await navigator.clipboard.writeText(text(s));
+        toast('카톡 글을 복사했습니다');
+      } catch {
+        toast('복사를 허용해 주세요');
+      }
+      return;
+    }
+    if (action === 'image') {
+      try {
+        const canvases = await capture(s);
+        A4Preview.download(canvases.map(c=>c.toDataURL('image/png').split(',')[1]),(s.orderNo || '검토용')+'-'+s.type);
+      } catch (e) {
+        s.errors = [e.message];
+        render();
+      }
+      return;
+    }
+    if (action === 'submit') return submit(s);
+    if (action === 'restore-calc') {
+      계산입력_복원(s.data.calc);
+      return;
+    }
+    if (action === 'recover') {
+      return openOrder(s.orderPageId);
+    }
+    if (action === 'edit') {
+      s.phase = 'edit';
+      return render();
+    }
+    if (!editable(s)) return;
+    if (action === 'extra-room') {
+      const r = s.data.rooms[ri];
+      s.data.lines.push({
+        id: uid(),
+        roomId: r.id,
+        room: r.name,
+        group: '기타',
+        name: '',
+        qty: '',
+        unit: '개',
+        size: '',
+        materialId: ''
+      });
+    }
+    if (action === 'add') {
+      if (s.type === '도기') {
+        const r = room('욕실 ' + (s.data.rooms.length + 1));
+        s.data.rooms.push(r);
+        fillRoom(s, r);
+      } else s.data.lines.push(door());
+    }
+    if (action === 'remove-door') s.data.lines.splice(index, 1);
+    if (action === 'remove-room') {
+      const r = s.data.rooms[ri];
+      if (confirm(r.name + ' 카드를 지울까요?')) {
+        s.data.rooms.splice(ri, 1);
+        s.data.lines = s.data.lines.filter((x) => x.roomId !== r.id);
+      }
+    }
+    if (action === 'copy-room') {
+      const target = s.data.rooms[ri],
+        source = s.data.rooms[ri - 1];
+      if (confirm('이 욕실을 이전 욕실 품목으로 바꿀까요?')) {
+        target.color = source.color;
+        s.data.lines = s.data.lines
+          .filter((x) => x.roomId !== target.id)
+          .concat(
+            s.data.lines
+              .filter((x) => x.roomId === source.id)
+              .map((x) => ({ ...clone(x), id: uid(), roomId: target.id, room: target.name }))
+          );
+      }
+    }
+    if (action === 'override-door') {
+      const r = s.data.lines[index];
+      if (r.finish !== null)
+        ['design', 'finish', 'film', 'handle', 'shoulder', 'hinge'].forEach((k) => (r[k] = null));
+      else {
+        const v = effective(s, r);
+        ['design', 'finish', 'film', 'handle', 'shoulder', 'hinge'].forEach(
+          (k) => (r[k] = clone(v[k] ?? null))
+        );
+      }
+    }
+    if (action === 'different-film') {
+      const r = s.data.lines[index],
+        v = effective(s, r);
+      if (r.film?.back != null) r.film = { front: r.film.front, back: null };
+      else r.film = { front: v.film?.front || '', back: v.film?.front || '' };
+    }
+    if (action === 'clear' && confirm('이 장의 입력을 비울까요?')) {
+      const n = initial();
+      s.data = n.data;
+    }
+    if (action === 'split') return split(s);
+    render();
+  });
+  function text(s) {
+    const d = build(s),
+      out = [
+        s.type + ' 발주서 · ' + (s.orderNo || '기록 후 정해집니다'),
+        (s.vendor || '—')+' 귀중',
+        '현장: '+(s.siteName || S.site?.name || ''),
+        '납품요청: '+s.due+dow(s.due),
+        '배송: '+s.shipKind,
+        '양중: '+s.liftKind,
+        '현장주소: '+(s.address || S.detail?.address || '—')
+      ];
+    if (s.type === '도기')
+      d.lines.forEach((x) =>
+        out.push(
+          [
+            x.room,
+            x.group,
+            x.name,
+            x.size,
+            x.color === 'N' ? '니켈' : x.color === 'B' ? '블랙' : x.color,
+            x.qty + x.unit,
+            x.note
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        )
+      );
+    else
+      d.lines.forEach((r, i) => {
+        const e = effective(s, r),
+          film = e.film || {},
+          head = e.design + (r.open && r.open !== '여닫이' ? ' · ' + r.open : '');
+        const lines = [
+          String(i + 1).padStart(2, '0') + '. ' + r.loc,
+          '[' + head + ']',
+          '브랜드 : ' + (d.common.brand || '') + ' (' + (d.common.spec || '') + ')',
+          '사이즈 : ' + r.w + '*' + r.h,
+          '스트라이커: ' + r.striker.from + '에서 ' + r.striker.mm
+        ];
+        if (r.swing && r.swing !== '없음') lines.push(r.swing);
+        lines.push(
+          e.shoulder?.on
+            ? '상부어깨가공 (너비 ' + e.shoulder.w + ' · 높이 ' + e.shoulder.h + ')'
+            : '어깨가공 없음'
+        );
+        lines.push(
+          e.finish === '백골'
+            ? '백골 (필름 없음)'
+            : film.back && film.back !== film.front
+              ? '필름: 앞 ' + film.front + ' / 뒤 ' + film.back
+              : '필름: ' + (film.front || '') + ' (양면)'
+        );
+        lines.push('손잡이 : ' + (e.handle?.name || ''));
+        if (e.handle?.note && e.handle.note !== '타공 특이사항 미등록') lines.push('*' + e.handle.note);
+        if (e.hinge) lines.push(e.hinge);
+        if (r.note) lines.push(r.note);
+        out.push('\n' + lines.join('\n'));
+      });
+    out.push('특기사항: '+(s.note || '—'));
+    if(S.detail?.unload)out.push('현장 하차·양중 조건: '+S.detail.unload);
+    return out.filter(Boolean).join('\n');
+  }
+
+  async function capture(s) {
+    return await A4Preview.capture(paper(s));
+  }
+  async function request(action, data) {
+    log(action, 'start');
+    let timer;
+    let r;
+    try {
+      r = await Promise.race([
+        api(action, data),
+        new Promise((_, reject) => {
+          timer = setTimeout(
+            () => reject(Error('서버 응답이 65초 동안 없습니다. 요청 결과를 확인한 뒤 다시 시도해 주세요')),
+            65000
+          );
+        })
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+    if (!r?.ok) {
+      log(action, 'failed');
+      const error = Error(r?.error || '서버 응답을 읽지 못했습니다');
+      error.problems = r?.problems;
+      throw error;
+    }
+    log(action, 'ok');
+    return r;
+  }
+  async function saveImage(s) {
+    if (s.imageBusy) return;
+    s.imageBusy = true;
+    s.phase = 'imagePending';
+    persist();
+    render();
+    try {
+      const signature=JSON.stringify([s.orderNo,build(s),s.note,s.due,s.shipKind,s.liftKind]);
+      if(s.imageSignature!==signature){s.imageSignature=signature;s.imagePageDone=0;}
+      const canvases = await capture(s);
+      for(let i=s.imagePageDone||0;i<canvases.length;i++) {
+        await request('saveOrderImage',{orderPageId:s.orderPageId,image:canvases[i].toDataURL('image/png').split(',')[1]});
+        s.imagePageDone=i+1;persist();
+      }
+      s.phase = 'saved';
+      s.message =
+        '발주와 이미지를 기록했습니다' +
+        (s.unchecked ? ' · ' + s.unchecked + '줄은 다시 확인해야 합니다' : '');
+      s.errors = [];
+    } catch (e) {
+      s.errors = ['발주 기록은 남았습니다. 이미지만 다시 저장하세요 — ' + e.message];
+    } finally {
+      s.imageBusy = false;
+    }
+    persist();
+    render();
+  }
+  async function submit(s) {
+    if (s.phase === 'sending' || s.phase === 'saved' || s.phase === 'readonly') return;
+    if (s.phase === 'imagePending') return saveImage(s);
+    if (s.phase === 'updateUncertain') {
+      try {
+        const r = await request('getOrderData', { orderPageId: s.orderPageId });
+        if (JSON.stringify(r.data) === JSON.stringify(s.pending.data.data)) {
+          s.pending = null;
+          return saveImage(s);
+        }
+        s.errors = [
+          '서버 자료와 수정 초안이 다릅니다. 중복 수정하지 않았습니다. 기존 기록을 다시 열어 비교해 주세요'
+        ];
+        persist();
+        render();
+      } catch (e) {
+        s.errors = [e.message];
+        render();
+      }
+      return;
+    }
+    if (!s.pending) {
+      s.attempted = true;
+      s.errors = validate(s);
+      if (s.errors.length) return render();
+      const data = build(s);
+      s.pending = {
+        action: s.orderPageId ? 'updateOrder' : 'submitOrder',
+        data: s.orderPageId
+          ? { orderPageId: s.orderPageId, data, summary: s.type + ' 발주 수정', notify: false }
+          : {
+              type: s.type,
+              requestId: s.requestId,
+              sitePageId: S.site.id,
+              vendor: s.vendor,
+              due: s.due,
+              shipKind: s.shipKind,
+              liftKind: s.liftKind,
+              note: s.note,
+              notes: [],
+              data
+            }
+      };
+    }
+    s.phase = 'sending';
+    s.errors = [];
+    persist();
+    render();
+    const pending = s.pending;
+    try {
+      const r = await request(pending.action, pending.data);
+      if (pending.action === 'submitOrder') {
+        if (!r.orderPageId || !r.orderNo)
+          throw Error('발주 번호를 받지 못했습니다. 같은 요청으로 다시 확인해 주세요');
+        s.orderPageId = r.orderPageId;
+        s.orderNo = r.orderNo;
+      }
+      s.unchecked = r.unchecked || 0;
+      s.message = r.unchecked ? r.unchecked + '줄은 다시 확인해야 합니다' : '';
+      s.pending = null;
+      persist();
+      await saveImage(s);
+    } catch (e) {
+      s.phase = e.problems
+        ? s.orderPageId
+          ? 'edit'
+          : 'draft'
+        : pending.action === 'updateOrder'
+          ? 'updateUncertain'
+          : 'uncertain';
+      s.errors = e.problems?.length ? [e.message, ...e.problems] : [e.message];
+      if (e.problems) s.pending = null;
+      persist();
+      render();
+    }
+  }
+  async function openOrder(id) {
+    const targetType = S.type,
+      key = scope();
+    try {
+      const r = await request('getOrderData', { orderPageId: id });
+      if (scope() !== key) return;
+      if (
+        !r.data ||
+        !Array.isArray(r.data.lines) ||
+        r.data.lines.some((x) => !x.id) ||
+        r.type !== targetType ||
+        (targetType === '도어' && !r.data.common)
+      )
+        throw Error('보관 자료 형식이 다릅니다. 기존 줄로 임의 복구하지 않았습니다');
+      const s = fresh();
+      Object.assign(s, {
+        data: clone(r.data),
+        orderPageId: id,
+        orderNo: r.orderNo,
+        vendor: r.vendor || r.data.header?.vendor || '',
+        due: r.due || r.data.header?.due || '',
+        shipKind: r.data.header?.shipKind || '',
+        liftKind: r.data.header?.liftKind || '',
+        note: r.data.header?.note || '',
+        phase: r.state === '입고완료' ? 'readonly' : 'edit',
+        message:
+          r.state === '입고완료'
+            ? '입고완료 발주는 읽기만 가능합니다. 반품은 기록 화면에서 처리하세요'
+            : '원래 발주를 수정합니다. 발주처·납품일은 고정입니다'
+      });
+      if (targetType === '도어') {
+        const normalizeHandle = (value) => {
+          if (!value) return value;
+          const known = handles.find((h) => h.id === value.id || h.name === value.name);
+          return { ...value, id: value.id || known?.id || '', note: value.note || '타공 특이사항 미등록' };
+        };
+        s.data.common.handle = normalizeHandle(s.data.common.handle);
+        s.data.lines.forEach((x) => {
+          if (x.handle) x.handle = normalizeHandle(x.handle);
+        });
+      }
+      if (targetType === '도어')
+        s.data.lines = s.data.lines.map((x) => ({
+          ...door(),
+          ...x,
+          swing: x.swing || '없음',
+          striker: { from: '상부', mm: '', ...x.striker }
+        }));
+      if (targetType === '도기') {
+        s.data.rooms = s.data.rooms || [];
+        s.data.lines.forEach((x) => {
+          let rm = s.data.rooms.find((y) => y.id === x.roomId || y.name === x.room);
+          if (!rm) {
+            rm = room(x.room);
+            rm.color = x.color || 'N';
+            s.data.rooms.push(rm);
+          }
+          if (!rm.id) rm.id = uid();
+          x.roomId = rm.id;
+          if (!Object.prototype.hasOwnProperty.call(x, 'color')) x.preserveNoColor = true;
+        });
+        s.data.rooms.forEach((rm) => {
+          if (!rm.id) rm.id = uid();
+          groups.forEach((group) => {
+            if (!s.data.lines.some((x) => x.roomId === rm.id && x.group === group))
+              s.data.lines.push({
+                id: uid(),
+                roomId: rm.id,
+                room: rm.name,
+                group,
+                name: '',
+                qty: '',
+                unit: '개',
+                size: '',
+                materialId: ''
+              });
+          });
+        });
+      }
+      const b = book();
+      b.sheets.push(s);
+      b.active = b.sheets.length - 1;
+      render();
+    } catch (e) {
+      state().errors = [e.message];
+      render();
+    }
+  }
+  const oldDraw = draw;
+  draw = function () {
+    oldDraw();
+    if (!['도기', '도어'].includes(S.type)) el('unifiedContext').hidden = false;
+    render();
+  };
+  const oldEdit = openEdit;
+  openEdit = function (id) {
+    const order = S.detail?.orders?.find((x) => x.id === id);
+    if (order && ['도기', '도어'].includes(order.type) && order.state !== '입고완료') {
+      setType(order.type);
+      return openOrder(id);
+    }
+    return oldEdit(id);
+  };
+  window.addEventListener('resize', () => {
+    if (['도기', '도어'].includes(S.type)) paintPaper(state());
+  });
+  window.StructuredOrder = {
+    render,
+    open: openOrder,
+    submit: () => submit(state()),
+    build: () => build(state()),
+    text: () => text(state()),
+    check: () => ({
+      type: S.type,
+      phase: state().phase,
+      sheets: book().sheets.length,
+      issues: state().errors.slice(),
+      trace: trace.slice()
+    })
+  };
+  window.새발주_점검 = () => StructuredOrder.check();
+  window.새발주_재시도 = () => StructuredOrder.submit();
+})();
+
+document.addEventListener('input', (e) => {
+  if (e.target.matches('.to-quantity,.v5-qty'))
+    e.target.classList.toggle('has-value', Number(e.target.value) > 0);
+});
 
 // ═════ 진입 ═════
 if (localStorage.getItem(LS_KEY)) boot();
@@ -5184,5 +7400,6 @@ el('pasteMask').addEventListener('paste', function (e) {
   });
 });
 </script>
+<script>A4Preview.watch();</script>
 </body>
 </html>
