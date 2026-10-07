@@ -647,6 +647,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .sheet.a4-sheet .stbl .qt b{font-weight:800}.sheet.a4-sheet .stbl .qt small{display:inline;font-size:9.5px;font-weight:400;color:#9a9aa2;margin-right:7px;font-variant-numeric:normal}
 .sheet.a4-sheet .stbl tr.cat td{padding:9px 6px 3px;border-bottom:1px solid #1b1b1f}.sheet.a4-sheet .stbl tr.cat span{display:block;background:none;border-radius:0;margin:0;padding:0;font-size:10px;font-weight:800;letter-spacing:.08em;color:#1b1b1f}
 .sheet.a4-sheet .ntot{margin:8px 0 0;padding:0;border:0;font-size:10.5px;color:#1b1b1f}.sheet.a4-sheet .ntot b{font-weight:800}
+.sheet.a4-sheet .stbl .m2{text-align:right;font-size:10px;color:#9a9aa2;white-space:nowrap}.sheet.a4-sheet .stbl th.r.m2{color:#9a9aa2;font-weight:600;font-size:9.5px}.sheet.a4-sheet .sfoot .a4-rule{display:block;margin-top:3px;color:#8a8a92}
 .sheet.a4-sheet .a4-reference{font-size:9px;color:#8a8a92;margin:6px 0 0}.sheet.a4-sheet .nfoot{margin:0;padding:8px 0 0;border-top:1px solid #d9d9dd;font-size:9px;color:#9a9aa2;letter-spacing:.08em;font-weight:400}
 .a4-cont-head,.a4-cont-meta{display:none}.a4-continuation .nhead,.a4-continuation .nto,.a4-continuation .ngrid,.a4-continuation .sfoot{display:none!important}
 .a4-continuation .a4-cont-head{display:flex;justify-content:space-between;gap:15px;padding-bottom:8px;border-bottom:1.5px solid #1b1b1f;font-size:11px}.a4-continuation .a4-cont-head b{font-weight:800}
@@ -1066,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-07-a4final2';
+var APP_VER = '2026-10-07-a4final3';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -2834,10 +2835,11 @@ function a4Frame(m, body) {
   return '<div class="nhead"><div class="me"><div class="nm">'+h(CO.name)+'</div><div class="biz">사업자 '+h(CO.biz)+' · 담당 '+h(m.owner||localStorage.getItem(LS_OWNER)||'')+' '+h(CO.tel)+' · '+h(CO.mail)+'</div></div><div class="ttl"><h2>발 주 서</h2><div class="no">'+h(m.no||'')+' · '+h(m.date||ymd(new Date())).replace(/-/g,'. ')+'</div></div></div>'
     +'<div class="nto"><div class="who">'+h(m.vendor||'—')+' 귀중</div><div class="sub">아래와 같이 발주합니다.</div></div>'
     +'<dl class="ngrid"><dt>현장</dt><dd>'+h(name)+'</dd><dt>납품요청</dt><dd class="big">'+(due?h(due.slice(5).replace('-','. '))+dow(due):'—')+'</dd><dt>배송</dt><dd>'+h(m.ship||'—')+'</dd><dt>양중</dt><dd>'+h(m.lift||'—')+'</dd><dt>현장주소</dt><dd class="addr">'+h(m.address||'—')+'</dd></dl>'
-    +'<div class="sfoot"><b>특기사항</b><p>'+(m.notes||[]).filter(Boolean).map(x=>h(x).replace(/\n/g,'<br>')).join(' · ')+'</p></div>'
+    // 현장 대시보드의 하차·양중 조건은 대표가 적은 말에 붙이지 않고 회색 「현장 규칙」 한 줄로(10/7 — 곰방 뒤에 「엘리베이터」가 붙어 한 문장처럼 읽힘)
+    +'<div class="sfoot"><b>특기사항</b><p>'+(m.notes||[]).filter(Boolean).map(x=>h(String(x).trim()).replace(/\n/g,'<br>')).join(' · ')+(m.rule?'<span class="a4-rule">현장 규칙 · '+h(m.rule)+'</span>':'')+'</p></div>'
     +'<div class="a4-cont-head"><b>'+h(CO.name)+' · 발주서 계속</b><b>'+h(m.no||'')+' · <span class="a4-page-number"></span></b></div>'
     +'<div class="a4-cont-meta"><span>'+h(m.vendor||'—')+' 귀중 · '+h(name)+'</span><span>납품요청 '+h(due)+dow(due)+' · 상세 조건은 1장 참조</span></div>'
-    +'<div class="pad a4-body">'+box.innerHTML+(reference?'<p class="a4-reference">≈ m² 는 박스당 1.44m² 기준 참고값입니다</p>':'')+'<div class="ntot"><span></span><b>품목 '+count+'건</b></div></div><div class="grow"></div><div class="nfoot"><span>'+h(CO.en||CO.name)+'</span><span>'+h(m.no||'')+' · <span class="a4-page-number"></span></span></div>';
+    +'<div class="pad a4-body">'+box.innerHTML+(reference?'<p class="a4-reference">헤베는 박스당 1.44m² 기준입니다</p>':'')+'<div class="ntot"><span></span><b>품목 '+count+'건</b></div></div><div class="grow"></div><div class="nfoot"><span>'+h(CO.en||CO.name)+'</span><span>'+h(m.no||'')+' · <span class="a4-page-number"></span></span></div>';
 }
 function draw() {
   var d = S.detail, lines = 합치기(pickedOf(S.cur)), due = el('dueIn').value;
@@ -3700,7 +3702,7 @@ function submit() {
       accessories: [blankAcc()],
       tubs: [blankTub()],
       groutOrders: {},
-      vendor: '신성타일',
+      vendor: '', // 기본값 없음 — 10/7 마벨로 건이 기본값 「신성타일」 그대로 나감. 고르지 않으면 기록 단계에서 막힘
       otherVendor: '',
       due: '',
       shipKind: '업체 배송',
@@ -4252,6 +4254,33 @@ function submit() {
       unload: S.detail?.unload || ''
     };
   }
+// 헤베 = 박스 수 × 박스당㎡. 박스당㎡ 를 아는 규격(600×600·600×1200)이고 정수 박스일 때만
+function heBe(r) {
+  return r.kind === 'tile' && r.unit === '박스' && positive(r.qty) && boxM2(r) && Number.isInteger(Number(r.qty))
+    ? r.qty * boxM2(r)
+    : 0;
+}
+// 규격 비교용: 공백 빼고 * x X 를 × 로 (「600*1200」 과 「600×1200×30T」 를 같은 규격으로 봄)
+function sameSpec(a) {
+  return String(a || '').replace(/\s+/g, '').replace(/[*xX]/g, '×').toLowerCase();
+}
+// 비고가 규격 안에 이미 들어 있으면 비고는 안 씀. 거꾸로 규격이 비고 안에 있으면 규격을 안 씀
+function noteOnly(r) {
+  const n = sameSpec(r.note), sp = sameSpec(r.spec);
+  return n.includes('×') && sp.includes(n) ? '' : r.note || '';
+}
+function specParts(r, textOnly) {
+  const sp = sameSpec(r.spec), n = sameSpec(r.note);
+  const spec = r.spec && !sameSpec(r.name).includes(sp) && !(sp.includes('×') && n.includes(sp)) ? r.spec : '';
+  if (textOnly) return [spec, r.color];
+  return [
+    spec,
+    r.color,
+    r.grout?.name ? '줄눈 ' + r.grout.name + ' / ' + r.grout.color : '',
+    r.cut ? '재단 ' + r.cut : '',
+    noteOnly(r)
+  ].filter(Boolean);
+}
 function paper(s, data = build(s), ctx = s.savedContext || context()) {
   let group = '',
     rows = '';
@@ -4259,13 +4288,9 @@ function paper(s, data = build(s), ctx = s.savedContext || context()) {
     const cat = { tile: '타일', acc: '부자재', tub: '욕조' }[r.kind];
     if (cat !== group) {
       group = cat;
-      rows += '<tr class="cat"><td colspan="5"><span>' + html(cat) + '</span></td></tr>';
+      rows += '<tr class="cat"><td colspan="6"><span>' + html(cat) + '</span></td></tr>';
     }
-    const notes = [
-      r.grout?.name ? '줄눈 ' + r.grout.name + ' / ' + r.grout.color : '',
-      r.cut ? '재단 ' + r.cut : '',
-      r.note
-    ].filter(Boolean);
+    const m2 = heBe(r);
     rows +=
       '<tr><td class="no">' +
       String(i + 1).padStart(2, '0') +
@@ -4273,20 +4298,16 @@ function paper(s, data = build(s), ctx = s.savedContext || context()) {
       html(r.space || '') +
       '</td><td class="nm">' +
       html(r.name || '—') +
-      // 규격·색·비고는 품명 옆 회색 한 줄로(10/7 대표 견본). 품명에 규격이 이미 있으면 다시 안 씀
+      // 규격·색·비고는 품명 옆 회색 한 줄로(10/7 대표 견본). 겹치는 규격은 한 번만
       '<i>' +
-      html([r.spec && !String(r.name || '').includes(r.spec) ? r.spec : '', r.color].concat(notes).filter(Boolean).join(' · ')) +
+      html(specParts(r).join(' · ')) +
       '</i>' +
       '</td><td class="un">' +
       html(r.unit) +
-      '</td><td class="qt">' +
-      (r.kind === 'tile' &&
-      r.unit === '박스' &&
-      positive(r.qty) &&
-      boxM2(r) &&
-      Number.isInteger(Number(r.qty))
-        ? '<small class="approx">≈\u00a0' + number(r.qty * boxM2(r)) + 'm²</small>'
-        : '') + '<b>'+(positive(r.qty)?number(r.qty):'—')+'</b>' +
+      // 헤베는 수량과 떼어 따로 한 칸(10/7 첫 실발주 — 숫자 옆에 붙어 「이거 뭐야」 소리 나옴)
+      '</td><td class="m2' + (m2 ? ' approx' : '') + '">' +
+      (m2 ? number(m2) + 'm²' : '') +
+      '</td><td class="qt"><b>' + (positive(r.qty) ? number(r.qty) : '—') + '</b>' +
       '</td></tr>';
   });
   return (
@@ -4301,9 +4322,10 @@ function paper(s, data = build(s), ctx = s.savedContext || context()) {
         due: s.due,
         ship: s.shipKind,
         lift: s.liftKind,
-        notes: [s.note, ctx.unload ? '현장 하차·양중 조건: ' + ctx.unload : '']
+        notes: [s.note],
+        rule: ctx.unload
       },
-      '<table class="stbl"><colgroup><col style="width:34px"><col style="width:128px"><col><col style="width:40px"><col style="width:118px"></colgroup><thead><tr><th>NO</th><th>공간</th><th>품명 · 규격</th><th class="c">단위</th><th class="r">수량</th></tr></thead><tbody>' +
+      '<table class="stbl"><colgroup><col style="width:34px"><col style="width:128px"><col><col style="width:40px"><col style="width:76px"><col style="width:56px"></colgroup><thead><tr><th>NO</th><th>공간</th><th>품명 · 규격</th><th class="c">단위</th><th class="r m2">헤베</th><th class="r">수량</th></tr></thead><tbody>' +
         rows +
         '</tbody></table><div class="ntot"><span class="l">TOTAL</span><span class="v">' +
         data.lines.length +
@@ -4332,23 +4354,21 @@ function text(s = state()) {
         '. [' +
         { tile: '타일', acc: '부자재', tub: '욕조' }[r.kind] +
         '] ' +
-        [r.space, r.name, r.spec, r.color].filter(Boolean).join(' / ') +
+        [r.space, r.name].concat(specParts(r, true)).filter(Boolean).join(' / ') +
         '\n【주문량 ' +
         number(r.qty) +
         ' ' +
         r.unit +
         '】' +
-        (r.kind === 'tile' && r.unit === '박스' && boxM2(r) && Number.isInteger(Number(r.qty))
-          ? ' ≈ ' + number(r.qty * boxM2(r)) + '㎡'
-          : '') +
+        (heBe(r) ? ' (헤베 ' + number(heBe(r)) + '㎡)' : '') +
         (r.grout?.name ? '\n줄눈 ' + r.grout.name + ' / ' + r.grout.color : '') +
         (r.cut ? '\n재단 ' + r.cut : '') +
-        (r.note ? '\n' + r.note : '')
+        (noteOnly(r) ? '\n' + noteOnly(r) : '')
     ),
     '',
-    data.lines.some(r=>r.kind==='tile'&&r.unit==='박스'&&boxM2(r))?'≈ ㎡ 는 박스당 1.44㎡ 기준 참고값입니다':'',
+    data.lines.some((r) => heBe(r)) ? '헤베는 박스당 1.44㎡ 기준입니다' : '',
     '특기사항: ' + (s.note || '—'),
-    ctx.unload ? '현장 하차·양중 조건: ' + ctx.unload : '',
+    ctx.unload ? '현장 규칙: ' + ctx.unload : '',
     '담당 ' + ctx.owner + ' · ' + CO.tel,
     CO.mail
   ]
@@ -6607,9 +6627,9 @@ function paper(s) {
         lift: s.liftKind,
         notes: [
           s.type === '도어' ? [d.common.brand, d.common.spec].filter(Boolean).join(' · ') : '',
-          s.note,
-          S.detail?.unload ? '현장 하차·양중 조건: ' + S.detail.unload : ''
-        ]
+          s.note
+        ],
+        rule: S.detail?.unload || ''
       },
       body
     ) +
@@ -7100,7 +7120,7 @@ function paintPaper(s) {
         out.push('\n' + lines.join('\n'));
       });
     out.push('특기사항: '+(s.note || '—'));
-    if(S.detail?.unload)out.push('현장 하차·양중 조건: '+S.detail.unload);
+    if(S.detail?.unload)out.push('현장 규칙: '+S.detail.unload);
     return out.filter(Boolean).join('\n');
   }
 
