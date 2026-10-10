@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-07-a4final3';
+var APP_VER = '2026-10-09-stmt1';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -4271,7 +4271,9 @@ function noteOnly(r) {
 }
 function specParts(r, textOnly) {
   const sp = sameSpec(r.spec), n = sameSpec(r.note);
-  const spec = r.spec && !sameSpec(r.name).includes(sp) && !(sp.includes('×') && n.includes(sp)) ? r.spec : '';
+  // 비고가 규격보다 길게 규격을 품을 때만 규격을 뺍니다. 둘이 같으면 비고 쪽이 빠지므로 규격은 남깁니다
+  // (10/8 GPT 지적 — 같을 때 서로 상대에게 미뤄 둘 다 사라졌음)
+  const spec = r.spec && !sameSpec(r.name).includes(sp) && !(sp.includes('×') && n.includes(sp) && n !== sp) ? r.spec : '';
   if (textOnly) return [spec, r.color];
   return [
     spec,
@@ -4408,7 +4410,7 @@ function text(s = state()) {
           `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) === null ? '실측·로스율을 확인해 주세요' : r.unit === '박스' ? (proposalBox(r, s) !== null ? `제안 ${proposalBox(r, s)}박스 = ${number(proposalBox(r, s) * boxM2(r))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}% → ${number(proposal(r, s))}㎡ ÷ 박스당 ${boxM2(r)}㎡ 올림) · <button data-action="fill" data-index="${i}">채우기</button>` : `제안 ${number(proposal(r, s))}㎡ · <b class="to-warning">이 규격은 박스당 ㎡ 를 몰라 박스로 바꿀 수 없습니다</b> — 박스 수를 직접 넣거나 단위를 ㎡ 로 · <button data-action="fill" data-index="${i}">㎡ 로 채우기</button>`) : `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>`}${r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? ' · <b class="to-warning">박스는 정수로 넣어 주세요</b>' : ''}</td></tr>` : ''}`
       )
       .join('');
-    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
+    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><button onclick="StatementApp.open()">명세서</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
       S.detail?.orders || []
     )
       .filter((o) => (o.type || o.name || '').includes('타일'))
@@ -5168,7 +5170,7 @@ function text(s = state()) {
 (function () {
   const root = document.createElement('section');
   root.id = 'unifiedOrder';
-  root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${APP_VER}</small></nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
+  root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><button onclick="StatementApp.open()">명세서</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${APP_VER}</small></nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
   el('scr-input').append(root);
   function move(id, parent) {
     parent.append(el(id));
@@ -7419,6 +7421,612 @@ el('pasteMask').addEventListener('paste', function (e) {
     }
   });
 });
+</script>
+<!-- ═════ 명세서 대조 (2026-10-09 · 1단계) ═════
+     거래처 명세서(카톡 사진)를 그 현장·업체 발주 기록과 줄마다 맞춰 봅니다.
+     1단계는 「거래처에 보낼 확인 문구 복사」까지 — 노션에는 아무것도 쓰지 않습니다.
+     시안: 시안/명세서검수_2026-10-08/시안_v2.html · GPT 크리틱 반영: 협업/2026-10-06_발주앱개편/19 -->
+<style>
+#stmtApp{position:fixed;inset:0;z-index:300;display:flex;background:#f4f4f5;color:#18181b;font-size:13px;line-height:1.45}
+#stmtApp[hidden]{display:none}
+#stmtApp *{box-sizing:border-box}
+#stmtApp button{font:inherit;cursor:pointer}
+#stmtApp .srail{width:64px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:22px;padding:22px 6px;background:#202020;color:#fff}
+#stmtApp .srail b{font-size:27px}#stmtApp .srail button{background:none;border:0;color:#fff;opacity:.6;font-size:12px;padding:0}
+#stmtApp .srail button.on{opacity:1;font-weight:800}
+#stmtApp .sh{flex:1;min-width:0;display:flex;flex-direction:column}
+#stmtApp .st{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 20px;background:#fff;border-bottom:1px solid #e4e4e7}
+#stmtApp .st h1{font-size:16px;margin:0 6px 0 0}
+#stmtApp .st label{display:flex;align-items:center;gap:6px;color:#71717a;font-size:12px}
+#stmtApp .st select,#stmtApp .st input{font:inherit;color:#18181b;border:1px solid #e4e4e7;border-radius:7px;padding:6px 8px;background:#fff}
+#stmtApp .st .sp{margin-left:auto}
+#stmtApp .bt{font-weight:700;border-radius:8px;padding:8px 13px;border:1px solid #e4e4e7;background:#fff;color:#18181b;white-space:nowrap}
+#stmtApp .bt.fn{color:#2563eb;border-color:#bfd2fb;background:#eff4ff}
+#stmtApp .bt.pri{background:#18181b;color:#fff;border-color:#18181b}
+#stmtApp .bt:disabled{opacity:.45;cursor:default}
+#stmtApp .wk{flex:1;min-height:0;display:grid;grid-template-columns:44% 56%}
+#stmtApp .wk>*{min-width:0;min-height:0}
+#stmtApp .lf{display:flex;flex-direction:column;border-right:1px solid #e4e4e7;background:#fafafa}
+#stmtApp .lh{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;color:#71717a;flex-wrap:wrap}
+#stmtApp .lh b{color:#18181b;font-size:13px}#stmtApp .lh .z{margin-left:auto;display:flex;gap:4px}
+#stmtApp .lh .z button,#stmtApp .pg button{border:1px solid #e4e4e7;background:#fff;border-radius:6px;padding:3px 8px}
+#stmtApp .pg{display:flex;gap:4px}#stmtApp .pg button.on{background:#18181b;color:#fff;border-color:#18181b}
+#stmtApp .ph{flex:1;overflow:auto;padding:0 14px 14px}
+#stmtApp .pb{position:relative;margin:0 auto}
+#stmtApp .pb img{width:100%;display:block;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+#stmtApp .band{position:absolute;left:0;right:0;background:rgba(250,204,21,.32);outline:2px solid #eab308;border-radius:2px;pointer-events:none}
+#stmtApp .lfoot{padding:8px 14px;border-top:1px solid #e4e4e7;font-size:12px;color:#71717a;background:#fff;display:flex;gap:10px;flex-wrap:wrap}
+#stmtApp .g{color:#15803d;font-weight:700}#stmtApp .r{color:#b91c1c;font-weight:700}
+#stmtApp .rt{display:flex;flex-direction:column;background:#fff}
+#stmtApp .vd{margin:12px 18px 8px;padding:12px 14px;border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#stmtApp .vd.caution{background:#fff7ed;color:#9a3412}#stmtApp .vd.ok{background:#f0fdf4;color:#15803d}#stmtApp .vd.bad{background:#fef2f2;color:#b91c1c}#stmtApp .vd.wait{background:#f4f4f5;color:#52525b}
+#stmtApp .vd b{font-size:16px}#stmtApp .vd p{margin:2px 0 0;font-size:12px;color:#71717a}
+#stmtApp .vd .am{margin-left:auto;text-align:right;font-size:11px;color:#71717a}#stmtApp .vd .am strong{display:block;font-size:17px;color:#18181b}
+#stmtApp .sc{margin:0 18px 8px;padding:8px 12px;border:1px solid #e4e4e7;border-radius:9px;font-size:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#stmtApp .sc.need{border-color:#fdba74;background:#fff7ed}
+#stmtApp .sc ul{list-style:none;margin:6px 0 0;padding:0;width:100%}
+#stmtApp .sc li{display:flex;gap:8px;align-items:center;padding:4px 0;border-top:1px solid #f4f4f5}
+#stmtApp .sc li em{font-style:normal;color:#a1a1aa}
+#stmtApp .tb{display:flex;gap:6px;margin:0 18px 6px;align-items:center}
+#stmtApp .seg{display:flex;border:1px solid #e4e4e7;border-radius:7px;overflow:hidden;font-size:12px}
+#stmtApp .seg button{border:0;background:#fff;padding:4px 10px}#stmtApp .seg button.on{background:#18181b;color:#fff}
+#stmtApp .tb small{margin-left:auto;color:#71717a}
+#stmtApp .tl{flex:1;overflow:auto;padding:0 18px 12px}
+#stmtApp table{width:100%;border-collapse:collapse}
+#stmtApp th{position:sticky;top:0;z-index:1;background:#fff;text-align:left;font-size:11px;color:#71717a;font-weight:600;padding:6px;border-bottom:1px solid #18181b}
+#stmtApp td{padding:7px 6px;border-bottom:1px solid #f0f0f2;vertical-align:middle}
+#stmtApp tr.stmtrow{cursor:pointer}
+#stmtApp td.no{color:#a1a1aa;width:44px;font-variant-numeric:tabular-nums;font-size:11.5px}
+#stmtApp td.n{font-weight:600}#stmtApp td.n small{display:block;font-weight:400;color:#71717a;font-size:11px;margin-top:1px}
+#stmtApp td.q{text-align:right;width:62px;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+#stmtApp td.q.o{color:#71717a;font-weight:500}
+#stmtApp td.d{text-align:right;width:56px;font-weight:800;white-space:nowrap}
+#stmtApp td.ac{width:250px;text-align:right}
+#stmtApp tr.gp td{padding:12px 6px 5px;font-weight:800;font-size:12px;border-bottom:1px solid #e4e4e7;cursor:default}
+#stmtApp tr.gp td em{font-style:normal;font-weight:500;color:#71717a}
+#stmtApp tr.bad td{background:#fef2f2}#stmtApp tr.bad td.d{color:#b91c1c}
+#stmtApp tr.ask td{background:#fff7ed}
+#stmtApp tr.don td{background:#fafafa;color:#52525b}
+#stmtApp tr.sel td{box-shadow:inset 0 2px 0 #eab308,inset 0 -2px 0 #eab308}
+#stmtApp .mi{font-size:11.5px;font-weight:700;border-radius:6px;padding:4px 8px;border:1px solid #e4e4e7;background:#fff;margin-left:4px;color:#18181b}
+#stmtApp .mi.fn{color:#2563eb;border-color:#bfd2fb;background:#eff4ff}
+#stmtApp .mi.on{color:#1d4ed8;border-color:#93b4f5;background:#dbe7ff}
+#stmtApp .ck{display:inline-flex;gap:5px;align-items:center;font-size:11.5px;color:#9a3412;font-weight:700;cursor:pointer}
+#stmtApp .ed{width:70px;font:inherit;font-weight:700;text-align:right;border:2px solid #ef4444;border-radius:6px;padding:3px 5px}
+#stmtApp .rs{display:flex;gap:6px;margin-top:6px;justify-content:flex-end}
+#stmtApp .rs input{flex:1;max-width:280px;font:inherit;border:1px solid #d4d4d8;border-radius:6px;padding:4px 7px}
+#stmtApp .pk{font:inherit;font-size:12px;border:1px solid #d4d4d8;border-radius:6px;padding:3px 6px;max-width:230px}
+#stmtApp .ft{display:flex;align-items:center;gap:10px;padding:10px 20px;background:#fff;border-top:1px solid #e4e4e7;flex-wrap:wrap}
+#stmtApp .ft .sp{margin-left:auto}#stmtApp .ft .nt{color:#a1a1aa;font-size:11.5px}
+#stmtApp .ft .msg{font-size:12.5px;font-weight:700;color:#15803d}#stmtApp .ft .msg.r{color:#b91c1c}
+#stmtApp .em{grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:30px;overflow:auto}
+#stmtApp .dz{width:min(760px,100%);border:2px dashed #93b4f5;background:#eff4ff;border-radius:16px;padding:40px;text-align:center}
+#stmtApp .dz.drag{background:#dbe7ff}
+#stmtApp .dz h2{margin:0 0 4px;font-size:20px}#stmtApp .dz .who{color:#2563eb;font-weight:700;margin-bottom:14px}
+#stmtApp .dz p{margin:6px 0;color:#71717a}
+#stmtApp .dz .bt.pri{font-size:15px;padding:11px 22px;margin:10px 0 6px}
+#stmtApp .dz details{margin-top:18px;text-align:left;background:#fff;border-radius:10px;padding:10px 14px}
+#stmtApp .dz details div{display:flex;gap:10px;padding:4px 0;border-top:1px solid #f4f4f5;font-size:12.5px}#stmtApp .dz details div span:last-child{margin-left:auto;color:#71717a}
+#stmtApp .er{margin:8px 0 0;padding:9px 12px;border-radius:8px;background:#fef2f2;color:#b91c1c;font-size:12.5px;text-align:left}
+@media(max-width:700px){
+ #stmtApp{position:fixed;overflow:auto;display:block}#stmtApp .srail{display:none}
+ #stmtApp .st{padding:10px}#stmtApp .st .sp{margin-left:0;width:100%}#stmtApp .st label{width:100%}#stmtApp .st select,#stmtApp .st input{flex:1}
+ #stmtApp .wk{display:flex;flex-direction:column}#stmtApp .lf{order:2;border-right:0}#stmtApp .ph{max-height:360px}
+ #stmtApp thead{display:none}#stmtApp table,#stmtApp tbody{display:block}
+ #stmtApp tr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 8px;padding:8px 6px;border-bottom:1px solid #f0f0f2}
+ #stmtApp tr.gp{display:block;padding:0}#stmtApp tr.gp td{display:block}
+ #stmtApp td{border:0;padding:0;width:auto!important}#stmtApp td.n{grid-column:1/-1}#stmtApp td.ac{grid-column:1/-1;text-align:left;margin-top:4px}
+ #stmtApp td.no{grid-column:1/-1;order:-1}
+ #stmtApp td.q,#stmtApp td.d{text-align:left}#stmtApp td.q::before{content:'명세서 ';font-weight:400;color:#71717a;font-size:11px}
+ #stmtApp td.q.o::before{content:'발주 '}#stmtApp td.d::before{content:'차이 ';font-weight:400;color:#71717a;font-size:11px}
+ #stmtApp tr.bad{background:#fef2f2}#stmtApp tr.ask{background:#fff7ed}#stmtApp tr.bad td,#stmtApp tr.ask td{background:none}
+ #stmtApp tr.sel td{box-shadow:none}#stmtApp tr.sel{outline:2px solid #eab308;outline-offset:-2px}
+ #stmtApp .ft .bt{flex:1}#stmtApp .dz .keys{display:none}
+}
+</style>
+<div id="stmtApp" hidden></div>
+<script>
+var StatementApp = (function () {
+  'use strict';
+  // ── 상태 ──
+  var D = { site: null, vendor: '', date: ymd(new Date()), base: null, baseErr: '', baseBusy: false,
+            pages: [], cur: 0, include: null, scopeOk: false, scopeOpen: false,
+            sel: null, dec: {}, bundle: {}, edit: {}, pick: {}, reasonOpen: null,
+            order: 'todo', costOpen: false, okOpen: false, copyMsg: '', lines: {} };
+  var MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  var PASTE = MAC ? '⌘V' : 'Ctrl+V';
+  var 비용말 = /재단|운임|양중|사다리|배송|택배|운반|하차|곰방|퀵|용차/;
+  // 업체가 우리와 다르게 부르는 이름 (명세서 품명 → 우리 품목). 10/8 신성목재 명세서에서 실제로 본 것만
+  var 별칭 = { '시트락보드': '시트락석고보드', 'hp523평몰딩80mm': '중백색평몰딩80mm' };
+
+  function h(s) { return esc(s); }
+  function norm(s) { return String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, ''); }
+  function core(s) { return norm(String(s || '').replace(/\([^)]*\)|\[[^\]]*\]/g, '')); }
+  function money(n) {
+    n = Math.round(Number(n) || 0); var a = Math.abs(n), s = n < 0 ? '-' : '';
+    if (a >= 10000) { var m = Math.floor(a / 10000), r = a % 10000; return s + m.toLocaleString() + '만' + (r ? ' ' + r.toLocaleString() : '') + '원'; }
+    return s + a.toLocaleString() + '원';
+  }
+  function md(s) { return s ? (+s.slice(5, 7)) + '/' + (+s.slice(8, 10)) : '날짜 없음'; }
+  function siteName() { return D.site ? D.site.name.replace(/\s*PROJECT\s*$/, '') : ''; }
+  function sameVendor(a, b) { a = norm(a); b = norm(b); return !!a && !!b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0); }
+
+  // ── 열고 닫기 ──
+  function open() {
+    var app = el('stmtApp'); app.hidden = false;
+    if (!D.site && S.site) D.site = S.site;
+    render();
+    if (D.site && !D.base && !D.baseBusy) loadBase();
+  }
+  function close() { el('stmtApp').hidden = true; }
+
+  // ── 서버 ──
+  function loadBase() {
+    if (!D.site) return;
+    D.baseBusy = true; D.baseErr = ''; D.base = null; D.include = null; D.scopeOk = false; render();
+    api('getStatementBase', { sitePageId: D.site.id }).then(function (r) {
+      D.baseBusy = false;
+      if (!r || !r.ok) { D.baseErr = (r && r.error) || '응답이 없습니다'; render(); return; }
+      D.base = r.orders || [];
+      if (!D.vendor) { var vs = vendors(); if (vs.length === 1) D.vendor = vs[0]; }
+      render();
+    }).catch(function (e) {
+      D.baseBusy = false; D.baseErr = e.message === 'unauthorized' ? '접속 키가 풀렸습니다' : '서버에 연결하지 못했습니다'; render();
+    });
+  }
+  function vendors() {
+    var out = [];
+    (D.base || []).forEach(function (o) { if (o.vendor && out.indexOf(o.vendor) < 0) out.push(o.vendor); });
+    return out;
+  }
+  function addFiles(files) {
+    files = [].slice.call(files || []).filter(function (f) { return f && f.type && f.type.indexOf('image') === 0; });
+    if (!files.length) return;
+    if (!D.site) { alert('현장을 먼저 고르세요'); return; }
+    files.forEach(function (f) {
+      var pg = { src: '', status: 'reading', error: '', read: null, lines: null, nat: null };
+      D.pages.push(pg); D.cur = D.pages.length - 1; render();
+      // 같은 사진·같은 내용이 두 번 들어오면 수량이 전부 두 배가 됩니다(10/10 시험에서 시트락 152 → 304).
+      // 카톡에서 같은 사진을 두 번 붙여넣는 일은 흔하므로 막고 알립니다
+      var 같은사진 = function (sig) { return D.pages.some(function (p) { return p !== pg && p.sig === sig && p.status !== 'fail'; }); };
+      shrink(f).then(function (x) {
+        pg.sig = x.b64.length + ':' + x.b64.slice(2000, 2400);
+        if (같은사진(pg.sig)) throw new Error('같은 사진을 두 번 넣었습니다 — 한 번만 씁니다');
+        pg.src = x.url; render(); detectLines(pg);
+        return api('readStatementImage', { image: x.b64, mime: 'image/jpeg' });
+      }).then(function (r) {
+        if (!r || !r.ok) throw new Error((r && r.error) || '응답이 없습니다');
+        var 같은내용 = D.pages.some(function (p) {
+          return p !== pg && p.read && p.read.rows.length === r.rows.length && p.read.total === r.total
+              && p.read.rows.map(function (x) { return x.name + x.qty; }).join('|') === r.rows.map(function (x) { return x.name + x.qty; }).join('|');
+        });
+        if (같은내용) throw new Error('이미 넣은 명세서와 내용이 같습니다 — 같은 명세서를 두 번 넣었는지 봐 주세요');
+        pg.read = r; pg.status = 'ok';
+        if (!D.vendor && r.vendor) { var v = vendors().filter(function (x) { return sameVendor(x, r.vendor); })[0]; if (v) D.vendor = v; }
+        if (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) D.date = r.date;
+        render();
+      }).catch(function (e) {
+        pg.status = 'fail'; pg.error = e.message;
+        // 실패한 장 대신 읽은 장을 보여 줍니다
+        var ok = D.pages.filter(function (p) { return p.status === 'ok'; })[0]; if (ok) D.cur = D.pages.indexOf(ok);
+        render();
+      });
+    });
+  }
+  // 폰 사진은 3~4MB 라 그대로 보내면 느립니다. 긴 변 2200px JPEG 로 줄여 보냅니다(글자는 충분히 남음)
+  function shrink(f) {
+    return new Promise(function (ok, no) {
+      var rd = new FileReader();
+      rd.onerror = function () { no(new Error('사진 파일을 열지 못했습니다')); };
+      rd.onload = function () {
+        var im = new Image();
+        im.onerror = function () { no(new Error('사진 파일을 열지 못했습니다')); };
+        im.onload = function () {
+          var k = Math.min(1, 2200 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+          c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+          var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+          var url = c.toDataURL('image/jpeg', 0.9);
+          ok({ url: url, b64: url.split(',')[1] });
+        };
+        im.src = rd.result;
+      };
+      rd.readAsDataURL(f);
+    });
+  }
+  // 사진의 가로선(표 줄)을 찾아 「명세서 n번째 줄 ↔ 사진 위치」를 맞춥니다. 못 찾으면 띠 없이 「원본 n행」만
+  function detectLines(pg) {
+    var im = new Image();
+    im.onload = function () {
+      var W = 500, H = Math.round(im.height * W / im.width), c = document.createElement('canvas');
+      c.width = W; c.height = H; var g = c.getContext('2d'); g.drawImage(im, 0, 0, W, H);
+      var px = g.getImageData(0, 0, W, H).data, ys = [];
+      for (var y = 0; y < H; y++) {
+        var dark = 0, n = 0;
+        for (var x = Math.round(W * 0.04); x < W * 0.96; x += 2) { n++; var i = (y * W + x) * 4; if (px[i] + px[i + 1] + px[i + 2] < 600) dark++; }
+        if (dark > n * 0.75) ys.push(y);
+      }
+      var lines = [];
+      ys.forEach(function (y) { if (lines.length && y - lines[lines.length - 1].e <= 2) lines[lines.length - 1].e = y; else lines.push({ s: y, e: y }); });
+      pg.lines = lines.map(function (l) { return (l.s + l.e) / 2 / H; });
+      render();
+    };
+    im.src = pg.src;
+  }
+  // n 줄짜리 표의 칸 경계 n+1 개 — 간격이 고른 가장 긴 구간의 앞쪽 n 칸
+  function rowBounds(pg) {
+    if (!pg.lines || !pg.read) return null;
+    var n = pg.read.rows.length, L = pg.lines, best = null;
+    for (var s = 0; s + n < L.length; s++) {
+      var gaps = []; for (var i = s; i < s + n; i++) gaps.push(L[i + 1] - L[i]);
+      var srt = gaps.slice().sort(function (a, b) { return a - b; }), med = srt[Math.floor(n / 2)];
+      if (gaps.every(function (g) { return g > med * 0.7 && g < med * 1.45; })) { best = L.slice(s, s + n + 1); break; }
+    }
+    return best;
+  }
+
+  // ── 대조 ──
+  function scopeOrders() {
+    var b = D.base || [];
+    // 업체·받은 날이 바뀌면 범위를 다시 고릅니다 — 사진에서 업체를 알아내기 전에 한 번 계산돼 0건으로 굳던 것(10/10 시험)
+    if (!D.include || D.includeFor !== D.vendor + '|' + D.date) {
+      D.include = {}; D.includeFor = D.vendor + '|' + D.date; D.scopeOk = false;
+      b.forEach(function (o) { D.include[o.id] = sameVendor(o.vendor, D.vendor) && (!o.due || o.due <= D.date); });
+    }
+    return b.filter(function (o) { return D.include[o.id]; });
+  }
+  function analyse() {
+    var A = { rows: [], mats: [], costs: [], pool: {}, items: [], blocking: [], check: null };
+    D.pages.forEach(function (pg, pi) {
+      if (!pg.read) return;
+      pg.read.rows.forEach(function (r, ri) { A.rows.push({ key: pi + ':' + ri, pi: pi, ri: ri, r: r }); });
+    });
+    // 판독 — 흐린 칸은 사람이 넣은 값이 있어야 씀
+    A.rows.forEach(function (x) {
+      x.qty = x.r.unsure ? (D.edit[x.key] != null && D.edit[x.key] !== '' ? Number(D.edit[x.key]) : null) : Number(x.r.qty);
+      x.cost = 비용말.test(x.r.name);
+    });
+    // 발주 모으기
+    var orders = scopeOrders();
+    orders.forEach(function (o) {
+      if (o.error) A.blocking.push(o.no + ' 를 읽지 못했습니다 — ' + o.error);
+      (o.items || []).forEach(function (it) {
+        if (!(it.qty > 0)) return;
+        var k = norm(it.name);
+        var p = A.pool[k] || (A.pool[k] = { key: k, name: it.name, unit: it.unit, qty: 0, src: [], used: false });
+        p.qty += it.qty; p.src.push(md(o.due || o.date) + ' ' + it.qty);
+      });
+    });
+    var poolKeys = Object.keys(A.pool);
+    function byCore(c) { return poolKeys.filter(function (k) { return core(A.pool[k].name) === c; }); }
+    // 명세서 자재 — 같은 품명 두 줄은 합쳐서 봄(분할 기재)
+    var merged = {};
+    A.rows.forEach(function (x) {
+      if (x.cost) { A.costs.push(x); return; }
+      var k = norm(x.r.name);
+      var m = merged[k] || (merged[k] = { key: 'm:' + k, name: x.r.name, unit: x.r.unit, rows: [], qty: 0, unknown: false });
+      m.rows.push(x); if (x.qty == null) m.unknown = true; else m.qty += x.qty;
+    });
+    A.mats = Object.keys(merged).map(function (k) { return merged[k]; });
+    // 1차 — 같은 이름 / 괄호 뺀 이름 / 별칭 / 사람이 고른 것
+    A.mats.forEach(function (m) {
+      var ks = D.pick[m.key];
+      if (!ks) {
+        var n = norm(m.name), c = core(m.name);
+        if (A.pool[n]) ks = [n];
+        else if (byCore(c).length === 1) ks = byCore(c);
+        else if (별칭[c] && byCore(별칭[c]).length === 1) ks = byCore(별칭[c]);
+        else if (별칭[n] && byCore(별칭[n]).length === 1) ks = byCore(별칭[n]);
+      }
+      ks = (ks || []).filter(function (k) { return A.pool[k] && !A.pool[k].used; });
+      ks.forEach(function (k) { A.pool[k].used = true; });
+      m.keys = ks; m.picked = !!D.pick[m.key];
+    });
+    // 2차 — 수량이 안 맞을 때, 이름이 겹치는 남은 품목을 더해 정확히 맞으면 「묶음 확인」
+    A.mats.forEach(function (m) {
+      if (m.unknown || m.picked) return;
+      var sum = m.keys.reduce(function (s, k) { return s + A.pool[k].qty; }, 0);
+      if (sum === m.qty) return;
+      var c = core(m.name); if (c.length < 2) return;
+      var extra = poolKeys.filter(function (k) {
+        var pc = core(A.pool[k].name); return !A.pool[k].used && pc.length >= 2 && (pc.indexOf(c) >= 0 || c.indexOf(pc) >= 0);
+      });
+      var add = extra.reduce(function (s, k) { return s + A.pool[k].qty; }, 0);
+      if (extra.length && sum + add === m.qty) { extra.forEach(function (k) { A.pool[k].used = true; }); m.keys = m.keys.concat(extra); m.bundle = true; }
+    });
+    // 줄 만들기
+    A.mats.forEach(function (m) {
+      var po = m.keys.reduce(function (s, k) { return s + A.pool[k].qty; }, 0);
+      var src = m.keys.map(function (k) { return (m.keys.length > 1 ? A.pool[k].name + ' ' : '') + A.pool[k].src.join('+'); }).join(' · ');
+      var it = { key: m.key, no: m.rows.map(function (x) { return x.r.no; }), pr: m.rows[0], name: m.name, unit: m.unit,
+                 q: m.unknown ? null : m.qty, po: m.keys.length ? po : null, src: src, keys: m.keys,
+                 pu: m.keys.length ? A.pool[m.keys[0]].unit : '' };
+      if (m.unknown) it.kind = '판독';
+      else if (!m.keys.length) it.kind = '기록없음';
+      else if (m.qty !== po) it.kind = '차이';
+      else if (m.bundle || (m.picked && m.keys.length > 1)) it.kind = '묶음';
+      else it.kind = '맞음';
+      it.d = it.q != null && it.po != null ? it.q - it.po : null;
+      A.items.push(it);
+    });
+    poolKeys.forEach(function (k) {
+      var p = A.pool[k]; if (p.used) return;
+      A.items.push({ key: 'p:' + k, no: [], name: p.name, unit: p.unit, q: 0, po: p.qty, d: -p.qty, src: p.src.join('+'), kind: '빠짐', keys: [k] });
+    });
+    // 검산 — 줄마다 수량×단가=공급가, 공급가 합=하단, 공급가+세액=합계
+    var bad = [], sum = 0, tot = D.pages.filter(function (p) { return p.read && p.read.totalsFound; }).pop();
+    A.rows.forEach(function (x) {
+      sum += Number(x.r.amount) || 0;
+      if (x.qty != null && x.r.price && Math.round(x.qty * x.r.price) !== Math.round(x.r.amount)) bad.push(x.r.no + '번 줄 ' + x.qty + '×' + x.r.price.toLocaleString() + ' ≠ ' + Number(x.r.amount).toLocaleString());
+      if (x.r.unsure && x.qty == null) bad.push(x.r.no + '번 줄 수량을 못 읽음');
+    });
+    if (!tot) bad.push('사진에서 하단 합계를 찾지 못했습니다');
+    else {
+      if (sum !== tot.read.supply) bad.push('줄 공급가 합 ' + sum.toLocaleString() + ' ≠ 하단 공급가 ' + tot.read.supply.toLocaleString());
+      if (tot.read.supply + tot.read.tax !== tot.read.total) bad.push('공급가+세액 ≠ 합계');
+    }
+    A.check = { ok: !bad.length, bad: bad, total: tot ? tot.read.total : 0, supply: tot ? tot.read.supply : 0, tax: tot ? tot.read.tax : 0 };
+    return A;
+  }
+  function decided(it) {
+    if (it.kind === '맞음') return true;
+    if (it.kind === '판독') return false;
+    if (it.kind === '묶음') return !!D.bundle[it.key];
+    return !!D.dec[it.key];
+  }
+
+  // ── 그리기 ──
+  function render() {
+    var app = el('stmtApp'); if (app.hidden) return;
+    var sites = (S.sites || []).map(function (s) {
+      return '<option value="' + h(s.id) + '"' + (D.site && D.site.id === s.id ? ' selected' : '') + '>' + h(s.name.replace(/\s*PROJECT\s*$/, '')) + '</option>';
+    }).join('');
+    var vs = vendors();
+    var top = '<header class="st"><h1>명세서 대조</h1>'
+      + '<label>현장 <select data-k="site"><option value="">현장 선택</option>' + sites + '</select></label>'
+      + '<label>업체 <select data-k="vendor"><option value="">' + (D.baseBusy ? '불러오는 중…' : '업체 선택') + '</option>'
+      + vs.map(function (v) { return '<option' + (v === D.vendor ? ' selected' : '') + '>' + h(v) + '</option>'; }).join('') + '</select></label>'
+      + '<label>명세서 받은 날 <input type="date" data-k="date" value="' + h(D.date) + '"></label>'
+      + (D.pages.length ? '<button class="bt fn sp" data-a="pick">📥 이 명세서에 사진 더 넣기</button><button class="bt" data-a="fresh">새 명세서 시작</button>' : '')
+      + '<input type="file" accept="image/*" multiple hidden id="stmtFile"></header>';
+    var body = D.pages.length ? work() : empty();
+    app.innerHTML = '<nav class="srail"><b>D</b><button data-a="close">발주</button><button class="on">명세서</button><button data-a="report">검수</button><button data-a="settle">기록</button></nav>'
+      + '<div class="sh">' + top + body + '</div>';
+    // 선택한 줄이 사진에서 안 보이면 가운데로
+    var band = app.querySelector('.band'), ph = app.querySelector('.ph');
+    if (band && ph && D.scrollTo) {
+      D.scrollTo = false;
+      var top2 = band.offsetTop, vis = top2 > ph.scrollTop && top2 + band.offsetHeight < ph.scrollTop + ph.clientHeight;
+      if (!vis) ph.scrollTop = top2 - ph.clientHeight / 2;
+    }
+  }
+  function empty() {
+    var who = D.site ? siteName() + (D.vendor ? ' · ' + D.vendor : '') : '';
+    var list = D.base ? '<details><summary>' + h(siteName()) + ' 발주 ' + D.base.length + '건 — 이 기록과 맞춰 봅니다</summary>'
+      + D.base.map(function (o) { return '<div><span>' + h(o.no) + '</span><span>' + h(o.vendor || '업체 없음') + ' · ' + (o.error ? '⚠️ 못 읽음' : (o.items || []).length + '품목') + '</span><span>' + md(o.due) + ' 납품 예정</span></div>'; }).join('') + '</details>' : '';
+    var err = D.baseErr ? '<div class="er">이 현장 발주 기록을 불러오지 못했습니다 — ' + h(D.baseErr) + ' <button class="mi" data-a="reload">다시 불러오기</button></div>' : '';
+    return '<div class="wk"><div class="em"><div class="dz" id="stmtDrop"><h2>카톡으로 받은 명세서 사진</h2>'
+      + (who ? '<div class="who">' + h(who) + '</div>' : '<div class="who" style="color:#b91c1c">먼저 위에서 현장을 고르세요</div>')
+      + '<button class="bt pri" data-a="pick"' + (D.site ? '' : ' disabled') + '>사진 선택</button>'
+      + '<p class="keys">또는 PC 카톡에서 사진을 복사해 여기서 ' + PASTE + ' · 파일을 끌어다 놓기 · 여러 장이면 한 번에</p>'
+      + '<p>사진을 읽어 이 현장·업체의 발주 기록과 줄마다 맞춰 봅니다. 노션에는 아무것도 쓰지 않습니다.</p>'
+      + list + err + '</div></div></div><footer class="ft"><span class="nt">사진을 넣으면 시작합니다</span></footer>';
+  }
+  function work() {
+    var pg = D.pages[D.cur] || D.pages[0];
+    var reading = D.pages.filter(function (p) { return p.status === 'reading'; }).length;
+    var failed = D.pages.filter(function (p) { return p.status === 'fail'; });
+    var A = analyse(); D.last = A;
+    var items = A.items.slice();
+    var sel = items.filter(function (it) { return it.key === D.sel; })[0];
+    // 왼쪽 — 사진 + 선택 줄 띠
+    var bandHtml = '', selNo = '';
+    if (sel && sel.pr && sel.pr.pi === D.cur) {
+      var b = rowBounds(pg), ri = sel.pr.ri;
+      selNo = '원본 ' + String(sel.pr.r.no).padStart(2, '0') + '행' + (D.pages.length > 1 ? ' · ' + (sel.pr.pi + 1) + '/' + D.pages.length + '쪽' : '');
+      if (b && b[ri + 1] != null) bandHtml = '<div class="band" style="top:' + (b[ri] * 100) + '%;height:' + ((b[ri + 1] - b[ri]) * 100) + '%"></div>';
+    }
+    var left = '<section class="lf"><div class="lh"><b>명세서 사진</b>'
+      + (pg && pg.read ? h(pg.read.vendor || D.vendor) + ' · ' + pg.read.rows.length + '줄 읽음' : pg && pg.status === 'reading' ? '읽는 중…' : '')
+      + (selNo ? ' · <span style="color:#a16207;font-weight:700">' + selNo + '</span>' : '')
+      + (D.pages.length > 1 ? '<span class="pg">' + D.pages.map(function (p, i) { return '<button data-a="page" data-i="' + i + '" class="' + (i === D.cur ? 'on' : '') + '">' + (i + 1) + '쪽</button>'; }).join('') + '</span>' : '')
+      + '<span class="z"><button data-a="zoom" data-v="-">－</button><button data-a="zoom" data-v="0">맞춤</button><button data-a="zoom" data-v="+">＋</button></span></div>'
+      + '<div class="ph"><div class="pb" style="width:' + (D.zoom || 100) + '%">' + (pg && pg.src ? '<img src="' + pg.src + '" alt="명세서">' : '') + bandHtml + '</div></div>'
+      + '<div class="lfoot">' + (A.rows.length ? (A.check.ok
+          ? '<span class="g">✓ 명세서 계산 맞음</span><span>줄마다 수량×단가 = 공급가 · 공급가 ' + money(A.check.supply) + ' + 세액 ' + money(A.check.tax) + ' = ' + money(A.check.total) + '</span>'
+          : '<span class="r">✕ 명세서 계산 확인 안 됨</span><span>' + h(A.check.bad.slice(0, 2).join(' · ')) + (A.check.bad.length > 2 ? ' 외 ' + (A.check.bad.length - 2) : '') + '</span>') : '<span>읽은 뒤 계산을 확인합니다</span>') + '</div></section>';
+    // 오른쪽
+    var cnt = { 판독: 0, 차이: 0, 묶음: 0, 기록없음: 0, 빠짐: 0 }, asked = 0, left2 = 0;
+    items.forEach(function (it) {
+      if (it.kind === '맞음') return;
+      if (D.dec[it.key] && D.dec[it.key].type === 'ask') asked++;
+      if (!decided(it)) { left2++; cnt[it.kind]++; }
+    });
+    var scope = scopeOrders(), scopeNeed = !D.scopeOk;
+    var 남은 = left2 + (scopeNeed ? 1 : 0);
+    var parts = []; if (scopeNeed) parts.push('범위 확인 1'); if (cnt.판독) parts.push('못 읽은 칸 ' + cnt.판독); if (cnt.차이) parts.push('수량 차이 ' + cnt.차이);
+    if (cnt.묶음) parts.push('묶음 확인 ' + cnt.묶음); if (cnt.기록없음) parts.push('발주 기록 없음 ' + cnt.기록없음); if (cnt.빠짐) parts.push('명세서에 없음 ' + cnt.빠짐);
+    var v;
+    if (reading) v = ['wait', '사진을 읽는 중입니다…', '한 장에 20~40초 걸립니다. 다 읽으면 바로 맞춰 봅니다'];
+    else if (failed.length && !A.rows.length) v = ['bad', '사진을 읽지 못했습니다', h(failed[0].error) + ' — 다시 넣어 주세요'];
+    else if (D.baseErr || !D.base) v = ['bad', '이 현장 발주 기록을 불러오지 못했습니다', h(D.baseErr || '불러오는 중')];
+    else if (!D.vendor) v = ['bad', '업체를 골라 주세요', '위 「업체」에서 이 명세서를 보낸 곳을 고르면 그 업체 발주와 맞춥니다'];
+    else if (!scope.length) v = ['bad', '대조할 발주가 없습니다', h(D.vendor) + ' 발주 중 받은 날(' + md(D.date) + ')까지 납품 예정인 것이 없습니다 — 받은 날이나 업체를 확인하거나 「범위 바꾸기」에서 고르세요'];
+    else if (A.blocking.length) v = ['bad', '발주 기록 ' + A.blocking.length + '건을 못 읽어 판단하지 않습니다', h(A.blocking[0])];
+    else if (cnt.판독) v = ['bad', '사진에서 못 읽은 칸이 ' + cnt.판독 + '개 있습니다', '그 칸을 넣기 전에는 맞는지 판단하지 않습니다'];
+    else if (남은) v = ['caution', '남은 확인 ' + 남은 + '건', parts.join(' · ') + ' · 단가·지급액은 보지 않았습니다'];
+    else if (!A.check.ok) v = ['caution', '수량은 다 확인했지만 명세서 계산이 안 맞습니다', '사진의 숫자를 다시 봐 주세요 — ' + h(A.check.bad[0])];
+    else v = ['ok', asked ? '확인 끝 — 업체 문의 ' + asked + '건만 남았습니다' : '✓ 선택한 발주와 자재 수량이 같습니다', asked ? '아래 「확인 문구 복사」로 카톡에 보내 주세요' : '단가·지급액은 보지 않았습니다'];
+    var verdict = '<div class="vd ' + v[0] + '"><div><b>' + v[1] + '</b><p>' + v[2] + '</p></div>'
+      + (A.check.total ? '<div class="am">명세서 합계<strong>' + money(A.check.total) + '</strong>누적 · 지급액 아님</div>' : '') + '</div>';
+    var vMatch = (D.base || []).filter(function (o) { return sameVendor(o.vendor, D.vendor); });
+    var scopeHtml = '<div class="sc' + (scopeNeed ? ' need' : '') + '"><span>대조할 발주 <b>' + scope.length + '건</b> · ' + h(D.vendor || '업체 미선택') + ' · 받은 날(' + md(D.date) + ')까지 납품 예정</span>'
+      + (scopeNeed ? '<button class="mi fn" data-a="scopeok">이 ' + scope.length + '건으로 대조</button>' : '<span class="g">✓ 확정</span>')
+      + '<button class="mi" data-a="scope">' + (D.scopeOpen ? '닫기' : '범위 바꾸기') + '</button>'
+      + (D.scopeOpen ? '<ul>' + vMatch.map(function (o) {
+          var on = !!D.include[o.id], why = on ? '' : (o.due && o.due > D.date ? '받은 날 뒤 납품 예정' : '뺌');
+          return '<li><input type="checkbox" data-a="inc" data-id="' + h(o.id) + '"' + (on ? ' checked' : '') + '><span>' + h(o.no) + '</span><span>' + md(o.due) + ' 납품 예정 · ' + (o.error ? '⚠️ 못 읽음' : (o.items || []).length + '품목') + '</span>' + (why ? '<em>' + why + '</em>' : '') + '</li>';
+        }).join('') + '</ul>' : '') + '</div>';
+    // 표
+    var 순서 = { 판독: 0, 차이: 1, 기록없음: 2, 빠짐: 3, 묶음: 4, 맞음: 9 };
+    var list = items.slice();
+    if (D.order === 'todo') list.sort(function (a, b) { return (decided(a) - decided(b)) || (순서[a.kind] - 순서[b.kind]) || ((a.no[0] || 999) - (b.no[0] || 999)); });
+    else list.sort(function (a, b) { return (a.pr ? a.pr.pi * 1000 + a.pr.ri : 99999) - (b.pr ? b.pr.pi * 1000 + b.pr.ri : 99999); });
+    var 제목 = { 판독: '✕ 사진에서 못 읽은 칸 — 원본을 보고 명세서 수량을 넣어 주세요', 차이: '⚠️ 수량이 다름', 기록없음: '❓ 명세서에만 있음 — 발주 기록에서 못 찾음', 빠짐: '❓ 발주했는데 명세서에 없음', 묶음: '🔁 업체가 두 품목을 한 줄로 청구 — 이번 명세서에서만 확인', 맞음: '✓ 수량 같음' };
+    var rows = '', last = '';
+    // 사람이 수량을 넣은 줄은 맞아도 접지 않고 「처리한 줄」에 남깁니다 — 넣은 값을 다시 볼 수 있게(GPT 10/9)
+    var 손 = function (it) { return it.pr && it.pr.r.unsure; };
+    var mats = list.filter(function (it) { return it.kind !== '맞음' || 손(it); }), oks = list.filter(function (it) { return it.kind === '맞음' && !손(it); });
+    if (D.order === 'todo') {
+      mats.forEach(function (it) {
+        var g = decided(it) ? '처리함' : it.kind;
+        if (g !== last) { last = g; rows += '<tr class="gp"><td colspan="6">' + (g === '처리함' ? '☑ 처리한 줄' : 제목[g]) + '</td></tr>'; }
+        rows += row(it, A);
+      });
+      rows += costRows(A);
+      rows += '<tr class="gp"><td colspan="6">✓ 수량 같음 <em>' + oks.length + '줄</em> <button class="mi" data-a="okopen" style="float:right">' + (D.okOpen ? '접기' : '펼치기') + '</button></td></tr>';
+      if (D.okOpen) oks.forEach(function (it) { rows += row(it, A); });
+    } else {
+      list.forEach(function (it) { rows += row(it, A); });
+      rows += costRows(A, true);
+    }
+    var right = '<section class="rt">' + verdict + scopeHtml
+      + '<div class="tb"><div class="seg"><button data-a="order" data-v="todo" class="' + (D.order === 'todo' ? 'on' : '') + '">확인할 것 먼저</button><button data-a="order" data-v="paper" class="' + (D.order === 'paper' ? 'on' : '') + '">명세서 순서대로</button></div><small>줄을 누르면 왼쪽 사진에서 그 줄을 보여 줍니다</small></div>'
+      + (failed.length && A.rows.length ? '<div class="sc need">사진 ' + failed.length + '장은 쓰지 않았습니다 — ' + h(failed[0].error) + ' <button class="mi" data-a="dropfail">그 사진 빼기</button></div>' : '')
+      + '<div class="tl"><table><thead><tr><th>No</th><th>명세서 품명 · 발주 근거</th><th style="text-align:right">명세서</th><th style="text-align:right">발주</th><th style="text-align:right">차이</th><th style="text-align:right">할 일</th></tr></thead><tbody>' + rows + '</tbody></table></div></section>';
+    // 아래
+    var vendorName = D.vendor || '업체';
+    var foot = '<footer class="ft"><span>' + (남은 ? '남은 확인 <b>' + 남은 + '건</b>' + (parts.length ? ' <span style="color:#71717a">(' + parts.join(' · ') + ')</span>' : '') : '<b class="g">남은 확인 0건</b>') + (asked ? ' · 업체 문의 <b>' + asked + '건</b> 담김' : '') + '</span>'
+      + '<span class="nt">이번 단계는 문구 복사까지 · 노션에는 저장되지 않습니다</span><span class="sp"></span>'
+      + (D.copyMsg ? '<span class="msg' + (D.copyMsg.charAt(0) === '!' ? ' r' : '') + '">' + h(D.copyMsg.replace(/^!/, '')) + '</span>' : '')
+      + '<button class="bt ' + (asked ? 'fn' : '') + '" data-a="copy"' + (asked ? '' : ' disabled') + '>💬 ' + h(vendorName) + ' 확인 문구 ' + asked + '건 복사</button></footer>';
+    return '<div class="wk">' + left + right + '</div>' + foot;
+  }
+  function row(it, A) {
+    var dec = D.dec[it.key], cls = 'stmtrow' + (it.key === D.sel ? ' sel' : '');
+    if (it.kind === '판독' || ((it.kind === '차이' || it.kind === '기록없음' || it.kind === '빠짐') && !dec)) cls += ' bad';
+    else if (it.kind === '묶음' && !D.bundle[it.key]) cls += ' ask';
+    else if (it.kind !== '맞음') cls += ' don';
+    var no = it.no.length ? it.no.map(function (n) { return String(n).padStart(2, '0'); }).join('·') : '—';
+    var srcTxt = it.kind === '기록없음' ? '발주 기록에서 같은 품목을 못 찾았습니다' : it.kind === '빠짐' ? '발주 ' + it.po + ' = ' + it.src : '발주 ' + (it.po == null ? '—' : it.po) + ' = ' + (it.src || '기록 없음');
+    var q = (it.kind === '판독' || (it.pr && it.pr.r.unsure))
+      ? '<input class="ed" data-a="edit" data-key="' + h(it.pr.key) + '" placeholder="명세서 수량" value="' + h(D.edit[it.pr.key] == null ? '' : D.edit[it.pr.key]) + '" inputmode="decimal">'
+      : (it.kind === '빠짐' ? '—' : it.q) + '<small style="font-weight:400;color:#a1a1aa"> ' + h(it.unit || '') + '</small>';
+    var d = it.d == null ? '?' : it.d === 0 ? '=' : (it.d > 0 ? '+' + it.d : it.d);
+    var ac = '';
+    if (it.kind === '판독') ac = '<button class="mi" data-a="sel" data-key="' + h(it.key) + '">원본 보기</button>';
+    else if (it.kind === '묶음') ac = '<label class="ck"><input type="checkbox" data-a="bundle" data-key="' + h(it.key) + '"' + (D.bundle[it.key] ? ' checked' : '') + '> 한 줄로 합쳐 청구된 것 맞음</label>';
+    else if (it.kind !== '맞음') {
+      if (dec && dec.type === 'ask') ac = '<button class="mi on" data-a="unask" data-key="' + h(it.key) + '">문의에 담김 · 취소</button>';
+      else if (dec && dec.type === 'reason') ac = '<span style="font-size:11.5px;color:#52525b">사유: ' + h(dec.text) + '</span> <button class="mi" data-a="undec" data-key="' + h(it.key) + '">되돌리기</button>';
+      else ac = '<button class="mi fn" data-a="ask" data-key="' + h(it.key) + '">문의 문구에 담기</button><button class="mi" data-a="reason" data-key="' + h(it.key) + '">차이 사유 남기기</button>'
+        + (it.kind === '기록없음' ? pickSel(it, A) : '');
+      if (D.reasonOpen === it.key) ac += '<div class="rs"><input data-a="reasontext" placeholder="예: 업체가 전화로 정정함 · 현장에서 추가로 받음" value=""><button class="mi fn" data-a="reasonok" data-key="' + h(it.key) + '">적용</button><button class="mi" data-a="reasoncancel">취소</button></div>';
+    }
+    return '<tr class="' + cls + '" data-key="' + h(it.key) + '"><td class="no">' + no + '</td><td class="n">' + h(it.name) + '<small>' + h(srcTxt) + '</small></td>'
+      + '<td class="q">' + q + '</td><td class="q o">' + (it.po == null ? '—' : it.po) + '</td><td class="d">' + d + '</td><td class="ac">' + ac + '</td></tr>';
+  }
+  function pickSel(it, A) {
+    var free = Object.keys(A.pool).filter(function (k) { return !A.pool[k].used; });
+    if (!free.length) return '';
+    return '<div class="rs"><select class="pk" data-a="pickitem" data-key="' + h(it.key) + '"><option value="">어느 발주 품목인가요?</option>'
+      + free.map(function (k) { return '<option value="' + h(k) + '">' + h(A.pool[k].name) + ' (' + A.pool[k].qty + h(A.pool[k].unit || '') + ')</option>'; }).join('') + '</select></div>';
+  }
+  function costRows(A, paper) {
+    if (!A.costs.length) return '';
+    var sum = A.costs.reduce(function (s, x) { return s + (Number(x.r.amount) || 0); }, 0);
+    var head = '<tr class="gp"><td colspan="6">🚚 운임·재단 등 비용 <em>' + A.costs.length + '줄 · 공급가 ' + money(sum) + ' · 발주와 비교하지 않음</em>'
+      + (paper ? '' : ' <button class="mi" data-a="costopen" style="float:right">' + (D.costOpen ? '접기' : '펼치기') + '</button>') + '</td></tr>';
+    if (!paper && !D.costOpen) return head;
+    return head + A.costs.map(function (x) {
+      return '<tr class="stmtrow' + (D.sel === 'c:' + x.key ? ' sel' : '') + '" data-key="c:' + h(x.key) + '"><td class="no">' + String(x.r.no).padStart(2, '0') + '</td><td class="n">' + h(x.r.name) + '</td><td class="q">' + (x.qty == null ? '?' : x.qty) + '</td><td class="q o">—</td><td class="d"></td><td class="ac" style="color:#71717a">'
+        + (Number(x.r.amount) ? money(x.r.amount) : '0원 기재') + '</td></tr>';
+    }).join('');
+  }
+  function copyText() {
+    var A = D.last; if (!A) return '';
+    var asks = A.items.filter(function (it) { return D.dec[it.key] && D.dec[it.key].type === 'ask'; });
+    var L = ['[다시필디자인] ' + siteName() + ' 명세서 확인 부탁드립니다.',
+             '(' + md(D.date) + ' 받은 명세서' + (A.check.total ? ' · 합계 ' + A.check.total.toLocaleString() + '원' : '') + ')', ''];
+    asks.forEach(function (it) {
+      if (it.kind === '빠짐') L.push('· ' + it.name + ' — 저희 발주 ' + it.po + (it.unit || '') + ' 인데 명세서에서 찾지 못했습니다');
+      else if (it.kind === '기록없음') L.push('· ' + it.name + ' — 명세서 ' + it.q + it.unit + ' (저희 발주 기록에서 찾지 못했습니다)');
+      // 단위는 각자 것으로(명세서 EA · 저희 장). 차이는 「명세서가 3 많음/적음」 — 과다 청구라고 단정하지 않습니다
+      else L.push('· ' + it.name + ' — 명세서 ' + it.q + it.unit + ' / 저희 발주 ' + it.po + (it.pu || it.unit) + ' (명세서가 ' + Math.abs(it.d) + (it.d > 0 ? ' 많음' : ' 적음') + ')');
+    });
+    L.push('', '확인 후 회신 부탁드립니다. 감사합니다.');
+    return L.join('\n');
+  }
+
+  // ── 이벤트 ──
+  function on(e) {
+    var t = e.target.closest('[data-a],[data-k],tr.stmtrow'); if (!t) return;
+    var a = t.getAttribute('data-a'), key = t.getAttribute('data-key');
+    if (t.matches('tr.stmtrow') && !a) { D.sel = t.getAttribute('data-key'); D.scrollTo = true; var it = (D.last.items || []).filter(function (x) { return x.key === D.sel; })[0]; if (it && it.pr) D.cur = it.pr.pi; render(); return; }
+    if (e.type === 'change' && t.getAttribute('data-k')) {
+      var k = t.getAttribute('data-k');
+      if (k === 'site') { D.site = (S.sites || []).filter(function (s) { return s.id === t.value; })[0] || null; D.vendor = ''; D.base = null; D.include = null; D.scopeOk = false; if (D.site) loadBase(); else render(); }
+      if (k === 'vendor') { D.vendor = t.value; D.include = null; D.scopeOk = false; render(); }
+      if (k === 'date') { D.date = t.value; D.include = null; D.scopeOk = false; render(); }
+      return;
+    }
+    if (e.type === 'change') {
+      if (a === 'inc') { D.include[t.getAttribute('data-id')] = t.checked; D.scopeOk = false; render(); }
+      if (a === 'bundle') { D.bundle[key] = t.checked; render(); }
+      if (a === 'pickitem') { if (t.value) D.pick[key] = [t.value]; render(); }
+      if (a === 'edit') { D.edit[key] = t.value.trim() === '' ? null : t.value.trim(); render(); }
+      return;
+    }
+    if (e.type !== 'click') return;
+    if (a === 'close') close();
+    if (a === 'report') window.open('https://nagwoon.github.io/layout-meeting/report/', '_blank');
+    if (a === 'settle') { close(); goSettle(); }
+    if (a === 'pick') el('stmtFile').click();
+    if (a === 'fresh') {
+      var 처리 = Object.keys(D.dec).length + Object.keys(D.bundle).length + Object.keys(D.edit).length;
+      if (처리 && !confirm('이 명세서에서 처리한 ' + 처리 + '건(문의 담기·사유·묶음 확인)이 지워집니다. 새 명세서를 시작할까요?')) return;
+      D.pages = []; D.cur = 0; D.sel = null; D.dec = {}; D.bundle = {}; D.edit = {}; D.pick = {}; D.copyMsg = ''; D.scopeOk = false; D.include = null;
+      render();
+    }
+    if (a === 'reload') loadBase();
+    if (a === 'page') { D.cur = +t.getAttribute('data-i'); render(); }
+    if (a === 'zoom') { var v = t.getAttribute('data-v'); D.zoom = v === '0' ? 100 : Math.max(60, Math.min(250, (D.zoom || 100) + (v === '+' ? 25 : -25))); render(); }
+    if (a === 'scopeok') { D.scopeOk = true; render(); }
+    if (a === 'scope') { D.scopeOpen = !D.scopeOpen; render(); }
+    if (a === 'order') { D.order = t.getAttribute('data-v'); render(); }
+    if (a === 'okopen') { D.okOpen = !D.okOpen; render(); }
+    if (a === 'costopen') { D.costOpen = !D.costOpen; render(); }
+    if (a === 'ask') { D.dec[key] = { type: 'ask' }; D.copyMsg = ''; render(); }
+    if (a === 'unask' || a === 'undec') { delete D.dec[key]; D.copyMsg = ''; render(); }
+    if (a === 'reason') { D.reasonOpen = key; render(); var inp = el('stmtApp').querySelector('[data-a="reasontext"]'); if (inp) inp.focus(); }
+    if (a === 'reasoncancel') { D.reasonOpen = null; render(); }
+    if (a === 'reasonok') { var tx = (el('stmtApp').querySelector('[data-a="reasontext"]') || {}).value || ''; if (!tx.trim()) { alert('사유를 한 줄 적어 주세요'); return; } D.dec[key] = { type: 'reason', text: tx.trim() }; D.reasonOpen = null; render(); }
+    if (a === 'sel') { D.sel = key; D.scrollTo = true; render(); }
+    if (a === 'dropfail') { D.pages = D.pages.filter(function (p) { return p.status !== 'fail'; }); D.cur = 0; render(); }
+    if (a === 'copy') {
+      var txt = copyText();
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () {
+        D.copyMsg = '복사했습니다 · 카톡에 붙여넣어 보내세요'; render();
+      }).catch(function () { D.copyMsg = '!복사하지 못했습니다 — 브라우저가 막았습니다'; render(); window.prompt('아래 글을 직접 복사해 주세요', txt); });
+    }
+    e.stopPropagation();
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var app = el('stmtApp');
+    app.addEventListener('click', on);
+    app.addEventListener('change', on);
+    app.addEventListener('change', function (e) { if (e.target.id === 'stmtFile') { addFiles(e.target.files); e.target.value = ''; } });
+    ['dragenter', 'dragover'].forEach(function (k) { app.addEventListener(k, function (e) { e.preventDefault(); var dz = el('stmtDrop'); if (dz) dz.classList.add('drag'); }); });
+    ['dragleave', 'drop'].forEach(function (k) { app.addEventListener(k, function (e) { e.preventDefault(); var dz = el('stmtDrop'); if (dz) dz.classList.remove('drag'); if (k === 'drop') addFiles(e.dataTransfer && e.dataTransfer.files); }); });
+    document.addEventListener('paste', function (e) {
+      if (el('stmtApp').hidden) return;
+      if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+      var it = (e.clipboardData && e.clipboardData.items) || [], fs = [];
+      for (var i = 0; i < it.length; i++) if (it[i].kind === 'file' && it[i].type.indexOf('image') === 0) fs.push(it[i].getAsFile());
+      if (fs.length) { e.preventDefault(); addFiles(fs); }
+    });
+  });
+  return { open: open, close: close, _D: D, _analyse: analyse, _copyText: copyText };
+})();
 </script>
 <script>A4Preview.watch();</script>
 </body>
