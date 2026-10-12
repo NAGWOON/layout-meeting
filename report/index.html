@@ -692,7 +692,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-06b';
+var APP_VER = '2026-10-12a';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -1054,7 +1054,8 @@ function loadSites() {
   api('getSites').then(function (r) {
     clearTimeout(깨우는중);
     if (!r.ok) throw new Error(r.error);
-    state.sites = r.sites || [];
+    // 서버는 새 현장부터 줍니다(발주앱도 같은 목록을 씀). 보고앱은 오래된 현장부터 — 대표 10/12
+    state.sites = (r.sites || []).slice().reverse();
     state.details = r.details || {};   // 서버가 상세까지 같이 보내줬으면 받아둡니다
     var recent = localStorage.getItem(LS_RECENT);
     var html = '';
