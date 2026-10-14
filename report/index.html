@@ -752,7 +752,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-14a';
+var APP_VER = '2026-10-14b';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -1180,6 +1180,7 @@ function pickSite(id) {
   document.getElementById('mSite').textContent = s.name;
   document.getElementById('mStage').textContent = s.stage || '';
   show('scr-mode');
+  안내미리(s.id);   // 작업팀 안내는 서버에서 3초쯤 걸립니다 — 고르는 동안 미리 받아 둡니다
 }
 function backToMode() { show('scr-mode'); }
 
@@ -1203,6 +1204,17 @@ function 월일(d) { var p = String(d || '').slice(0, 10).split('-'); return p.l
 // 예전엔 공정 3일 전에 텔레그램으로 왔습니다. 작업팀은 그보다 훨씬 일찍 주소를 묻습니다 (대표 10/14).
 // 서버(Guide.gs getGuide)가 그 현장 공정표의 공정마다 안내문을 만들어 주고, 여기선 고르고 복사만 합니다.
 var GD = { data: null, open: -1, edit: {}, form: false };
+// 미리 받아 두기 — 현장을 고르는 순간 시작합니다 (10/14 실측: 서버가 깨어 있어도 2.5~3초).
+// 받아 둔 것은 1분만 씁니다. 공정표는 자주 바뀌니, 그보다 오래된 것은 다시 묻습니다.
+var 안내_미리 = {};
+function 안내미리(id) {
+  var 있음 = 안내_미리[id];
+  if (있음 && Date.now() - 있음.t < 60000) return 있음.p;
+  var p = api('getGuide', { sitePageId: id });
+  안내_미리[id] = { t: Date.now(), p: p };
+  p.catch(function () { delete 안내_미리[id]; });   // 실패한 것은 남겨 두지 않습니다
+  return p;
+}
 function startGuide() {
   GD = { data: null, open: -1, edit: {}, form: false };
   document.getElementById('gSite').textContent = state.site.name;
@@ -1210,8 +1222,8 @@ function startGuide() {
   document.getElementById('gForm').classList.add('hide');
   document.getElementById('gList').innerHTML = '<div class="spin"></div>';
   show('scr-guide');
-  api('getGuide', { sitePageId: state.site.id }).then(function (r) {
-    if (!r || !r.ok) throw new Error((r && r.error) || '안내문을 만들지 못했습니다');
+  안내미리(state.site.id).then(function (r) {
+    if (!r || !r.ok) { delete 안내_미리[state.site.id]; throw new Error((r && r.error) || '안내문을 만들지 못했습니다'); }
     GD.data = r;
     for (var i = 0; i < r.items.length; i++) { if (!r.items[i].지남) { GD.open = i; break; } }
     drawGuide();
@@ -1293,6 +1305,7 @@ function saveGuideForm() {
   api('saveGuide', { sitePageId: state.site.id, 값: 값 }).then(function (r) {
     if (!r || !r.ok || !r.items) throw new Error((r && r.error) || '저장은 됐는지 모릅니다 — 다시 열어 확인해 주세요');
     GD.data = r; GD.edit = {}; GD.form = false;
+    delete 안내_미리[state.site.id];   // 저장했으니 미리 받아 둔 것은 옛것입니다
     document.getElementById('gForm').classList.add('hide');
     toast('저장했습니다 — 안내문에 들어갔습니다');
     drawGuide();
