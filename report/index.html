@@ -752,7 +752,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-20a';
+var APP_VER = '2026-10-20b';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -918,7 +918,7 @@ function prefetchItems() {
       if (!r.byOrder)  return 멈춤('byOrder 가 없습니다 — 배포본이 예전 것일 수 있습니다');
       var 받음 = 0;
       OD.orders.forEach(function (o) {
-        if (r.byOrder[o.id]) { o.items = r.byOrder[o.id]; 받음++; }
+        if (r.byOrder[o.id]) { o.items = 서버목록합치기(r.byOrder[o.id]); 받음++; }
       });
       OD.pre = { 상태: '완료', n: 받음,
                  초: ((Date.now() - 잰때) / 1000).toFixed(1) };
@@ -938,7 +938,7 @@ function loadOrderItems(id) {
       if (!o) return;
       // 못 읽었을 때 빙글이만 계속 돌면 「느리네」로 끝납니다. 원인을 보여주고 다시 누르게 합니다.
       if (!r || !r.ok) { o.itemsError = String((r && r.error) || '응답이 없습니다').replace(/^Error:\s*/, ''); renderOrders(); return; }
-      o.items = r.items || [];
+      o.items = 서버목록합치기(r.items || []);
       renderOrders();
     })
     .catch(function (e) {
@@ -1049,31 +1049,78 @@ function toggleOrder(id) {
   if (OD.open && o && !o.items) loadOrderItems(id);   // 미리받기가 실패했을 때만 여기로 옵니다
 }
 
+// ── 검수 체크 (2026-10-20 대표 「눌렀는데 꺼졌다 켜진다」) ──
+// 노션은 방금 쓴 체크를 바로 다시 읽으면 옛 값을 줄 때가 있습니다. 전에는 서버가 돌려준 목록으로
+// 화면을 통째로 다시 그려, 방금 켠 줄이 꺼졌다가(옛 값) 다시 열면 켜졌습니다. 연타하면 앞 응답이
+// 뒤에 누른 줄까지 덮었습니다. 옛 값을 주는 가짜 서버로 재현: 천천히 3줄 → 화면 2줄, 연타 9줄 → 화면 4줄.
+//  · 누른 줄은 누른 값 그대로 둡니다 — 서버 목록은 다른 줄에만 씁니다(누른 뒤 15초)
+//  · 같은 줄을 켰다 껐다 하면 마지막 값만 저장합니다(앞 저장이 끝나면 이어서 한 번 더)
+//  · 서버가 저장 못 했으면(실패 응답 포함) 그 줄만 되돌리고 알립니다
+//  · 다 체크했는데 서버가 옛 목록을 읽어 입고완료를 못 봤으면, 3초 뒤 한 번 더 물어봅니다
+// 저장은 지금처럼 줄마다 바로 나갑니다 — 속도는 그대로입니다.
+var 체크 = {};   // blockId → { 원함, 저장됨, 보내는중, 최근 }
+function 서버목록합치기(items) {
+  if (!items) return items;
+  var 지금 = Date.now();
+  items.forEach(function (x) {
+    var c = 체크[x.id];
+    if (c && (c.보내는중 || 지금 - (c.최근 || 0) < 15000)) x.checked = c.원함;
+  });
+  return items;
+}
+function 화면값(o, blockId, v) {
+  if (o && o.items) o.items.forEach(function (x) { if (x.id === blockId) x.checked = v; });
+}
 function checkItem(orderId, blockId, checked) {
   // 먼저 화면부터 바꿉니다. 현장에서 신호가 느릴 때 손이 멈추면 안 됩니다.
   var o = OD.orders.filter(function (x) { return x.id === orderId; })[0];
-  if (o && o.items) {
-    o.items.forEach(function (x) { if (x.id === blockId) x.checked = checked; });
-    renderOrders();
-  }
-  api('checkOrderItem', { orderPageId: orderId, blockId: blockId, checked: checked })
+  var c = 체크[blockId] || (체크[blockId] = { 저장됨: !checked });
+  c.원함 = checked;
+  화면값(o, blockId, checked);
+  renderOrders();
+  if (!c.보내는중) 체크보내기(orderId, blockId, 0);
+}
+function 체크보내기(orderId, blockId, 다시) {
+  var c = 체크[blockId], v = c.원함;
+  c.보내는중 = true;
+  api('checkOrderItem', { orderPageId: orderId, blockId: blockId, checked: v })
     .then(function (r) {
-      if (!r || !r.ok) return;
+      if (!r || !r.ok) throw new Error((r && r.error) || '서버가 저장하지 않았습니다');
+      c.보내는중 = false; c.저장됨 = v; c.최근 = Date.now();
+      if (c.원함 !== v) return 체크보내기(orderId, blockId, 0);   // 그사이 다시 눌렀습니다 — 마지막 값으로
+      var o = OD.orders.filter(function (x) { return x.id === orderId; })[0];
+      if (!o) return;
       // 체크는 저장됐지만 목록을 다시 못 읽은 경우(r.items 없음) — 화면의 체크를 그대로 둡니다
-      if (o) { if (r.items) o.items = r.items; if (r.완료) o.state = '입고완료'; }
+      if (r.items) o.items = 서버목록합치기(r.items);
+      if (r.완료) o.state = '입고완료';
       // 체크를 풀면 서버가 입고완료를 되돌립니다(2026-10-20) — 화면도 같이 되돌립니다
-      if (o && !checked && o.state === '입고완료' && !r.상태실패) o.state = '발주완료';
+      if (!v && o.state === '입고완료' && !r.상태실패) o.state = '발주완료';
       renderOrders();
       if (r.완료) alert('검수가 끝났습니다. 사무실에 알림을 보냈습니다.');
       if (r.상태실패) alert(r.상태실패);
-    })
-    .catch(function () {
-      // 되돌립니다 — 저장이 안 됐는데 체크된 채로 두면 받은 줄 알게 됩니다
-      if (o && o.items) {
-        o.items.forEach(function (x) { if (x.id === blockId) x.checked = !checked; });
-        renderOrders();
+      // 화면은 다 체크인데 서버가 옛 목록을 읽어 완료를 못 봤으면 — 같은 값으로 한 번 더 저장하며 다시 셉니다(두 번까지)
+      var 화면남음 = (o.items || []).filter(function (x) { return !x.checked; }).length;
+      var 보내는중 = Object.keys(체크).some(function (k) { return 체크[k].보내는중; });
+      if (v && !r.완료 && !화면남음 && !보내는중 && o.state !== '입고완료' && 다시 < 2) {
+        setTimeout(function () {
+          // 그 3초 사이에 다른 줄을 풀었거나 아직 저장 중인 줄이 있으면 다시 묻지 않습니다
+          var o2 = OD.orders.filter(function (x) { return x.id === orderId; })[0];
+          var 남음2 = o2 ? (o2.items || []).filter(function (x) { return !x.checked; }).length : 1;
+          var 중2 = Object.keys(체크).some(function (k) { return 체크[k].보내는중; });
+          if (남음2 || 중2 || !o2 || o2.state === '입고완료' || 체크[blockId].원함 !== v) return;
+          체크보내기(orderId, blockId, 다시 + 1);
+        }, 3000);
       }
-      alert('저장하지 못했습니다. 신호를 확인하고 다시 눌러주세요.');
+    })
+    .catch(function (e) {
+      c.보내는중 = false;
+      if (c.원함 !== v) return 체크보내기(orderId, blockId, 0);   // 다른 값을 또 눌렀으면 그것부터
+      // 되돌립니다 — 저장이 안 됐는데 체크된 채로 두면 받은 줄 알게 됩니다
+      c.원함 = c.저장됨;
+      var o = OD.orders.filter(function (x) { return x.id === orderId; })[0];
+      화면값(o, blockId, c.저장됨);
+      renderOrders();
+      alert('저장하지 못했습니다. 신호를 확인하고 다시 눌러주세요.' + (e && e.message ? '\n(' + String(e.message).replace(/^Error:\s*/, '') + ')' : ''));
     });
 }
 
