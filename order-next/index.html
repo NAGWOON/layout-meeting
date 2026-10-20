@@ -1050,7 +1050,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 
 <div id="toast"></div>
 
-<script src="calc.js?v=2026-10-06"></script>
+<script src="calc.js?v=2026-10-20"></script>
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
 var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner';
@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-15-stmt1b';
+var APP_VER = '2026-10-20-check2';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -1202,6 +1202,7 @@ function boot() {
       o.value = x.id; o.textContent = x.name.replace(/\s*PROJECT\s*$/, ''); s.appendChild(o);
     });
     renderTypes(); renderVendors(); renderShip();
+    if (window.StatementApp) StatementApp.refresh();
     기본자재채우기();
     renderLoss(); renderStud(); renderWalls(); renderCeil(); renderIns(); renderMold();
     cardOpen('calc', S.type === '목자재');
@@ -1225,6 +1226,11 @@ function boot() {
 // ═════ 현장 ═════
 function pickSite() {
   var id = el('siteSel').value;
+  // 기록하는 중(이미지 만들기·서버 저장)에 현장을 바꾸면 내용과 현장이 섞입니다(10/20 GPT R1-5)
+  if ((S.busy || window.__구조저장중) && S.site && id !== S.site.id) {
+    el('siteSel').value = S.site.id;
+    return toast('기록하는 중에는 현장을 바꿀 수 없습니다 — 끝난 뒤에 바꾸세요');
+  }
   S.site = null; S.detail = null; S.elev = null; S.unload = null;
   T2.rows = []; T2.ordered = {};        // 현장이 바뀌면 불러온 발주도 버립니다
   el('setNote2').textContent = '';
@@ -1881,26 +1887,39 @@ function clearQty() {
   S.shipBy = {}; S.typeBy = {}; S.liftBy = {}; S.noteBy = {};
   renderItems(); draw(); bar(); side(); toast('비웠습니다');
 }
+// 지난 발주·고친 발주의 줄을 주문표로 되살립니다. 「지난 발주 불러오기」와 「수량 수정 뒤 화면으로」가 같이 씁니다.
+// 마스터 품목에 얹는 것은 이름·규격·단위가 다 같고 아직 안 채운 품목일 때만 — 아니면 지난 줄 그대로(필름·재단 포함) 임시 품목으로.
+// 이름만 보고 얹어 3000K 가 4000K 로, 2박스가 2개로 바뀌고 같은 이름 둘째 줄이 덮였습니다 (10/20 GPT R1-3 · R2-2 · R2-5)
+function 줄되살리기(items, 후보찾기) {
+  var 깨끗 = function (v) { return String(v || '').replace(/[\s×xX*]/g, '').toLowerCase(); };
+  var hit = 0, miss = 0;
+  S.qty = {}; S.cut = {}; S.extra = []; S.film = {};
+  (items || []).forEach(function (x) {
+    if (!(x.qty > 0)) return;
+    var m = 후보찾기(x.name);
+    var 같음 = m && !(S.qty[m.id] > 0) && 깨끗(x.spec) === 깨끗(m.spec) && (!x.unit || !m.unit || x.unit === m.unit);
+    if (같음) {
+      S.qty[m.id] = x.qty;
+      if (x.cut)  S.cut[m.id]  = x.cut;
+      if (x.film) S.film[m.id] = x.film;
+      hit++;
+    } else {
+      S.extra.push({ name: x.name, spec: x.spec || '', cut: x.cut || '', film: x.film || '', unit: x.unit,
+                     qty: x.qty, group: '이번 발주에만', type: S.type });
+      miss++;
+    }
+  });
+  return { hit: hit, miss: miss };
+}
 function loadPast() {
   var id = el('pastSel').value; if (!id) return;
   toast('불러오는 중…');
   api('getOrderItems', { orderPageId: id }).then(function (r) {
     if (!r || !r.ok) return toast('불러오지 못했습니다');
-    var byName = {}; pool().forEach(function (i) { byName[i.name] = i.id; });
-    var hit = 0, miss = 0; S.qty = {}; S.cut = {}; S.extra = [];
-    (r.items || []).forEach(function (x) {
-      if (!(x.qty > 0)) return;
-      var id2 = byName[x.name];
-      if (id2) {
-        S.qty[id2] = x.qty;
-        if (x.cut)  S.cut[id2]  = x.cut;
-        if (x.film) S.film[id2] = x.film;   // 옛 발주는 필름이 없습니다 — 그대로 비어 옵니다
-        hit++;
-      }
-      else { S.extra.push({ name:x.name, spec:x.spec, cut:x.cut||'', unit:x.unit, qty:x.qty, group:'이번 발주에만', type: S.type }); miss++; }
-    });
+    var byName = {}; pool().forEach(function (i) { byName[i.name] = i; });
+    var n = 줄되살리기(r.items, function (name) { return byName[name]; });
     renderItems(); draw(); bar(); side();
-    toast(hit + '품목 불러왔습니다' + (miss ? ' · ' + miss + '건은 임시 품목으로' : ''));
+    toast(n.hit + '품목 불러왔습니다' + (n.miss ? ' · ' + n.miss + '건은 지난 줄 그대로' : ''));
   });
 }
 
@@ -2521,6 +2540,8 @@ function setVen(v) {
 }
 function setSheetType(t) { S.typeBy[S.cur] = t; draw(); renderSheetTabs(); }
 function goSheetNo(n) {
+  // 기록하는 동안 장을 바꾸면, 번호가 바뀌어 이미지를 다시 그릴 때 다른 장이 그려졌습니다 (10/20 GPT R2-3)
+  if (S.busy && n !== S.cur) return toast('기록하는 중에는 장을 바꿀 수 없습니다 — 끝난 뒤에 바꾸세요');
   S.cur = n;
   renderShip(); draw(); bar();
   el('sheetSub').textContent = venOf(n) || '발주처 미지정';
@@ -3434,7 +3455,8 @@ function saveEdit() {
 
   var lines = E.rows.filter(function (r) { return r.qty > 0 && r.name.trim(); })
     .map(function (r) {
-      return { name:r.name.trim(), spec:r.spec, cut:r.cut, unit:r.unit, qty:r.qty,
+      // film 이 빠져 있어 수량만 고쳐도 서버가 몰딩 필름 없는 줄로 덮어썼습니다(10/20 GPT R1-4)
+      return { name:r.name.trim(), spec:r.spec, cut:r.cut, film:r.film || '', unit:r.unit, qty:r.qty,
                group:(r.group || '기타') };
     });
   api('updateOrder', {
@@ -3449,6 +3471,7 @@ function saveEdit() {
     if (o) o.items = null;
     // 고친 내용을 그대로 화면에 올려 발주서를 다시 뽑을 수 있게 합니다.
     편집을화면으로(lines);
+    if (r.warning) alert(r.warning);
     toast('저장했습니다 — 발주서를 업체에 다시 보내세요');
   }).catch(function () { E.busy = false; renderEdit(); toast('저장하지 못했습니다'); });
 }
@@ -3462,21 +3485,10 @@ function 편집을화면으로(lines) {
   var byName = {};
   Object.keys(후보).forEach(function (n) {
     var c = 후보[n];
-    var m = c.filter(function (i) { return i.type === S.type; })[0] || c[0];
-    byName[n] = m.id;
+    byName[n] = c.filter(function (i) { return i.type === S.type; })[0] || c[0];
   });
-  S.qty = {}; S.cut = {}; S.extra = [];
   S.sheetNo = {}; S.ven = {}; S.done = {}; S.cur = 1;
-  lines.forEach(function (x) {
-    var id = byName[x.name];
-    if (id) {
-      S.qty[id] = x.qty;
-      if (x.cut)  S.cut[id]  = x.cut;
-      if (x.film) S.film[id] = x.film;
-    }
-    else S.extra.push({ name:x.name, spec:x.spec, cut:x.cut || '', unit:x.unit,
-                        qty:x.qty, group:'이번 발주에만', type:S.type });
-  });
+  줄되살리기(lines, function (name) { return byName[name]; });
   S.ven[1] = E.vendor;
   S.orderNo = E.no;
   // 이미 노션에 있는 발주를 고친 것입니다. 여기서 「등록」을 또 누르면
@@ -3592,21 +3604,49 @@ function submit() {
   // 거래처는 비워도 넘어갑니다 — 새 거래처면 발주서를 먼저 만들고 나중에 정하십니다.
   S.busy = true;
   var b = el('submitBtn'); if (b) { b.classList.add('dis'); b.textContent = '등록 중…'; }
+  // 누른 순간의 현장·장·내용을 붙잡아 둡니다. 이미지를 만드는 동안 현장을 바꾸면
+  // A 현장 품목이 B 현장으로 기록됐습니다(10/20 GPT R1-5). 현장 고르기도 기록 중에는 막습니다(pickSite)
+  var 장 = S.cur, 보낸번호 = S.orderNo;
+  var 보낼 = {
+    sitePageId: S.site.id, type: typeOf(장), vendor: venOf(장), orderNo: 보낸번호,
+    due: el('dueIn').value || null, shipKind: shipOf(장), liftKind: liftOf(장),
+    note: (noteOf(장).trim() || el('noteIn').value.trim()),
+    notes: footLines(), items: lines
+  };
+  // 같은 내용을 다시 보내도 한 건만 생기게 하는 표시 — 응답이 끊겨 다시 누르면 두 건 생겼습니다(R1-6).
+  // 표시는 「내용」에 묶습니다. 장에만 묶었더니 실패 뒤 현장·내용을 바꿔 보내도 같은 표시라
+  // 서버가 앞 발주를 돌려주고 새 발주는 기록되지 않았습니다 (10/20 GPT R2-1). 번호(orderNo)는 서버가 바꿀 수 있어 뺍니다
+  var 지문 = (function (t) { var h = 5381; for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); })(
+    JSON.stringify(Object.assign({}, 보낼, { orderNo: '' })));
+  S.reqId = S.reqId || {};
+  if (!S.reqId[장] || S.reqId[장].지문 !== 지문) S.reqId[장] = { 지문: 지문, id: 'r-' + 지문 + '-' + Math.random().toString(36).slice(2, 8) };
+  보낼.requestId = S.reqId[장].id;
 
   let outputPages=[];
   shot().then(function (c) {
     outputPages=(c.a4Pages||[c]).map(x=>x.toDataURL('image/png').split(',')[1]);
     var img = null;
     try { if (c) img = c.toDataURL('image/png').split(',')[1]; } catch (e) { img = null; }
-    return api('submitOrder', {
-      sitePageId: S.site.id, type: typeOf(S.cur), vendor: venOf(S.cur), orderNo: S.orderNo,
-      due: el('dueIn').value || null, shipKind: shipOf(S.cur), liftKind: liftOf(S.cur),
-      note: (noteOf(S.cur).trim() || el('noteIn').value.trim()),
-      notes: footLines(), items: lines, image: img
-    });
+    보낼.image = img;
+    return api('submitOrder', 보낼);
   }).then(async function (r) {
-    S.busy = false;
-    if (!r || !r.ok) { bar(); return toast('등록에 실패했습니다 — ' + ((r && r.error) || '')); }
+    if (!r || !r.ok) { S.busy = false; bar(); return toast('등록에 실패했습니다 — ' + ((r && r.error) || '')); }
+    // 서버에 기록된 순간 「기록됨」으로 잠급니다 — 이미지를 다시 그리는 동안 또 누르면 같은 발주가 두 번 나갔습니다 (R2-3)
+    S.done[장] = r.orderNo;
+    delete S.reqId[장];
+    // 서버가 번호를 바꿨으면(다른 발주가 먼저 그 번호를 씀) 이미지 속 번호가 옛 번호입니다 — 새 번호로 다시 그려 저장합니다(R1-23).
+    // 그리는 동안 장 바꾸기는 막혀 있어(goSheetNo) 지금 화면이 곧 그 장입니다
+    if (r.orderNo && 보낸번호 && r.orderNo !== 보낸번호 && r.orderPageId && !r.again && S.cur === 장) {
+      S.orderNo = r.orderNo; draw();
+      try {
+        var c2 = await shot();
+        var img2 = c2.toDataURL('image/png').split(',')[1];
+        outputPages = (c2.a4Pages || [c2]).map(function (x) { return x.toDataURL('image/png').split(',')[1]; });
+        var s2 = await api('saveOrderImage', { orderPageId: r.orderPageId, image: img2 });
+        if (s2 && s2.ok) { r.fileUrl = s2.fileUrl; r.fileError = null; }
+        else r.fileError = '번호가 ' + r.orderNo + ' 로 바뀌어 발주서를 다시 저장하지 못했습니다 — 이미지를 내려받아 주세요';
+      } catch (e2) { r.fileError = '번호가 ' + r.orderNo + ' 로 바뀌어 발주서를 다시 저장하지 못했습니다 — 이미지를 내려받아 주세요'; }
+    }
     el('resultNote').innerHTML = '✅ <b>' + esc(r.orderNo) + '</b> 등록됨 · ' + r.count + '품목'
       + '<br><a href="' + r.pageUrl + '" target="_blank" style="color:var(--accent)">노션에서 열기</a>'
       + (r.fileUrl ? ' · <a href="' + r.fileUrl + '" target="_blank" style="color:var(--accent)">드라이브 발주서</a>' : '')
@@ -3617,8 +3657,8 @@ function submit() {
       if(id){legacyImageJobs.push({pageId:id,no:r.orderNo,images:outputPages,next:r.fileError?0:1});await retryLegacyImages();}
       else el('resultNote').innerHTML+='<div class="warn">추가 페이지를 저장할 발주 주소를 확인하지 못했습니다. 이미지를 내려받아 주세요.</div>';
     }
-    toast(r.orderNo + ' 등록했습니다');
-    S.done[S.cur] = r.orderNo;
+    toast(r.orderNo + (r.again ? ' — 이미 기록된 발주였습니다 (두 번 기록하지 않았습니다)' : ' 등록했습니다'));
+    S.busy = false;
     S.orderNo = '';
 
     // 남은 장이 있으면 그리로 넘겨드립니다. 다음 장은 발주번호를 새로 받아야 합니다.
@@ -3634,6 +3674,7 @@ function submit() {
     }
     pickSite(); draw(); bar();
   }).catch(function (e) { S.busy = false; bar(); toast('발주 처리를 마치지 못했습니다 — '+e.message); });
+  // (S.busy 는 서버 기록·이미지 다시 그리기까지 다 끝난 뒤 위에서 풉니다)
 }
 
 // ═════ v5 타일 주문 — 기존 목자재/설비 상태와 분리 ═════
@@ -4345,8 +4386,8 @@ function text(s = state()) {
     (s.vendor === '그 외' ? s.otherVendor : s.vendor) + ' 귀중',
     '현장: ' + ctx.name,
     '납품요청: ' + s.due + dow(s.due),
-    '배송: ' + s.shipKind,
-    '양중: ' + s.liftKind,
+    '배송: ' + (s.shipKind || '—'),
+    '양중: ' + (s.liftKind || '—'),
     '현장주소: ' + ctx.address,
     '',
     ...data.lines.map(
@@ -6597,10 +6638,15 @@ function paper(s) {
       rows +=
         '<tr class="cat"><td colspan="5"><span>' +
         h(room.name) +
-        ' · ' +
-        h(room.color === 'N' ? '니켈' : '블랙') +
+        (room.color === 'N' ? ' · 니켈' : room.color === 'B' ? ' · 블랙' : '') +
         '</span></td></tr>';
       lines.forEach((x) => {
+        // 품목 색이 욕실 공통색과 다를 때만 품목 옆에 적습니다. 「색 없음」도 예외라 적습니다 —
+        // 안 적으면 발주서에는 욕실 제목의 「블랙」만 남아 거래처가 블랙으로 보냈습니다(10/20 GPT R1-2)
+        const 최종색 = x.colorOverride || (x.preserveNoColor ? '' : room.color || x.color || '');
+        // 양변기·비데·세면대·욕실장은 원래 색이 없는 품목입니다 — 「색 없음」을 찍으면 거래처에는 잡음입니다
+        const 색무관 = ['양변기', '비데', '세면대', '욕실장'].includes(x.group);
+        const 색글 = 최종색 === room.color || (색무관 && !최종색) ? '' : 최종색 === 'N' ? '니켈' : 최종색 === 'B' ? '블랙' : '색 없음';
         rows +=
           '<tr><td class="no">' +
           ++n +
@@ -6610,7 +6656,7 @@ function paper(s) {
           h(x.name) +
           '<i>' +
           h(
-            [x.size, x.colorOverride === 'N' ? '니켈' : x.colorOverride === 'B' ? '블랙' : '']
+            [x.size, 색글]
               .filter(Boolean)
               .join(' · ')
           ) +
@@ -6927,6 +6973,20 @@ function paintPaper(s) {
         toast('기록된 장에는 옮길 수 없습니다');
         return;
       }
+      // 도어 브랜드·두께는 장 공통값에만 있습니다. 공통값이 다른 장으로 옮기면 그 짝의 브랜드·두께가
+      // 말없이 바뀌어 발주서에 찍혔습니다(10/20 GPT R1-1 · Claude 재현). 다르면 막고 「새 장」으로 안내합니다
+      if (s.type === '도어') {
+        const 다른장 = selections.find((x) => {
+          if (x.value === 'new' || x.value === String(b.active)) return false;
+          const t = b.sheets[Number(x.value)].data.common || {};
+          return (t.brand || '') !== (s.data.common.brand || '') || (t.spec || '') !== (s.data.common.spec || '');
+        });
+        if (다른장) {
+          const t = b.sheets[Number(다른장.value)].data.common || {};
+          alert('브랜드·두께가 다른 장입니다 — 옮기면 그 짝이 「' + (t.brand || '브랜드 없음') + ' (' + (t.spec || '두께 없음') + ')」로 바뀝니다.\n\n같은 사양이면 그 장의 공통값을 먼저 맞추고, 아니면 「새 장」으로 옮기세요.');
+          return;
+        }
+      }
       let newIndex = null;
       const moved = [];
       selections.forEach((sel) => {
@@ -7080,8 +7140,8 @@ function paintPaper(s) {
         (s.vendor || '—')+' 귀중',
         '현장: '+(s.siteName || S.site?.name || ''),
         '납품요청: '+s.due+dow(s.due),
-        '배송: '+s.shipKind,
-        '양중: '+s.liftKind,
+        '배송: '+(s.shipKind||'—'),
+        '양중: '+(s.liftKind||'—'),
         '현장주소: '+(s.address || S.detail?.address || '—')
       ];
     if (s.type === '도기')
@@ -7092,7 +7152,9 @@ function paintPaper(s) {
             x.group,
             x.name,
             x.size,
-            x.color === 'N' ? '니켈' : x.color === 'B' ? '블랙' : x.color,
+            x.color === 'N' ? '니켈' : x.color === 'B' ? '블랙' : x.color ||
+              // 욕실 색이 있는데 이 품목만 색을 뺀 경우 — 발주서 그림과 같이 적습니다(10/20)
+              (!['양변기', '비데', '세면대', '욕실장'].includes(x.group) && (d.rooms.find((r) => r.id === x.roomId) || {}).color ? '색 없음' : ''),
             x.qty + x.unit,
             x.note
           ]
@@ -7183,7 +7245,8 @@ function paintPaper(s) {
       s.message =
         '발주와 이미지를 기록했습니다' +
         (s.unchecked ? ' · ' + s.unchecked + '줄은 다시 확인해야 합니다' : '');
-      s.errors = [];
+      // 옛 줄을 못 지운 경우 등 — 저장은 됐지만 노션에서 손볼 것이 있으면 숨기지 않습니다
+      s.errors = s.warning ? [s.warning] : [];
     } catch (e) {
       s.errors = ['발주 기록은 남았습니다. 이미지만 다시 저장하세요 — ' + e.message];
     } finally {
@@ -7198,7 +7261,9 @@ function paintPaper(s) {
     if (s.phase === 'updateUncertain') {
       try {
         const r = await request('getOrderData', { orderPageId: s.orderPageId });
-        if (JSON.stringify(r.data) === JSON.stringify(s.pending.data.data)) {
+        // 서버는 저장하며 savedAt·orderNo·type 을 붙입니다. 통째로 비교하면 정상 반영돼도 늘 「다름」이었습니다(10/20 GPT R1-20)
+        const 내용 = (x) => { const y = clone(x || {}); delete y.savedAt; delete y.orderNo; delete y.type; return JSON.stringify(y); };
+        if (내용(r.data) === 내용(s.pending.data.data)) {
           s.pending = null;
           return saveImage(s);
         }
@@ -7218,6 +7283,9 @@ function paintPaper(s) {
       s.errors = validate(s);
       if (s.errors.length) return render();
       const data = build(s);
+      // 저장 뒤 만드는 이미지가 그때의 현장 주소를 쓰게 붙잡아 둡니다 — 저장 중 현장을 바꾸면 다른 현장 주소가 찍혔습니다(R1-5)
+      if (!s.siteName) s.siteName = S.site?.name || '';
+      if (!s.address) s.address = S.detail?.address || '';
       s.pending = {
         action: s.orderPageId ? 'updateOrder' : 'submitOrder',
         data: s.orderPageId
@@ -7241,6 +7309,7 @@ function paintPaper(s) {
     persist();
     render();
     const pending = s.pending;
+    window.__구조저장중 = true;
     try {
       const r = await request(pending.action, pending.data);
       if (pending.action === 'submitOrder') {
@@ -7250,6 +7319,7 @@ function paintPaper(s) {
         s.orderNo = r.orderNo;
       }
       s.unchecked = r.unchecked || 0;
+      s.warning = r.warning || '';
       s.message = r.unchecked ? r.unchecked + '줄은 다시 확인해야 합니다' : '';
       s.pending = null;
       persist();
@@ -7266,6 +7336,8 @@ function paintPaper(s) {
       if (e.problems) s.pending = null;
       persist();
       render();
+    } finally {
+      window.__구조저장중 = false;
     }
   }
   async function openOrder(id) {
@@ -7298,6 +7370,7 @@ function paintPaper(s) {
             ? '입고완료 발주는 읽기만 가능합니다. 반품은 기록 화면에서 처리하세요'
             : '원래 발주를 수정합니다. 발주처·납품일은 고정입니다'
       });
+      if (r.warning) s.errors = [r.warning];
       if (targetType === '도어') {
         const normalizeHandle = (value) => {
           if (!value) return value;
@@ -7328,6 +7401,11 @@ function paintPaper(s) {
           if (!rm.id) rm.id = uid();
           x.roomId = rm.id;
           if (!Object.prototype.hasOwnProperty.call(x, 'color')) x.preserveNoColor = true;
+          // 저장된 품목 색이 욕실 공통색과 다르면 예외로 되살립니다 — 안 그러면 다시 열 때 욕실 색(N)으로 덮였습니다(10/20 GPT R1-2)
+          else if (!x.colorOverride && !x.preserveNoColor) {
+            if (x.color && x.color !== rm.color) x.colorOverride = x.color;
+            else if (!x.color && rm.color) x.preserveNoColor = true;
+          }
         });
         s.data.rooms.forEach((rm) => {
           if (!rm.id) rm.id = uid();
@@ -7545,9 +7623,18 @@ var StatementApp = (function () {
             order: 'todo', costOpen: false, okOpen: false, copyMsg: '', lines: {} };
   var MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   var PASTE = MAC ? '⌘V' : 'Ctrl+V';
-  var 비용말 = /재단|운임|양중|사다리|배송|택배|운반|하차|곰방|퀵|용차/;
-  // 업체가 우리와 다르게 부르는 이름 (명세서 품명 → 우리 품목). 10/8 신성목재 명세서에서 실제로 본 것만
-  var 별칭 = { '시트락보드': '시트락석고보드', 'hp523평몰딩80mm': '중백색평몰딩80mm' };
+  // 단수정리·할인은 자재가 아니라 금액 조정 줄입니다(10/20 신성그룹 −7만 9,229원)
+  var 비용말 = /재단|운임|양중|사다리|배송|택배|운반|하차|곰방|퀵|용차|단수|끝전|절사|할인/;
+  // 업체가 우리와 다르게 부르는 이름 (명세서 품명 → 우리 품목). 명세서에서 실제로 본 것만
+  //  · 10/8 신성목재: 시트락 보드 · HP523 평몰딩
+  //  · 신성그룹 타일(협업/2026-10-06_발주앱개편/6_… 3장 + 10/20 실제 명세서): 신성은 자기 코드·품명으로 적습니다
+  var 별칭 = { '시트락보드': '시트락석고보드', 'hp523평몰딩80mm': '중백색평몰딩80mm',
+    'vaticangraphite': 'lumengraphite', 'vaticanblanc': 'lumenblanc', 'vaticanivory': 'lumenivory',
+    'lunagrey': 'linggrey', '612pr09': 'per09', 'veragrey': 'doragrey', 'limestonecream': 'newstarcream',
+    'lme66016': 'lucenero', '룰러': '롤러', '스노우그레이': 'windgrey' };
+  // 같은 회사를 발주에 다른 이름으로 적은 것. 10/20 신성그룹 타일 발주가 「신성타일」·「신성그룹」 둘로 나뉘어
+  // 업체를 고르면 본 발주(신성타일 15줄)가 대조에서 빠졌습니다. ⚠️ 신성목재는 다른 회사입니다 — 여기 넣지 않습니다
+  var 같은회사 = [['신성그룹', '신성타일', '신성세라믹']];
 
   function h(s) { return esc(s); }
   function norm(s) { return String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, ''); }
@@ -7559,7 +7646,37 @@ var StatementApp = (function () {
   }
   function md(s) { return s ? (+s.slice(5, 7)) + '/' + (+s.slice(8, 10)) : '날짜 없음'; }
   function siteName() { return D.site ? D.site.name.replace(/\s*PROJECT\s*$/, '') : ''; }
-  function sameVendor(a, b) { a = norm(a); b = norm(b); return !!a && !!b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0); }
+  // 「주식회사 신성그룹」 → 「신성그룹」 · 같은 회사 다른 이름은 한 이름으로
+  function vendorKey(s) {
+    var n = norm(String(s || '').replace(/주식회사|\(주\)|㈜/g, ''));
+    for (var i = 0; i < 같은회사.length; i++) if (같은회사[i].some(function (x) { return norm(x) === n; })) return norm(같은회사[i][0]);
+    return n;
+  }
+  function sameVendor(a, b) { a = vendorKey(a); b = vendorKey(b); return !!a && !!b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0); }
+  // 타일 한 박스 면적. 신성 명세서는 ㎡, 우리 발주는 박스(협업/…/6_… 3장 ②: 600×600·600×1200·200×1200 모두 1.44)
+  // 150×900 은 10/20 실제 명세서 7.56㎡ = 7박스 → 1.08. 모르는 크기는 null — 환산하지 않고 사람에게 보입니다
+  function dims(s) { var m = String(s || '').match(/(\d{2,4})\s*[x×*X]\s*(\d{2,4})/); return m ? [Math.min(+m[1], +m[2]), Math.max(+m[1], +m[2])] : null; }
+  function boxM2(spec) {
+    var d = dims(spec); if (!d) return null;
+    if (d[0] === 150 && d[1] === 900) return 1.08;
+    if ((d[0] === 600 && (d[1] === 600 || d[1] === 1200)) || (d[0] === 200 && d[1] === 1200) || (d[0] === 300 && (d[1] === 300 || d[1] === 600))) return 1.44;
+    return null;
+  }
+  // 단위 묶음. 신성목재는 장·개·갑 모두 「EA」로 적으므로 EA·빈 칸은 어느 쪽과도 맞다고 봅니다.
+  // 포·봉(포대), 통·말(통)은 업체마다 바꿔 씁니다 — 신성그룹 줄눈 「포」 = 우리 「봉」(10/20 실제 명세서)
+  // 둘 다 구체적인데 묶음이 다르면(박스 ↔ 개) 숫자가 같아도 맞다고 하지 않습니다 (10/20 GPT R2-7)
+  var 단위묶음 = { '개': 'n', '장': 'n', '본': 'n', '매': 'n', 'pcs': 'n', '박스': 'box', 'box': 'box', 'bx': 'box',
+                   '㎡': 'm2', 'm2': 'm2', 'm²': 'm2', '헤베': 'm2', '롤': 'roll', 'roll': 'roll', '포': 'bag', '봉': 'bag', '통': 'can', '조': '조',
+                   '단': '단', '갑': '갑', 'm': 'm', '말': 'can', '세트': 'set', 'set': 'set', 'kg': 'kg', '식': '식' };
+  function unitG(u) { u = String(u || '').replace(/\s/g, '').toLowerCase(); if (!u || u === 'ea') return ''; return 단위묶음[u] || u; }
+  // 규격 속 코드(3000K · 114 · HP523 · 9T 처럼 숫자 든 토막, 가로×세로는 뺌)
+  function specCodes(s) {
+    return String(s || '').replace(/\d{2,4}\s*[x×*X]\s*\d{2,4}(\s*[x×*X]\s*[\d.]+T?)?/g, ' ').split(/[\s()\[\]·,/]+/)
+      .filter(function (t) { return /\d/.test(t) && t.length >= 2 && !/^\d+(kg|l|ml|인치)?$/i.test(t); }).map(norm);
+  }
+  function specKey(s) { var d = dims(s); return d ? 'd' + d[0] + 'x' + d[1] : norm(s); }
+  function isM2(u) { return /^(m2|㎡|m²|헤베)$/i.test(String(u || '').replace(/\s/g, '')); }
+  function r2(n) { return Math.round(n * 100) / 100; }
 
   // ── 열고 닫기 ──
   function open() {
@@ -7569,24 +7686,42 @@ var StatementApp = (function () {
     if (D.site && !D.base && !D.baseBusy) loadBase();
   }
   function close() { el('stmtApp').hidden = true; }
+  // 서버가 깨어나는 동안(최대 30초) 명세서를 먼저 열면 현장 목록이 빈 채로 굳었습니다 — 10/10 대표 「현장 선택도 업체 선택도 안 된다」.
+  // 첫 자료가 도착하면 열려 있는 화면을 다시 그립니다(10/20 ?delay=8 로 재현·확인)
+  function refresh() {
+    var app = el('stmtApp'); if (!app || app.hidden) return;
+    if (!D.site && S.site) D.site = S.site;
+    render();
+    if (D.site && !D.base && !D.baseBusy) loadBase();
+  }
 
   // ── 서버 ──
   function loadBase() {
     if (!D.site) return;
     D.baseBusy = true; D.baseErr = ''; D.base = null; D.include = null; D.scopeOk = false; render();
-    api('getStatementBase', { sitePageId: D.site.id }).then(function (r) {
+    // 현장을 바꾼 뒤 옛 현장 응답이 늦게 오면 그것으로 덮였습니다 — 지금 고른 현장의 마지막 요청만 받습니다 (10/20 GPT R1-14)
+    var 현장id = D.site.id, 차례 = D.baseSeq = (D.baseSeq || 0) + 1;
+    api('getStatementBase', { sitePageId: 현장id }).then(function (r) {
+      if (차례 !== D.baseSeq || !D.site || D.site.id !== 현장id) return;
       D.baseBusy = false;
       if (!r || !r.ok) { D.baseErr = (r && r.error) || '응답이 없습니다'; render(); return; }
       D.base = r.orders || [];
       if (!D.vendor) { var vs = vendors(); if (vs.length === 1) D.vendor = vs[0]; }
       render();
     }).catch(function (e) {
+      if (차례 !== D.baseSeq) return;
       D.baseBusy = false; D.baseErr = e.message === 'unauthorized' ? '접속 키가 풀렸습니다' : '서버에 연결하지 못했습니다'; render();
     });
   }
   function vendors() {
-    var out = [];
-    (D.base || []).forEach(function (o) { if (o.vendor && out.indexOf(o.vendor) < 0) out.push(o.vendor); });
+    // 같은 회사 다른 이름(신성타일·신성그룹)은 한 줄로 — 고르면 두 이름의 발주가 다 들어옵니다
+    var out = [], seen = {};
+    (D.base || []).forEach(function (o) {
+      if (!o.vendor) return;
+      var k = vendorKey(o.vendor); if (seen[k]) return; seen[k] = 1;
+      var g = 같은회사.filter(function (x) { return norm(x[0]) === k; })[0];
+      out.push(g ? g[0] : o.vendor);
+    });
     return out;
   }
   function addFiles(files) {
@@ -7613,7 +7748,8 @@ var StatementApp = (function () {
         if (같은내용) throw new Error('이미 넣은 명세서와 내용이 같습니다 — 같은 명세서를 두 번 넣었는지 봐 주세요');
         pg.read = r; pg.status = 'ok';
         if (!D.vendor && r.vendor) { var v = vendors().filter(function (x) { return sameVendor(x, r.vendor); })[0]; if (v) D.vendor = v; }
-        if (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) D.date = r.date;
+        // 여러 장이면 가장 늦은 날짜로 — 응답이 오는 차례에 따라 대조 범위가 달라지던 것(R1-12)
+        if (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && (!D.dateFromPhoto || r.date > D.date)) { D.date = r.date; D.dateFromPhoto = true; }
         render();
       }).catch(function (e) {
         pg.status = 'fail'; pg.error = e.message;
@@ -7697,45 +7833,99 @@ var StatementApp = (function () {
     });
     // 발주 모으기
     var orders = scopeOrders();
+    // 같은 이름에 규격이 여럿이면(마페이 줄눈 114·119·120) 규격까지 붙여 따로 셉니다 — 한데 합치면 색별 차이가 안 보입니다
+    // 규격이 「114 ANTRACITE」처럼 색 번호·이름일 때만 나눕니다. 「10」「15」(수량을 규격 칸에 적은 것)·빈 칸이 섞이면 나누지 않습니다
+    // — 나누면 신성목재 폼본드(10 / 빈 칸)가 두 줄로 갈려 「묶음」이 됐습니다(10/20 회귀 시험)
+    var specsOf = {}, 색규격 = function (s) { s = String(s || '').trim(); return !!s && !/^\d+$/.test(s) && /\d{3}|[A-Za-z]{3}/.test(s); };
+    orders.forEach(function (o) { (o.items || []).forEach(function (it) {
+      var n = norm(it.name), g = specsOf[n] = specsOf[n] || { s: {}, ok: true }; g.s[norm(it.spec)] = 1; if (!색규격(it.spec)) g.ok = false;
+    }); });
     orders.forEach(function (o) {
       if (o.error) A.blocking.push(o.no + ' 를 읽지 못했습니다 — ' + o.error);
       (o.items || []).forEach(function (it) {
         if (!(it.qty > 0)) return;
-        var k = norm(it.name);
-        var p = A.pool[k] || (A.pool[k] = { key: k, name: it.name, unit: it.unit, qty: 0, src: [], used: false });
+        var n = norm(it.name), g = specsOf[n], split = !!g && g.ok && Object.keys(g.s).length > 1;
+        var k = split ? n + '#' + norm(it.spec) : n;
+        var p = A.pool[k] || (A.pool[k] = { key: k, name: split ? it.name + ' ' + it.spec : it.name, base: it.name, spec: it.spec || '', unit: it.unit, qty: 0, src: [], used: false });
         p.qty += it.qty; p.src.push(md(o.due || o.date) + ' ' + it.qty);
       });
     });
     var poolKeys = Object.keys(A.pool);
-    function byCore(c) { return poolKeys.filter(function (k) { return core(A.pool[k].name) === c; }); }
-    // 명세서 자재 — 같은 품명 두 줄은 합쳐서 봄(분할 기재)
+    function byCore(c) { return poolKeys.filter(function (k) { return !A.pool[k].used && core(A.pool[k].name) === c; }); }
+    // 「마페이 114」「아덱스 메지 FG8」처럼 회사 이름 + 번호만 적힌 줄 — 같은 회사 이름이 들어가고
+    // 그 번호가 품명·규격에 있는 발주 품목이 하나뿐이면 그것으로 봅니다
+    function byBrandCode(name, spec) {
+      var w = String(name || '').split(/\s+/).filter(Boolean), brand = norm(w[0]);
+      var codes = (String(name || '') + ' ' + String(spec || '')).split(/[\s()\[\]·,]+/).filter(function (t) { return /\d/.test(t) && t.length >= 2 && !/^\d+(kg|t|l|ml|mm|인치)$/i.test(t); }).map(norm);
+      if (brand.length < 2 || !codes.length) return [];
+      // 회사·번호 말고 다른 낱말이 있으면(「마페이 케라폭시 114」) 그 낱말도 발주 품목에 있어야 합니다 — 다른 제품군이 같은 번호로 붙던 것(R2-8)
+      var 같은말 = { '메지': '줄눈' };
+      var 나머지 = w.slice(1).map(function (t) { t = norm(t); return 같은말[t] || t; }).filter(function (t) { return t.length >= 2 && codes.indexOf(t) < 0 && !/\d/.test(t); });
+      // 후보는 이미 짝지은 품목까지 포함한 전체에서 셉니다 — 처리 차례 때문에 「하나뿐」이 되던 것(R2-8)
+      var 후보 = poolKeys.filter(function (k) {
+        var p = A.pool[k], pc = core(p.name + ' ' + p.spec);
+        var hay = String(p.name + ' ' + p.spec).split(/[\s()\[\]·,]+/).map(norm);
+        return core(p.name).indexOf(brand) === 0 && codes.every(function (c) { return hay.indexOf(c) >= 0; })
+          && 나머지.every(function (t) { return pc.indexOf(t) >= 0; });
+      });
+      return 후보.length === 1 && !A.pool[후보[0]].used ? 후보 : [];
+    }
+    // 명세서 자재 — 같은 품명 두 줄은 합쳐서 봄(분할 기재 · 날짜별 묶음).
+    // 반품(음수)은 합치지 않고 따로 보입니다 — 합치면 「17박스 발주 / 16박스 청구」처럼 차이로 보여 반품인지 모릅니다
     var merged = {};
+    A.returns = [];
     A.rows.forEach(function (x) {
       if (x.cost) { A.costs.push(x); return; }
-      var k = norm(x.r.name);
-      var m = merged[k] || (merged[k] = { key: 'm:' + k, name: x.r.name, unit: x.r.unit, rows: [], qty: 0, unknown: false });
-      m.rows.push(x); if (x.qty == null) m.unknown = true; else m.qty += x.qty;
+      if (x.qty != null && x.qty < 0) { A.returns.push(x); return; }
+      // 품명만으로 합치면 같은 이름의 다른 규격(600×600 + 600×1200 · 3000K + 4000K)이 한 줄로 섞여
+      // 둘째 규격이 사라진 채 「맞음」이 됐습니다 (10/20 GPT R2-7). 규격·단위까지 같을 때만 합칩니다
+      var k = norm(x.r.name) + '#' + specKey(x.r.spec) + '#' + (isM2(x.r.unit) ? 'm2' : unitG(x.r.unit));
+      var m = merged[k] || (merged[k] = { key: 'm:' + k, name: x.r.name, spec: x.r.spec || '', unit: x.r.unit, rows: [], qty: 0, unknown: false });
+      m.rows.push(x); if (x.qty == null) m.unknown = true; else m.qty = r2(m.qty + x.qty);
     });
     A.mats = Object.keys(merged).map(function (k) { return merged[k]; });
-    // 1차 — 같은 이름 / 괄호 뺀 이름 / 별칭 / 사람이 고른 것
+    // 1차 — 같은 이름 / 괄호 뺀 이름 / 별칭 / 회사+번호 / 사람이 고른 것
     A.mats.forEach(function (m) {
       var ks = D.pick[m.key];
       if (!ks) {
-        var n = norm(m.name), c = core(m.name);
-        if (A.pool[n]) ks = [n];
+        var n = norm(m.name), c = core(m.name), bc, ns = n + '#' + norm(m.spec);
+        if (A.pool[ns] && !A.pool[ns].used) ks = [ns];
+        else if (A.pool[n] && !A.pool[n].used) ks = [n];
         else if (byCore(c).length === 1) ks = byCore(c);
         else if (별칭[c] && byCore(별칭[c]).length === 1) ks = byCore(별칭[c]);
         else if (별칭[n] && byCore(별칭[n]).length === 1) ks = byCore(별칭[n]);
+        else if ((bc = byBrandCode(m.name, m.spec)).length === 1) ks = bc;
       }
       ks = (ks || []).filter(function (k) { return A.pool[k] && !A.pool[k].used; });
       ks.forEach(function (k) { A.pool[k].used = true; });
       m.keys = ks; m.picked = !!D.pick[m.key];
+      // ㎡ 로 청구된 타일을 박스로 — 발주가 박스이고 크기를 알 때만. 딱 떨어지지 않으면 환산하지 않고 그대로 보입니다
+      m.conv = null; m.specBad = '';
+      if (!m.unknown && ks.length && isM2(m.unit) && A.pool[ks[0]].unit === '박스') {
+        var per = boxM2(m.spec) || boxM2(A.pool[ks[0]].spec);
+        if (per) { var b = m.qty / per; if (Math.abs(b - Math.round(b)) < 0.02) m.conv = { boxes: Math.round(b), m2: m.qty, per: per }; }
+        // 환산이 안 되면 ㎡ 숫자와 박스 숫자를 그대로 비교하지 않습니다 — 7.0㎡ 와 7박스가 「같음」으로 지나가던 것(10/20 일부러 틀린 입력으로 잡음)
+        if (!m.conv) m.specBad = '명세서 ' + m.qty + '㎡ 를 박스로 딱 나누지 못했습니다' + (per ? ' (한 박스 ' + per + '㎡ 기준 ' + r2(m.qty / per) + '박스)' : ' — 타일 크기를 몰라 환산 못 함');
+      }
+      // 규격 크기가 서로 다르면(욕조 800×1500 ↔ 발주 800×1600) 수량이 같아도 맞다고 하지 않습니다
+      if (!m.specBad && ks.length === 1) {
+        var P1 = A.pool[ks[0]], a = dims(m.spec), b2 = dims(P1.spec);
+        if (a && b2 && (a[0] !== b2[0] || a[1] !== b2[1])) m.specBad = '규격 다름 — 명세서 ' + m.spec + ' / 발주 ' + P1.spec;
+        // 색온도·색 번호 같은 규격 코드가 서로 하나도 안 겹치면(3000K ↔ 4000K) 다른 물건입니다 (R2-7)
+        // 양쪽 규격 칸이 다 있을 때만 봅니다. 「3*6*10T」 와 「10T」처럼 한쪽이 다른 쪽을 품으면 같은 것으로 봅니다
+        var ca = specCodes(m.spec), cb = specCodes(P1.spec);
+        var 겹침 = ca.some(function (x) { return cb.some(function (y) { return x.indexOf(y) >= 0 || y.indexOf(x) >= 0; }); });
+        if (!m.specBad && ca.length && cb.length && !겹침) m.specBad = '규격 다름 — 명세서 ' + m.spec + ' / 발주 ' + P1.spec;
+        // 단위가 서로 다른 묶음이면(5박스 ↔ 5개) 숫자만 같다고 맞다고 하지 않습니다 (R2-7)
+        var ua = isM2(m.unit) ? 'm2' : unitG(m.unit), ub = unitG(P1.unit);
+        if (!m.specBad && !m.conv && ua && ub && ua !== ub) m.specBad = '단위 다름 — 명세서 ' + m.unit + ' / 발주 ' + P1.unit;
+      }
     });
     // 2차 — 수량이 안 맞을 때, 이름이 겹치는 남은 품목을 더해 정확히 맞으면 「묶음 확인」
     A.mats.forEach(function (m) {
       if (m.unknown || m.picked) return;
       var sum = m.keys.reduce(function (s, k) { return s + A.pool[k].qty; }, 0);
-      if (sum === m.qty) return;
+      if (sum === (m.conv ? m.conv.boxes : m.qty)) return;
       var c = core(m.name); if (c.length < 2) return;
       var extra = poolKeys.filter(function (k) {
         var pc = core(A.pool[k].name); return !A.pool[k].used && pc.length >= 2 && (pc.indexOf(c) >= 0 || c.indexOf(pc) >= 0);
@@ -7747,41 +7937,63 @@ var StatementApp = (function () {
     A.mats.forEach(function (m) {
       var po = m.keys.reduce(function (s, k) { return s + A.pool[k].qty; }, 0);
       var src = m.keys.map(function (k) { return (m.keys.length > 1 ? A.pool[k].name + ' ' : '') + A.pool[k].src.join('+'); }).join(' · ');
-      var it = { key: m.key, no: m.rows.map(function (x) { return x.r.no; }), pr: m.rows[0], name: m.name, unit: m.unit,
-                 q: m.unknown ? null : m.qty, po: m.keys.length ? po : null, src: src, keys: m.keys,
+      var q = m.unknown ? null : (m.conv ? m.conv.boxes : m.qty);
+      var it = { key: m.key, no: m.rows.map(function (x) { return x.r.no; }), pr: m.rows[0], name: m.name, unit: m.conv ? '박스' : m.unit,
+                 q: q, po: m.keys.length ? po : null, src: src, keys: m.keys, conv: m.conv, specBad: m.specBad, rs: m.rows,
                  pu: m.keys.length ? A.pool[m.keys[0]].unit : '' };
       if (m.unknown) it.kind = '판독';
       else if (!m.keys.length) it.kind = '기록없음';
-      else if (m.qty !== po) it.kind = '차이';
+      else if (q !== po || m.specBad) it.kind = '차이';
       else if (m.bundle || (m.picked && m.keys.length > 1)) it.kind = '묶음';
       else it.kind = '맞음';
-      it.d = it.q != null && it.po != null ? it.q - it.po : null;
+      it.d = it.q != null && it.po != null ? r2(it.q - it.po) : null;
       A.items.push(it);
+    });
+    // 반품 줄 — 어느 발주 품목인지 이름으로만 짝을 찾아 보여 줍니다(판정에는 안 씀)
+    A.returns.forEach(function (x) {
+      var n = norm(x.r.name), c = core(x.r.name), k = A.pool[n] ? n : (poolKeys.filter(function (k2) { return core(A.pool[k2].name) === c || core(A.pool[k2].name) === 별칭[c]; })[0] || '');
+      var per = isM2(x.r.unit) && k && A.pool[k].unit === '박스' ? (boxM2(x.r.spec) || boxM2(A.pool[k].spec)) : null;
+      x.ret = per && Math.abs(x.qty / per - Math.round(x.qty / per)) < 0.02 ? Math.round(-x.qty / per) + '박스 (' + r2(-x.qty) + '㎡)' : r2(-x.qty) + (x.r.unit || '');
+      x.retOf = k ? A.pool[k].name : '';
     });
     poolKeys.forEach(function (k) {
       var p = A.pool[k]; if (p.used) return;
       A.items.push({ key: 'p:' + k, no: [], name: p.name, unit: p.unit, q: 0, po: p.qty, d: -p.qty, src: p.src.join('+'), kind: '빠짐', keys: [k] });
     });
     // 검산 — 줄마다 수량×단가=공급가, 공급가 합=하단, 공급가+세액=합계
-    var bad = [], sum = 0, tot = D.pages.filter(function (p) { return p.read && p.read.totalsFound; }).pop();
+    // 합계가 적힌 쪽마다 그 앞(합계 없던 쪽 포함)의 줄 합과 맞춰 봅니다 — 한 명세서가 여러 쪽이면 마지막 쪽에만 합계가 있고,
+    // 날짜별 명세서 여러 장이면 장마다 합계가 있습니다. 전에는 모든 줄 합을 마지막 장 합계 하나와 비교했습니다 (10/20 GPT R1-12)
+    var bad = [], 쌓임 = 0, 합계쪽 = 0, 공급 = 0, 세액 = 0, 총 = 0;
     A.rows.forEach(function (x) {
-      sum += Number(x.r.amount) || 0;
       if (x.qty != null && x.r.price && Math.round(x.qty * x.r.price) !== Math.round(x.r.amount)) bad.push(x.r.no + '번 줄 ' + x.qty + '×' + x.r.price.toLocaleString() + ' ≠ ' + Number(x.r.amount).toLocaleString());
       if (x.r.unsure && x.qty == null) bad.push(x.r.no + '번 줄 수량을 못 읽음');
     });
-    if (!tot) bad.push('사진에서 하단 합계를 찾지 못했습니다');
-    else {
-      if (sum !== tot.read.supply) bad.push('줄 공급가 합 ' + sum.toLocaleString() + ' ≠ 하단 공급가 ' + tot.read.supply.toLocaleString());
-      if (tot.read.supply + tot.read.tax !== tot.read.total) bad.push('공급가+세액 ≠ 합계');
-    }
-    A.check = { ok: !bad.length, bad: bad, total: tot ? tot.read.total : 0, supply: tot ? tot.read.supply : 0, tax: tot ? tot.read.tax : 0 };
+    D.pages.forEach(function (pg, pi) {
+      if (!pg.read) return;
+      pg.read.rows.forEach(function (r) { 쌓임 += Number(r.amount) || 0; });
+      if (!pg.read.totalsFound) return;
+      합계쪽++;
+      var 쪽 = D.pages.length > 1 ? (pi + 1) + '쪽 ' : '';
+      if (Math.round(쌓임) !== Math.round(pg.read.supply)) bad.push(쪽 + '줄 공급가 합 ' + Math.round(쌓임).toLocaleString() + ' ≠ 하단 공급가 ' + pg.read.supply.toLocaleString());
+      if (pg.read.supply + pg.read.tax !== pg.read.total) bad.push(쪽 + '공급가+세액 ≠ 합계');
+      공급 += pg.read.supply; 세액 += pg.read.tax; 총 += pg.read.total; 쌓임 = 0;
+    });
+    if (!합계쪽) bad.push('사진에서 하단 합계를 찾지 못했습니다');
+    else if (Math.round(쌓임)) bad.push('마지막 합계 뒤에 넣은 사진의 줄(' + Math.round(쌓임).toLocaleString() + '원)은 합계로 확인하지 못했습니다');
+    A.check = { ok: !bad.length, bad: bad, total: 총, supply: 공급, tax: 세액 };
     return A;
   }
+  // 사람이 내린 확인(문의 담기·사유·묶음 맞음)은 그때의 양쪽 수량에 묶입니다. 범위를 바꿔 차이가 +1 → +5 가 되면
+  // 예전 확인은 무효 — 다시 확인하게 합니다 (10/20 GPT R1-16)
+  function sigOf(it) { return [it.q, it.po, it.specBad || '', (it.keys || []).join(',')].join('/'); }
+  function itemOf(key) { return ((D.last && D.last.items) || []).filter(function (x) { return x.key === key; })[0]; }
+  function decOf(it) { var d = D.dec[it.key]; return d && d.sig === sigOf(it) ? d : null; }
+  function bundleOk(it) { return D.bundle[it.key] === sigOf(it); }
   function decided(it) {
     if (it.kind === '맞음') return true;
     if (it.kind === '판독') return false;
-    if (it.kind === '묶음') return !!D.bundle[it.key];
-    return !!D.dec[it.key];
+    if (it.kind === '묶음') return bundleOk(it);
+    return !!decOf(it);
   }
 
   // ── 그리기 ──
@@ -7792,7 +8004,7 @@ var StatementApp = (function () {
     }).join('');
     var vs = vendors();
     var top = '<header class="st"><h1>명세서 대조</h1>'
-      + '<label>현장 <select data-k="site"><option value="">현장 선택</option>' + sites + '</select></label>'
+      + '<label>현장 <select data-k="site"><option value="">' + ((S.sites || []).length ? '현장 선택' : '현장 불러오는 중…') + '</option>' + sites + '</select></label>'
       + '<label>업체 <select data-k="vendor"><option value="">' + (D.baseBusy ? '불러오는 중…' : '업체 선택') + '</option>'
       + vs.map(function (v) { return '<option' + (v === D.vendor ? ' selected' : '') + '>' + h(v) + '</option>'; }).join('') + '</select></label>'
       + '<label>명세서 받은 날 <input type="date" data-k="date" value="' + h(D.date) + '"></label>'
@@ -7848,7 +8060,7 @@ var StatementApp = (function () {
     var cnt = { 판독: 0, 차이: 0, 묶음: 0, 기록없음: 0, 빠짐: 0 }, asked = 0, left2 = 0;
     items.forEach(function (it) {
       if (it.kind === '맞음') return;
-      if (D.dec[it.key] && D.dec[it.key].type === 'ask') asked++;
+      if (decOf(it) && decOf(it).type === 'ask') asked++;
       if (!decided(it)) { left2++; cnt[it.kind]++; }
     });
     var scope = scopeOrders(), scopeNeed = !D.scopeOk;
@@ -7884,7 +8096,7 @@ var StatementApp = (function () {
     var 제목 = { 판독: '✕ 사진에서 못 읽은 칸 — 원본을 보고 명세서 수량을 넣어 주세요', 차이: '⚠️ 수량이 다름', 기록없음: '❓ 명세서에만 있음 — 발주 기록에서 못 찾음', 빠짐: '❓ 발주했는데 명세서에 없음', 묶음: '🔁 업체가 두 품목을 한 줄로 청구 — 이번 명세서에서만 확인', 맞음: '✓ 수량 같음' };
     var rows = '', last = '';
     // 사람이 수량을 넣은 줄은 맞아도 접지 않고 「처리한 줄」에 남깁니다 — 넣은 값을 다시 볼 수 있게(GPT 10/9)
-    var 손 = function (it) { return it.pr && it.pr.r.unsure; };
+    var 손 = function (it) { return (it.rs || (it.pr ? [it.pr] : [])).some(function (x) { return x.r.unsure; }); };
     var mats = list.filter(function (it) { return it.kind !== '맞음' || 손(it); }), oks = list.filter(function (it) { return it.kind === '맞음' && !손(it); });
     if (D.order === 'todo') {
       mats.forEach(function (it) {
@@ -7892,11 +8104,13 @@ var StatementApp = (function () {
         if (g !== last) { last = g; rows += '<tr class="gp"><td colspan="6">' + (g === '처리함' ? '☑ 처리한 줄' : 제목[g]) + '</td></tr>'; }
         rows += row(it, A);
       });
+      rows += returnRows(A);
       rows += costRows(A);
       rows += '<tr class="gp"><td colspan="6">✓ 수량 같음 <em>' + oks.length + '줄</em> <button class="mi" data-a="okopen" style="float:right">' + (D.okOpen ? '접기' : '펼치기') + '</button></td></tr>';
       if (D.okOpen) oks.forEach(function (it) { rows += row(it, A); });
     } else {
       list.forEach(function (it) { rows += row(it, A); });
+      rows += returnRows(A);
       rows += costRows(A, true);
     }
     var right = '<section class="rt">' + verdict + scopeHtml
@@ -7912,19 +8126,24 @@ var StatementApp = (function () {
     return '<div class="wk">' + left + right + '</div>' + foot;
   }
   function row(it, A) {
-    var dec = D.dec[it.key], cls = 'stmtrow' + (it.key === D.sel ? ' sel' : '');
+    var dec = decOf(it), cls = 'stmtrow' + (it.key === D.sel ? ' sel' : '');
     if (it.kind === '판독' || ((it.kind === '차이' || it.kind === '기록없음' || it.kind === '빠짐') && !dec)) cls += ' bad';
-    else if (it.kind === '묶음' && !D.bundle[it.key]) cls += ' ask';
+    else if (it.kind === '묶음' && !bundleOk(it)) cls += ' ask';
     else if (it.kind !== '맞음') cls += ' don';
     var no = it.no.length ? it.no.map(function (n) { return String(n).padStart(2, '0'); }).join('·') : '—';
     var srcTxt = it.kind === '기록없음' ? '발주 기록에서 같은 품목을 못 찾았습니다' : it.kind === '빠짐' ? '발주 ' + it.po + ' = ' + it.src : '발주 ' + (it.po == null ? '—' : it.po) + ' = ' + (it.src || '기록 없음');
-    var q = (it.kind === '판독' || (it.pr && it.pr.r.unsure))
-      ? '<input class="ed" data-a="edit" data-key="' + h(it.pr.key) + '" placeholder="명세서 수량" value="' + h(D.edit[it.pr.key] == null ? '' : D.edit[it.pr.key]) + '" inputmode="decimal">'
+    if (it.keys && it.keys.length === 1 && A.pool[it.keys[0]] && norm(A.pool[it.keys[0]].name) !== norm(it.name) && it.kind !== '빠짐') srcTxt = '우리 이름 ' + A.pool[it.keys[0]].name + ' · ' + srcTxt;
+    if (it.conv) srcTxt += ' · 명세서 ' + it.conv.m2 + '㎡ ÷ ' + it.conv.per + '㎡';
+    // 같은 품명 두 줄을 합친 경우, 못 읽은 줄마다 입력칸을 따로 둡니다 — 첫 줄 칸만 있어 둘째 줄은 고칠 수 없었습니다 (10/20 GPT R1-13)
+    var 흐린 = (it.rs || (it.pr ? [it.pr] : [])).filter(function (x) { return x.r.unsure; });
+    var q = 흐린.length
+      ? 흐린.map(function (x) { return '<input class="ed" data-a="edit" data-key="' + h(x.key) + '" placeholder="' + (흐린.length > 1 ? String(x.r.no).padStart(2, '0') + '행 ' : '') + '명세서 수량" value="' + h(D.edit[x.key] == null ? '' : D.edit[x.key]) + '" inputmode="decimal">'; }).join('')
       : (it.kind === '빠짐' ? '—' : it.q) + '<small style="font-weight:400;color:#a1a1aa"> ' + h(it.unit || '') + '</small>';
-    var d = it.d == null ? '?' : it.d === 0 ? '=' : (it.d > 0 ? '+' + it.d : it.d);
+    var specLine = it.specBad ? '<small style="color:#b91c1c;font-weight:700">' + h(it.specBad) + '</small>' : '';
+    var d = it.d == null ? '?' : it.d === 0 ? (it.specBad ? '규격' : '=') : (it.d > 0 ? '+' + it.d : it.d);
     var ac = '';
     if (it.kind === '판독') ac = '<button class="mi" data-a="sel" data-key="' + h(it.key) + '">원본 보기</button>';
-    else if (it.kind === '묶음') ac = '<label class="ck"><input type="checkbox" data-a="bundle" data-key="' + h(it.key) + '"' + (D.bundle[it.key] ? ' checked' : '') + '> 한 줄로 합쳐 청구된 것 맞음</label>';
+    else if (it.kind === '묶음') ac = '<label class="ck"><input type="checkbox" data-a="bundle" data-key="' + h(it.key) + '"' + (bundleOk(it) ? ' checked' : '') + '> 한 줄로 합쳐 청구된 것 맞음</label>';
     else if (it.kind !== '맞음') {
       if (dec && dec.type === 'ask') ac = '<button class="mi on" data-a="unask" data-key="' + h(it.key) + '">문의에 담김 · 취소</button>';
       else if (dec && dec.type === 'reason') ac = '<span style="font-size:11.5px;color:#52525b">사유: ' + h(dec.text) + '</span> <button class="mi" data-a="undec" data-key="' + h(it.key) + '">되돌리기</button>';
@@ -7932,7 +8151,7 @@ var StatementApp = (function () {
         + (it.kind === '기록없음' ? pickSel(it, A) : '');
       if (D.reasonOpen === it.key) ac += '<div class="rs"><input data-a="reasontext" placeholder="예: 업체가 전화로 정정함 · 현장에서 추가로 받음" value=""><button class="mi fn" data-a="reasonok" data-key="' + h(it.key) + '">적용</button><button class="mi" data-a="reasoncancel">취소</button></div>';
     }
-    return '<tr class="' + cls + '" data-key="' + h(it.key) + '"><td class="no">' + no + '</td><td class="n">' + h(it.name) + '<small>' + h(srcTxt) + '</small></td>'
+    return '<tr class="' + cls + '" data-key="' + h(it.key) + '"><td class="no">' + no + '</td><td class="n">' + h(it.name) + '<small>' + h(srcTxt) + '</small>' + specLine + '</td>'
       + '<td class="q">' + q + '</td><td class="q o">' + (it.po == null ? '—' : it.po) + '</td><td class="d">' + d + '</td><td class="ac">' + ac + '</td></tr>';
   }
   function pickSel(it, A) {
@@ -7940,6 +8159,16 @@ var StatementApp = (function () {
     if (!free.length) return '';
     return '<div class="rs"><select class="pk" data-a="pickitem" data-key="' + h(it.key) + '"><option value="">어느 발주 품목인가요?</option>'
       + free.map(function (k) { return '<option value="' + h(k) + '">' + h(A.pool[k].name) + ' (' + A.pool[k].qty + h(A.pool[k].unit || '') + ')</option>'; }).join('') + '</select></div>';
+  }
+  // 반품 — 판정에는 안 쓰고 보이기만. 노션 발주 「반품」 칸에 적을 때 보라고(10/20 실제 명세서 4건)
+  function returnRows(A) {
+    if (!A.returns || !A.returns.length) return '';
+    var sum = A.returns.reduce(function (s, x) { return s + (Number(x.r.amount) || 0); }, 0);
+    return '<tr class="gp"><td colspan="6">↩ 반품 <em>' + A.returns.length + '줄 · ' + money(sum) + ' · 위 수량에서 빼지 않고 따로 봅니다</em></td></tr>'
+      + A.returns.map(function (x) {
+        return '<tr class="stmtrow' + (D.sel === 'r:' + x.key ? ' sel' : '') + '" data-key="r:' + h(x.key) + '"><td class="no">' + String(x.r.no).padStart(2, '0') + '</td><td class="n">' + h(x.r.name)
+          + '<small>' + (x.retOf ? h(x.retOf) + ' 반품' : '발주 품목을 못 찾음') + '</small></td><td class="q">−' + h(x.ret) + '</td><td class="q o">—</td><td class="d"></td><td class="ac" style="color:#71717a">' + money(x.r.amount) + '</td></tr>';
+      }).join('');
   }
   function costRows(A, paper) {
     if (!A.costs.length) return '';
@@ -7954,12 +8183,13 @@ var StatementApp = (function () {
   }
   function copyText() {
     var A = D.last; if (!A) return '';
-    var asks = A.items.filter(function (it) { return D.dec[it.key] && D.dec[it.key].type === 'ask'; });
+    var asks = A.items.filter(function (it) { return decOf(it) && decOf(it).type === 'ask'; });
     var L = ['[다시필디자인] ' + siteName() + ' 명세서 확인 부탁드립니다.',
              '(' + md(D.date) + ' 받은 명세서' + (A.check.total ? ' · 합계 ' + A.check.total.toLocaleString() + '원' : '') + ')', ''];
     asks.forEach(function (it) {
       if (it.kind === '빠짐') L.push('· ' + it.name + ' — 저희 발주 ' + it.po + (it.unit || '') + ' 인데 명세서에서 찾지 못했습니다');
       else if (it.kind === '기록없음') L.push('· ' + it.name + ' — 명세서 ' + it.q + it.unit + ' (저희 발주 기록에서 찾지 못했습니다)');
+      else if (it.specBad && it.d === 0) L.push('· ' + it.name + ' — ' + it.specBad.replace('발주 ', '저희 발주 '));
       // 단위는 각자 것으로(명세서 EA · 저희 장). 차이는 「명세서가 3 많음/적음」 — 과다 청구라고 단정하지 않습니다
       else L.push('· ' + it.name + ' — 명세서 ' + it.q + it.unit + ' / 저희 발주 ' + it.po + (it.pu || it.unit) + ' (명세서가 ' + Math.abs(it.d) + (it.d > 0 ? ' 많음' : ' 적음') + ')');
     });
@@ -7974,14 +8204,14 @@ var StatementApp = (function () {
     if (t.matches('tr.stmtrow') && !a) { D.sel = t.getAttribute('data-key'); D.scrollTo = true; var it = (D.last.items || []).filter(function (x) { return x.key === D.sel; })[0]; if (it && it.pr) D.cur = it.pr.pi; render(); return; }
     if (e.type === 'change' && t.getAttribute('data-k')) {
       var k = t.getAttribute('data-k');
-      if (k === 'site') { D.site = (S.sites || []).filter(function (s) { return s.id === t.value; })[0] || null; D.vendor = ''; D.base = null; D.include = null; D.scopeOk = false; if (D.site) loadBase(); else render(); }
-      if (k === 'vendor') { D.vendor = t.value; D.include = null; D.scopeOk = false; render(); }
+      if (k === 'site') { D.site = (S.sites || []).filter(function (s) { return s.id === t.value; })[0] || null; D.vendor = ''; D.base = null; D.include = null; D.scopeOk = false; D.dec = {}; D.bundle = {}; D.pick = {}; if (D.site) loadBase(); else render(); }
+      if (k === 'vendor') { D.vendor = t.value; D.include = null; D.scopeOk = false; D.dec = {}; D.bundle = {}; D.pick = {}; render(); }
       if (k === 'date') { D.date = t.value; D.include = null; D.scopeOk = false; render(); }
       return;
     }
     if (e.type === 'change') {
       if (a === 'inc') { D.include[t.getAttribute('data-id')] = t.checked; D.scopeOk = false; render(); }
-      if (a === 'bundle') { D.bundle[key] = t.checked; render(); }
+      if (a === 'bundle') { var bi = itemOf(key); D.bundle[key] = t.checked && bi ? sigOf(bi) : false; render(); }
       if (a === 'pickitem') { if (t.value) D.pick[key] = [t.value]; render(); }
       if (a === 'edit') { D.edit[key] = t.value.trim() === '' ? null : t.value.trim(); render(); }
       return;
@@ -7994,7 +8224,7 @@ var StatementApp = (function () {
     if (a === 'fresh') {
       var 처리 = Object.keys(D.dec).length + Object.keys(D.bundle).length + Object.keys(D.edit).length;
       if (처리 && !confirm('이 명세서에서 처리한 ' + 처리 + '건(문의 담기·사유·묶음 확인)이 지워집니다. 새 명세서를 시작할까요?')) return;
-      D.pages = []; D.cur = 0; D.sel = null; D.dec = {}; D.bundle = {}; D.edit = {}; D.pick = {}; D.copyMsg = ''; D.scopeOk = false; D.include = null;
+      D.pages = []; D.cur = 0; D.sel = null; D.dec = {}; D.bundle = {}; D.edit = {}; D.pick = {}; D.copyMsg = ''; D.scopeOk = false; D.include = null; D.dateFromPhoto = false;
       render();
     }
     if (a === 'reload') loadBase();
@@ -8005,11 +8235,11 @@ var StatementApp = (function () {
     if (a === 'order') { D.order = t.getAttribute('data-v'); render(); }
     if (a === 'okopen') { D.okOpen = !D.okOpen; render(); }
     if (a === 'costopen') { D.costOpen = !D.costOpen; render(); }
-    if (a === 'ask') { D.dec[key] = { type: 'ask' }; D.copyMsg = ''; render(); }
+    if (a === 'ask') { var ai = itemOf(key); if (ai) D.dec[key] = { type: 'ask', sig: sigOf(ai) }; D.copyMsg = ''; render(); }
     if (a === 'unask' || a === 'undec') { delete D.dec[key]; D.copyMsg = ''; render(); }
     if (a === 'reason') { D.reasonOpen = key; render(); var inp = el('stmtApp').querySelector('[data-a="reasontext"]'); if (inp) inp.focus(); }
     if (a === 'reasoncancel') { D.reasonOpen = null; render(); }
-    if (a === 'reasonok') { var tx = (el('stmtApp').querySelector('[data-a="reasontext"]') || {}).value || ''; if (!tx.trim()) { alert('사유를 한 줄 적어 주세요'); return; } D.dec[key] = { type: 'reason', text: tx.trim() }; D.reasonOpen = null; render(); }
+    if (a === 'reasonok') { var tx = (el('stmtApp').querySelector('[data-a="reasontext"]') || {}).value || ''; if (!tx.trim()) { alert('사유를 한 줄 적어 주세요'); return; } var ri = itemOf(key); if (ri) D.dec[key] = { type: 'reason', text: tx.trim(), sig: sigOf(ri) }; D.reasonOpen = null; render(); }
     if (a === 'sel') { D.sel = key; D.scrollTo = true; render(); }
     if (a === 'dropfail') { D.pages = D.pages.filter(function (p) { return p.status !== 'fail'; }); D.cur = 0; render(); }
     if (a === 'copy') {
@@ -8035,7 +8265,7 @@ var StatementApp = (function () {
       if (fs.length) { e.preventDefault(); addFiles(fs); }
     });
   });
-  return { open: open, close: close, _D: D, _analyse: analyse, _copyText: copyText };
+  return { open: open, close: close, refresh: refresh, _D: D, _analyse: analyse, _copyText: copyText };
 })();
 </script>
 <script>A4Preview.watch();</script>
