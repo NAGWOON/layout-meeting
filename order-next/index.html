@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-20-check2';
+var APP_VER = '2026-10-20-check3';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -1827,7 +1827,27 @@ function renderItems() {
   }
   el('itemList').innerHTML = html || '<div class="note">보여줄 품목이 없습니다.</div>';
 }
+// 기록하는 동안(서버 저장 → 번호가 바뀌면 이미지 다시 그리기) 주문 내용을 바꾸면, 서버에는 5개가 기록됐는데
+// 다시 그린 발주서에는 고친 9개가 찍혔습니다 (10/20 GPT R3-1). 그동안은 내용을 못 바꾸게 막습니다
+function 기록중막기() {
+  if (!S.busy) return false;
+  var t = Date.now(); if (!기록중막기.t || t - 기록중막기.t > 1500) { 기록중막기.t = t; toast('기록하는 중입니다 — 끝난 뒤에 고쳐주세요'); }
+  return true;
+}
+document.addEventListener('DOMContentLoaded', function () {
+  ['input', 'change', 'click', 'keydown', 'paste', 'drop'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      if (!S.busy) return;
+      var t = e.target; if (!t || !t.closest) return;
+      if (!t.closest('#scr-input, #scr-sheet')) return;
+      if (ev === 'click' && !t.closest('button, input, select, textarea, label, [onclick], [data-field], [data-a]')) return;
+      if (ev === 'keydown' && !t.closest('input, select, textarea, [contenteditable]')) return;
+      e.preventDefault(); e.stopImmediatePropagation(); 기록중막기();
+    }, true);
+  });
+});
 function setQty(id, v) {
+  if (기록중막기()) { renderItems(); return; }
   var n = Number(v);
   if (!n || n <= 0) { delete S.qty[id]; delete S.cut[id]; }
   else S.qty[id] = n;
@@ -1844,9 +1864,10 @@ function markRow(id) {
   var c = row.querySelector('.cut');
   if (c) { c.classList.toggle('hide', !on); if (!on) c.value = ''; }
 }
-function setCut(id, v) { if (v) S.cut[id] = v; else delete S.cut[id]; draw(); elevCalc(); }
-function setFilm(id, v) { if (v) S.film[id] = v; else delete S.film[id]; markRow(id); draw(); }
+function setCut(id, v) { if (기록중막기()) { renderItems(); return; } if (v) S.cut[id] = v; else delete S.cut[id]; draw(); elevCalc(); }
+function setFilm(id, v) { if (기록중막기()) { renderItems(); return; } if (v) S.film[id] = v; else delete S.film[id]; markRow(id); draw(); }
 function setExtra(i, v) {
+  if (기록중막기()) { renderItems(); return; }
   var n = Number(v);
   S.extra[i].qty = n > 0 ? n : 0;   // 고치려고 지운 것일 수 있으니 줄은 남깁니다
   var row = el('itemList').querySelector('[data-extra="' + i + '"]');
@@ -1856,9 +1877,10 @@ function setExtra(i, v) {
   }
   draw(); bar(); side();
 }
-function setExtraCut(i, v) { S.extra[i].cut = v; draw(); }
+function setExtraCut(i, v) { if (기록중막기()) { renderItems(); return; } S.extra[i].cut = v; draw(); }
 // 비운 채로 칸을 벗어나면 그때 줄을 없앱니다
 function blurExtra(i) {
+  if (S.busy) return;
   if (S.extra[i] && S.extra[i].qty > 0) return;
   S.extra.splice(i, 1); renderItems(); draw(); bar(); side();
 }
