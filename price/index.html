@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>단가 관리</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* 단가 관리 — 견적서는 엑셀로, 여기는 기준 단가·근거·이력을 지키는 장치 (대표 10/20) */
+:root{--bg:#eef1f5;--card:rgba(255,255,255,.86);--fg:#16191f;--fg2:#2c323c;--mut:#5d6573;--fnt:#8b93a1;--line:rgba(20,30,50,.07);--acc:#2f6fed;--acc2:rgba(47,111,237,.10);
+--warn:#a16207;--warn2:rgba(217,119,6,.11);--ok:#15803d;--ok2:rgba(22,163,74,.10);--bad:#b91c1c;--bad2:rgba(220,38,38,.07);--head:#14171d;--hm:#a3abb8;--inp:#fff;
+--sh:0 1px 1px rgba(16,24,40,.04),0 2px 4px rgba(16,24,40,.04),0 6px 12px rgba(16,24,40,.04),0 14px 28px rgba(16,24,40,.05),0 30px 60px rgba(16,24,40,.05);
+--num:"Bodoni Moda",Georgia,serif;--sans:Pretendard,"Malgun Gothic",-apple-system,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1217;--card:rgba(28,32,40,.86);--fg:#eef1f6;--fg2:#d5dae3;--mut:#a3abb8;--fnt:#7a8292;--line:rgba(255,255,255,.07);--head:#05070a;--inp:#171b22;
+--acc2:rgba(96,140,255,.16);--warn2:rgba(217,119,6,.18);--ok2:rgba(22,163,74,.18);--bad2:rgba(220,38,38,.15)}}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:var(--sans);color:var(--fg);font-size:13px;background:var(--bg);
+background-image:radial-gradient(60% 50% at 0% 100%,rgba(255,184,120,.14),transparent 70%),radial-gradient(50% 40% at 100% 0%,rgba(120,170,255,.16),transparent 70%);background-attachment:fixed;min-height:100vh}
+button{font:inherit;cursor:pointer;color:inherit}input,select,textarea{font:inherit;color:var(--fg)}
+select{background:var(--inp);border:1px solid var(--line);border-radius:7px;padding:4px 6px}
+.hide{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 14px 60px}
+.head{position:sticky;top:8px;z-index:20;background:var(--head);color:#f4f6fa;border-radius:16px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);flex-wrap:wrap}
+.head::before{content:"";position:absolute;inset:0 18px auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+.mark{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-family:var(--num);font-weight:700;flex:none}
+.seg{display:flex;background:rgba(255,255,255,.08);border-radius:10px;padding:3px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;color:var(--hm);font-weight:600;font-size:12.5px;white-space:nowrap}
+.seg button.on{background:#fff;color:#16191f}
+.seg button small{color:#fbd38d;font-weight:700;margin-left:4px}
+.head .r{margin-left:auto;display:flex;gap:12px;color:var(--hm);font-size:12px;align-items:center;white-space:nowrap}
+.head .r a,.head .r button{color:#cfe0ff;text-decoration:none;font-weight:600;border:0;background:none;padding:0}
+.ver{font-size:10.5px;color:#6b7280}
+.gl{background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;box-shadow:var(--sh);position:relative}
+.gl::before{content:"";position:absolute;inset:0 16px auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);pointer-events:none}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 7px;white-space:nowrap;vertical-align:1px}
+.p-ok{background:var(--ok2);color:var(--ok)}.p-warn{background:var(--warn2);color:var(--warn)}.p-gray{background:rgba(127,135,150,.14);color:var(--mut)}.p-acc{background:var(--acc2);color:var(--acc)}.p-bad{background:var(--bad2);color:var(--bad)}
+.btn{border:0;border-radius:9px;padding:7px 12px;font-weight:700;font-size:12.5px;background:var(--acc2);color:var(--acc);white-space:nowrap}
+.btn.pri{background:var(--acc);color:#fff}.btn.gh{background:transparent;color:var(--mut)}.btn:disabled{opacity:.45;cursor:default}
+.sm{font-size:11px;color:var(--fnt);line-height:1.5}
+.note{margin:10px 0 0;padding:10px 14px;font-size:12px;color:var(--mut);line-height:1.6}
+.note b{color:var(--fg)}
+.err{background:var(--bad2);color:var(--bad);border-radius:10px;padding:10px 12px;margin-top:10px;font-weight:600;line-height:1.6}
+/* 도구줄 */
+.bar{margin-top:10px;padding:10px 12px;position:sticky;top:64px;z-index:15}
+.tool{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.q{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;border-radius:9px;padding:6px 10px;background:var(--inp);box-shadow:inset 0 0 0 1px var(--line)}
+.q input{border:0;outline:0;flex:1;background:transparent;font-size:13px}
+.q .k{font-size:10.5px;color:var(--fnt);border-radius:5px;padding:0 5px;box-shadow:inset 0 0 0 1px var(--line)}
+.chip{border:0;font-size:12px;border-radius:999px;padding:4px 10px;background:rgba(127,135,150,.12);color:var(--mut);font-weight:600;white-space:nowrap}
+.chip.on{background:var(--head);color:#fff}
+.band{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:8px}
+.band button{border:0;padding:5px 8px;border-radius:8px;font-size:12px;font-weight:600;color:var(--mut);white-space:nowrap;display:flex;align-items:baseline;gap:5px;background:rgba(127,135,150,.08);text-align:left}
+.band button b{font-weight:800;color:var(--fg);min-width:14px}
+.band button small{margin-left:auto;font-size:10.5px;color:var(--fnt)}
+.band button.on{background:var(--head);color:#e6eaf1}.band button.on b{color:#fff}
+/* 표 */
+.sheet{margin-top:10px;overflow:hidden}
+.cols,.row{display:grid;grid-template-columns:22px minmax(90px,150px) 1fr 44px 132px 132px 86px;align-items:center}
+.cols{font-size:10.5px;color:var(--fnt);font-weight:600;padding:9px 6px 7px;border-bottom:1px solid var(--line)}
+.cols span:nth-child(5),.cols span:nth-child(6){text-align:right;padding-right:8px}.cols span:nth-child(4),.cols span:nth-child(7){text-align:center}
+.gh{display:flex;align-items:baseline;gap:8px;padding:14px 12px 6px;scroll-margin-top:170px}
+.gh b{font-size:14px}.gh .n{font-weight:800;font-size:14px;width:22px}
+.gh .c{font-size:11px;color:var(--fnt)}
+.row{padding:7px 6px;min-height:46px;border-top:1px solid var(--line);font-size:12.5px;cursor:pointer}
+.row:hover{background:rgba(47,111,237,.035)}
+.row.open{background:rgba(47,111,237,.06);box-shadow:inset 3px 0 0 var(--acc)}
+.row.off{opacity:.5}
+.row .t{color:var(--fnt);text-align:center;font-size:10px}
+.row .a{font-weight:600;padding-right:6px;line-height:1.35}
+.row .d{color:var(--mut);font-size:12px;padding-right:10px;line-height:1.45}
+.row .d i{font-style:normal;color:var(--fnt)}
+.row .u{text-align:center;color:var(--fnt);font-size:11.5px}
+.m{text-align:right;padding-right:8px;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2}
+.m .v{color:var(--fg2);font-weight:500}.m.f .v{color:var(--fg);font-weight:800;font-size:13.5px}.m.z .v{color:var(--fnt);opacity:.6}
+.m s{text-decoration:none;display:block;font-size:10px;color:var(--fnt);font-weight:500}
+.m s.ch{color:var(--warn);font-weight:700}
+.row .s{text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center}
+.oth{margin:4px 8px 8px;border-radius:10px;background:rgba(127,135,150,.06)}
+.oth>button{width:100%;border:0;background:none;display:flex;align-items:center;gap:8px;padding:9px 10px;font-size:12px;color:var(--mut);font-weight:600;text-align:left}
+.oth>button b{color:var(--fg)}.oth>button span:last-child{margin-left:auto;color:var(--acc)}
+.more{padding:10px 12px 14px 30px;background:rgba(47,111,237,.045);display:grid;grid-template-columns:1.1fr 1fr;gap:10px;cursor:default}
+.box{background:var(--inp);border-radius:11px;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.box h5{margin:0 0 6px;font-size:11.5px;color:var(--mut);display:flex;gap:6px;align-items:center}
+.box .full{font-size:12px;line-height:1.55}
+.rec{width:100%;border-collapse:collapse;font-size:11.5px}.rec td{padding:4px 3px;border-top:1px solid var(--line)}.rec td.n{text-align:right;font-variant-numeric:tabular-nums}
+.rec tr.x td{color:var(--fnt);text-decoration:line-through}
+.acts{grid-column:1/3;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+svg text{font-family:var(--sans)}
+/* 서랍 — 단가 정하기 */
+.dim{position:fixed;inset:0;background:rgba(10,12,16,.35);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:41;background:var(--bg);box-shadow:-20px 0 60px rgba(0,0,0,.2);overflow:auto;padding:14px 16px 30px}
+.drawer h2{margin:4px 0 2px;font-size:18px}
+.sec{padding:12px 14px;margin-top:10px}.sec h4{margin:0 0 8px;font-size:12.5px;color:var(--mut);display:flex;gap:8px;align-items:center}
+.comp{width:100%;border-collapse:collapse;font-size:12.5px}.comp td{padding:6px 3px;border-top:1px solid var(--line)}.comp tr:first-child td{border-top:0}.comp td.n{text-align:right;font-variant-numeric:tabular-nums}
+.opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(127,135,150,.08);margin-top:6px;font-size:13px;cursor:pointer;border:0;width:100%;text-align:left}
+.opt i{width:16px;height:16px;border-radius:50%;border:2px solid var(--fnt);flex:none}
+.opt.on{background:var(--acc2);color:var(--acc);font-weight:700}.opt.on i{border-color:var(--acc);background:radial-gradient(circle,var(--acc) 42%,transparent 48%)}
+.opt.no{opacity:.45;cursor:not-allowed}
+.opt .r{margin-left:auto;font-size:11.5px;color:var(--fnt);font-weight:500;text-align:right}
+.in{background:var(--inp);border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:110px;text-align:right}
+.in.wide{width:100%;text-align:left}
+.big{font-family:var(--num);font-weight:700;font-variant-numeric:lining-nums tabular-nums}
+/* 올리기 */
+.drop{display:block;cursor:pointer;margin-top:10px;padding:22px;text-align:center;border:2px dashed rgba(127,135,150,.35);border-radius:14px;color:var(--mut)}
+.drop.over{border-color:var(--acc);background:var(--acc2)}
+.sumr{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sb{display:flex;align-items:baseline;gap:6px;background:var(--card);border-radius:10px;padding:6px 11px;font-size:12px;font-weight:600;color:var(--mut);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.sb b{font-size:15px;color:var(--fg)}.sb.bad b{color:var(--bad)}.sb.warn b{color:var(--warn)}.sb.acc b{color:var(--acc)}.sb.ok b{color:var(--ok)}
+.cs{margin-top:10px;padding:0 0 4px}.csh{display:flex;align-items:center;gap:8px;padding:11px 14px 9px;flex-wrap:wrap}.csh b{font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}.dot.bad{background:#dc2626}.dot.warn{background:#d97706}.dot.gray{background:#64748b}.dot.acc{background:var(--acc)}
+.ck{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start;padding:8px 14px;border-top:1px solid var(--line)}
+.ck .rn{font-weight:800;font-variant-numeric:tabular-nums}.ck.bad{background:var(--bad2)}.ck.bad .rn{color:var(--bad)}
+.ck .why{font-size:12px;color:var(--mut);margin-top:2px;line-height:1.5}.ck .why b{color:var(--fg)}
+.cr{display:grid;grid-template-columns:20px 48px 90px 1fr 150px;gap:8px;align-items:start;padding:8px 14px;border-top:1px solid var(--line);font-size:12.5px}
+.cr .why{font-size:12px;color:var(--mut);margin-top:2px}
+.cr .vv{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}.cr .vv s{display:block;text-decoration:none;font-size:10.5px;color:var(--warn);font-weight:700}
+.cr select{max-width:100%;font-size:11.5px;margin-top:4px}
+.nx{display:flex;align-items:center;gap:10px;padding:12px 2px 0;flex-wrap:wrap}
+/* 공급 */
+.sup{width:100%;border-collapse:collapse;font-size:12.5px}.sup th{font-size:10.5px;color:var(--fnt);text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+.sup td{padding:8px;border-top:1px solid var(--line)}.sup td.n{text-align:right;font-variant-numeric:tabular-nums}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--head);color:#fff;border-radius:11px;padding:10px 16px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.keybox{max-width:380px;margin:12vh auto 0;padding:24px}
+.keybox input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--inp);margin:12px 0}
+.loading{padding:40px;text-align:center;color:var(--mut)}
+/* 좁은 화면 — 읽기만 편하게 */
+@media (max-width:760px){
+ .wrap{padding:8px 8px 60px}.head .r .lg{display:none}.bar{top:58px}
+ .band{grid-template-columns:repeat(4,1fr)}
+ .cols{display:none}
+ .row{display:block;padding:10px 12px}.row .t{display:none}
+ .row .d{margin-top:3px}.row .u{display:inline;margin-left:6px}
+ .row .mm{display:flex;gap:14px;margin-top:6px}.m{text-align:left;padding:0}
+ .m .v::before{content:attr(data-l);font-size:10.5px;color:var(--fnt);font-weight:500}
+ .row .s{flex-direction:row;margin-top:6px;justify-content:flex-start}
+ .more{grid-template-columns:1fr;padding:10px}.acts{grid-column:1}
+ .cr{grid-template-columns:20px 1fr;}.cr .rn2,.cr .gg{display:none}.cr .vv{text-align:left}
+}
+.mm{display:contents}
+</style>
+</head><body>
+<div id="toast"></div>
+<div class="wrap">
+ <div class="keybox gl hide" id="scr-key">
+  <b style="font-size:16px">단가 관리</b>
+  <div class="sm" style="margin-top:4px">발주앱과 같은 접속키를 넣으세요. 대표 키로만 열립니다.</div>
+  <input id="keyIn" type="password" placeholder="접속키" onkeydown="if(event.key==='Enter')login()">
+  <button class="btn pri" onclick="login()" style="width:100%">들어가기</button>
+ </div>
+ <div id="scr-app" class="hide">
+  <div class="head">
+   <span class="mark">D</span>
+   <div class="seg" id="tabs">
+    <button data-t="tbl" class="on" onclick="go('tbl')">견적 단가표</button>
+    <button data-t="tune" onclick="go('tune')">단가 맞추기<small id="tuneN"></small></button>
+    <button data-t="up" onclick="go('up')">견적 올리기</button>
+    <button data-t="sup" onclick="go('sup')">공급 단가</button>
+   </div>
+   <div class="r"><span class="lg" id="loadedAt"></span><button onclick="load(true)">↻<span class="lg"> 새로 불러오기</span></button>
+    <a href="https://www.notion.so/3ff32ffbd25681eea503d7d7b28c1765" target="_blank" rel="noopener">노션 ↗</a><span class="ver" id="ver"></span></div>
+  </div>
+  <div id="loadErr"></div>
+  <!-- 견적 단가표 -->
+  <section id="v-tbl">
+   <div class="bar gl">
+    <div class="tool">
+     <label class="q">🔍 <input id="qIn" placeholder="이 표에서 거르기 — 폐기물, 아덱스, 강마루…" oninput="S.q=this.value;drawTbl()"><span class="k">Ctrl+K</span></label>
+     <button class="chip on" data-f="전체" onclick="setF(this)">전체</button>
+     <button class="chip" data-f="확정" onclick="setF(this)">확정만</button>
+     <button class="chip" data-f="정할것" onclick="setF(this)">정할 것</button>
+     <button class="chip" data-f="안씀" onclick="setF(this)">안 쓰는 줄 보기</button>
+    </div>
+    <div class="band" id="band"></div>
+   </div>
+   <div class="sheet gl">
+    <div class="cols"><span></span><span>시공항목 (A)</span><span>상세내역 (C)</span><span>단위</span><span>자재비 (H)</span><span>노무비 (I)</span><span>상태</span></div>
+    <div id="tblBody"><div class="loading">불러오는 중…</div></div>
+   </div>
+   <div class="note gl">회색 숫자는 <b>후보</b>(지난 견적에서 온 값), 진한 숫자는 <b>확정</b>(회사 기준)입니다. 줄을 누르면 견적별 기록과 근거가 펼쳐지고, 「이 사양 단가 정하기」로 확정합니다. 견적서는 지금처럼 엑셀로 쓰시면 됩니다.</div>
+  </section>
+  <!-- 단가 맞추기 -->
+  <section id="v-tune" class="hide">
+   <div class="note gl" id="tuneHead"></div>
+   <div id="tuneBody"></div>
+  </section>
+  <!-- 견적 올리기 -->
+  <section id="v-up" class="hide">
+   <div class="note gl"><b>쓴 견적 파일(.xlsx · .xlsb)을 올리면</b> ① 금액이 틀어질 수 있는 줄을 먼저 보여주고 ② 단가표와 비교해서 ③ 체크한 줄만 「견적 기록」에 더합니다. <b>견적서는 고치지 않고, 확정 단가도 바꾸지 않습니다.</b> 파일은 이 브라우저에서만 읽고, 고른 줄의 숫자만 노션에 저장합니다.</div>
+   <label class="drop gl" id="drop">
+    <input type="file" id="fileIn" accept=".xlsx,.xlsb,.xlsm,.xls" class="hide" onchange="readFile(this.files[0])">
+    <div style="font-size:22px">📄</div><b>여기에 견적 파일을 끌어 놓거나 눌러서 고르세요</b><div class="sm">「최초견적」 시트를 읽습니다</div>
+   </label>
+   <div id="upBody"></div>
+  </section>
+  <!-- 공급 단가 -->
+  <section id="v-sup" class="hide">
+   <div class="bar gl" style="position:static"><div class="tool"><label class="q">🔍 <input id="supQ" placeholder="품목 거르기 — 석고, MDF, 아덱스…" oninput="drawSup()"></label></div></div>
+   <div class="sheet gl"><div id="supBody"></div></div>
+   <div class="note gl"><b>📚 자재 품목 마스터</b>의 「최근 단가」입니다. 명세서 대조 때 갱신되는 마지막 값이고, <b>기본 발주처</b>는 실제 거래처와 다를 수 있습니다. 단가 기준일이 비어 있는 품목은 언제 값인지 확인되지 않은 것입니다.</div>
+  </section>
+ </div>
+</div>
+<div id="drawerRoot"></div>
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
+var LS_KEY = 'dsf_key';          // 발주앱과 같은 키 (같은 주소라 한 번 넣으면 같이 씁니다)
+var APP_VER = '2026-10-21a';
+var 공종들 = ['1 철거','2 설비','3 전기','4 창호','5 목공','6 타일','7 욕실','8 필름·도장','9 마루','10 도배','11 가구','12 마감·기타'];
+var S = { 줄: [], 견적: [], 공급: [], q: '', f: '전체', open: null, othOpen: {}, tab: 'tbl', up: null, 불러온: null };
+
+// 목공 벽체 자재 구성 — 1m 당 소요량. 근거: 발주앱 목자재 산출기(상 간격 @300 = 0.472단/m · 8자 기준)
+// 와 9/28 단가표(석고 1ply 1.45장 · 양면 2.9장 · 벽 높이 2.35), MDF 는 원장 폭 1,220 → 1÷1.22장 (대표 10/20).
+// 공급가는 📚 자재 품목 마스터의 「최근 단가」를 그 자리에서 읽습니다. 빌린 소요량이 있으면 「가정」이라 규칙값 확정을 막습니다.
+var 구성 = {
+ '[타일 벽체]': [['소송 건조 투바이', 0.472, '상 @300 (산출기)'], ['일반 석고보드', 2.9, '양면 1ply · 높이 2.35']],
+ '[단열]':     [['합판 다루끼 (LVL) 8자', 0.472, '상 @300 (산출기)'], ['일반 석고보드', 1.45, '1ply · 높이 2.35']],
+ '[신설 벽체]': [['소송 건조 투바이', 0.472, '가정 — 투바이+석고 것을 빌림'], ['고밀도 MDF 9T (U-30) 수입', 1 / 1.22, '원장 1÷1.22 (산출기와 같음)']]
+};
+var 배수 = 2.0;
+
+function el(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function won(n) { return n == null || n === '' ? '—' : Math.round(n).toLocaleString('ko-KR'); }
+function toast(m) { var t = el('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('show'); }, 2600); }
+function ymd(d) { var t = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return t.toISOString().slice(0, 10); }
+function 공백(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
+
+// ───── 서버 ─────
+function api(action, data) {
+  if (window.__priceMock) return Promise.resolve(window.__priceMock(action, data || {}));
+  return fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: action, key: localStorage.getItem(LS_KEY) || '', data: data || {} }) })
+    .then(function (r) { return r.json(); })
+    .then(function (r) { if (r && r.error === 'unauthorized') { logout(); throw new Error('접속키가 맞지 않습니다'); } return r; });
+}
+function 서버말(r) {
+  var e = (r && r.error) || '';
+  if (/페이지 id|모르는 요청/.test(e)) return '서버에 단가 기능이 아직 없습니다 — Price.gs 를 붙여넣고 Code.gs 를 바꾼 뒤 「새 버전」으로 배포해야 합니다 (사용법 1단계).';
+  return e || '알 수 없는 오류';
+}
+function login() {
+  var k = el('keyIn').value.trim(); if (!k) return;
+  localStorage.setItem(LS_KEY, k); start();
+}
+function logout() { localStorage.removeItem(LS_KEY); el('scr-app').classList.add('hide'); el('scr-key').classList.remove('hide'); }
+function start() {
+  if (!localStorage.getItem(LS_KEY) && !window.__priceMock) { el('scr-key').classList.remove('hide'); return; }
+  el('scr-key').classList.add('hide'); el('scr-app').classList.remove('hide'); el('ver').textContent = APP_VER;
+  load(false);
+}
+function load(again) {
+  el('loadErr').innerHTML = '';
+  if (again) toast('새로 불러오는 중…');
+  return api('priceInit', {}).then(function (r) {
+    if (!r || !r.ok) { el('loadErr').innerHTML = '<div class="err">불러오지 못했습니다 — ' + esc(서버말(r)) + '</div>'; el('tblBody').innerHTML = ''; return; }
+    S.줄 = r.줄.map(풀기); S.견적 = r.견적 || []; S.공급 = r.공급 || []; S.불러온 = new Date();
+    if (r.공급오류) el('loadErr').innerHTML = '<div class="err">' + esc(r.공급오류) + ' — 단가표는 그대로 씁니다</div>';
+    el('loadedAt').textContent = S.불러온.toTimeString().slice(0, 5) + ' 불러옴';
+    drawAll(); if (again) toast('새로 불러왔습니다');
+  }).catch(function (e) { el('loadErr').innerHTML = '<div class="err">연결에 실패했습니다 — ' + esc(e.message || e) + '</div>'; });
+}
+
+// 「견적 기록」 한 줄 = 키 · 자재비 · 노무비 · 수량 · r행 [· 표시]
+function 풀기(r) {
+  r.기록들 = String(r.기록 || '').split('\n').filter(String).map(function (x) {
+    var p = x.split(' · ');
+    return { 키: p[0], 자: +p[1] || 0, 노: +p[2] || 0, 수량: p[3] === '' ? null : +p[3], 행: p[4] || '', 표: p[5] || '' };
+  }).sort(function (a, b) { return a.키 < b.키 ? -1 : 1; });
+  r.이력들 = String(r.이력 || '').split('\n').map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean);
+  var 쓸 = r.기록들.filter(function (x) { return x.표 !== '1회성'; });
+  var 값들 = {}; 쓸.forEach(function (x) { 값들[x.자 + '/' + x.노] = 1; });
+  r.후보수 = Object.keys(값들).length;
+  r.구성 = 구성찾기(r);
+  return r;
+}
+function 구성찾기(r) {
+  if (r.공종 !== '5 목공' || r.항목 !== '벽체 목공 자재') return null;
+  for (var k in 구성) if (공백(r.상세).indexOf(k) === 0) return 구성[k];
+  return null;
+}
+function 공급가(이름) { return S.공급.filter(function (s) { return s.품목 === 이름; })[0] || null; }
+function 원가계산(c) {
+  var 합 = 0, 가정 = false, 빠짐 = [], 줄 = c.map(function (x) {
+    var s = 공급가(x[0]); var 가 = s && s.단가;
+    if (!가) 빠짐.push(x[0]); if (/가정/.test(x[2])) 가정 = true;
+    합 += (가 || 0) * x[1];
+    return { 이름: x[0], 량: x[1], 근거: x[2], 단가: 가, 단위: s && s.단위, 기준일: s && s.기준일, 발주처: s && s.발주처 };
+  });
+  return { 줄: 줄, 원가: 합, 규칙: Math.floor(합 * 배수 / 1000) * 1000, 가정: 가정, 빠짐: 빠짐, 가능: !가정 && !빠짐.length };
+}
+function 정할것(r) { return r.상태 !== '확정' && r.상태 !== '안 씀' && (r.후보수 > 1 || r.확인 || r.구성); }
+
+// ───── 탭 ─────
+function go(t) {
+  S.tab = t;
+  ['tbl','tune','up','sup'].forEach(function (x) { el('v-' + x).classList.toggle('hide', x !== t); });
+  [].forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.dataset.t === t); });
+  if (t === 'tune') drawTune(); if (t === 'sup') drawSup();
+  try { localStorage.setItem('dsf_price_tab', t); } catch (e) {}
+}
+function drawAll() {
+  drawTbl(); drawTune(); drawSup();
+  var n = S.줄.filter(정할것).length; el('tuneN').textContent = n ? n : '';
+}
+function setF(b) { S.f = b.dataset.f; [].forEach.call(document.querySelectorAll('.chip[data-f]'), function (x) { x.classList.toggle('on', x === b); }); drawTbl(); }
+
+// ───── 견적 단가표 ─────
+function 걸러(r) {
+  if (S.f === '안씀') { if (r.상태 !== '안 씀') return false; }
+  else if (r.상태 === '안 씀') return false;
+  if (S.f === '확정' && r.상태 !== '확정') return false;
+  if (S.f === '정할것' && !정할것(r)) return false;
+  if (S.q) { var q = S.q.toLowerCase(); if ((r.항목 + ' ' + r.상세 + ' ' + r.단위).toLowerCase().indexOf(q) < 0) return false; }
+  return true;
+}
+function drawTbl() {
+  var body = '', 띠 = '';
+  공종들.forEach(function (g, gi) {
+    var 모두 = S.줄.filter(function (r) { return r.공종 === g; }).sort(function (a, b) { return (a.순서 || 0) - (b.순서 || 0); });
+    var 주 = 모두.filter(function (r) { return r.출처 !== '다른 견적' && 걸러(r); });
+    var 옛 = 모두.filter(function (r) { return r.출처 === '다른 견적' && 걸러(r); });
+    띠 += '<button onclick="점프(' + gi + ')"><b>' + (gi + 1) + '</b>' + esc(g.split(' ').slice(1).join(' ')) + '<small>' + 주.length + '</small></button>';
+    if (!주.length && !옛.length) return;
+    var 확 = 모두.filter(function (r) { return r.상태 === '확정'; }).length;
+    body += '<div class="gh" id="g' + gi + '"><span class="n">' + (gi + 1) + '</span><b>' + esc(g.split(' ').slice(1).join(' ')) + '</b><span class="c">' + 주.length + '줄 · 확정 ' + 확 + ' · 정할 것 ' + 모두.filter(정할것).length + '</span></div>';
+    주.forEach(function (r) { body += 줄그림(r); });
+    if (옛.length) {
+      var 열림 = S.othOpen[g] || S.q;
+      body += '<div class="oth"><button onclick="S.othOpen[\'' + g + '\']=!S.othOpen[\'' + g + '\'];drawTbl()"><b>다른 견적에서 쓴 항목</b> ' + 옛.length + '줄 · 기준 견적(10/15)에는 없음<span>' + (열림 ? '접기 ▴' : '펼치기 ▾') + '</span></button>' + (열림 ? 옛.map(줄그림).join('') : '') + '</div>';
+    }
+  });
+  el('band').innerHTML = 띠;
+  el('tblBody').innerHTML = body || '<div class="loading">' + (S.줄.length ? '거른 조건에 맞는 줄이 없습니다' : '불러오는 중…') + '</div>';
+}
+function 점프(gi) { var g = el('g' + gi); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function 상태칸(r) {
+  var p = [];
+  if (r.상태 === '확정') p.push('<span class="pill p-ok">확정</span>');
+  else if (r.상태 === '안 씀') p.push('<span class="pill p-gray">안 씀</span>');
+  else if (r.확인) p.push('<span class="pill p-warn">확인 필요</span>');
+  else if (r.후보수 > 1) p.push('<span class="pill p-warn">후보 ' + r.후보수 + '개</span>');
+  else p.push('<span class="pill p-gray">후보</span>');
+  if (r.조건 && r.조건 !== '일반') p.push('<span class="pill p-gray">' + esc(r.조건) + '</span>');
+  if (r.출처 === '새로 올림') p.push('<span class="pill p-acc">새</span>');
+  return p.join('');
+}
+function 금액칸(r, k) {
+  var v = r[k], 확 = r.상태 === '확정';
+  var 마지막 = r.기록들.filter(function (x) { return x.표 !== '1회성'; }).slice(-1)[0], 앞 = null;
+  if (!확 && r.후보수 > 1 && 마지막) {
+    var 다른 = r.기록들.filter(function (x) { return x.표 !== '1회성' && (x.자 !== 마지막.자 || x.노 !== 마지막.노); }).slice(-1)[0];
+    if (다른) 앞 = k === '자' ? 다른.자 : 다른.노;
+  }
+  var note = 확 ? '<s>' + esc((r.확정일 || '').slice(5).replace('-', '/')) + ' 확정</s>'
+    : (앞 != null && 앞 !== (v || 0)) ? '<s class="ch">전 ' + won(앞) + '</s>' : '';
+  if (k === '자' && r.조건 === '현장별 총액' && v) note = '<s>총액</s>';
+  if (r.조건 === '자재+시공 일괄' && v) note = note || '<s>자재+시공 일괄</s>';
+  return '<span class="m ' + (!v ? 'z' : 확 ? 'f' : '') + '"><span class="v" data-l="' + (k === '자' ? '자재 ' : '노무 ') + '">' + (v ? won(v) : '0') + '</span>' + note + '</span>';
+}
+function 줄그림(r) {
+  var open = S.open === r.id;
+  var m = r.상세.match(/^\[([^\]]+)\]\s*/), d = m ? '<i>[' + esc(m[1]) + ']</i> ' + esc(r.상세.slice(m[0].length)) : esc(r.상세);
+  return '<div class="row' + (open ? ' open' : '') + (r.상태 === '안 씀' ? ' off' : '') + '" onclick="펼치기(\'' + r.id + '\')"><span class="t">' + (open ? '▾' : '▸') + '</span>'
+    + '<span class="a">' + esc(r.항목) + '</span><span class="d">' + d + '</span><span class="u">' + esc(r.단위) + '</span>'
+    + '<span class="mm">' + 금액칸(r, '자') + 금액칸(r, '노') + '</span><span class="s">' + 상태칸(r) + '</span></div>'
+    + (open ? 펼침(r) : '');
+}
+function 펼치기(id) { S.open = S.open === id ? null : id; drawTbl(); }
+function 점차트(vals, W, H, 기준) {
+  var vs = vals.filter(function (v) { return v.v != null; }).map(function (v) { return v.v; });
+  if (기준) vs.push(기준);
+  if (!vs.length) return '<div class="sm">기록 없음</div>';
+  var mn = Math.min.apply(null, vs) * 0.85, mx = Math.max.apply(null, vs) * 1.12; if (mx === mn) { mn = mn * 0.8; mx = mx * 1.2 + 1; }
+  var L = 12, R = W - 12, T = 16, B = H - 18, n = vals.length;
+  var X = function (i) { return n === 1 ? (L + R) / 2 : L + i * (R - L) / (n - 1); }, Y = function (v) { return B - (v - mn) / (mx - mn) * (B - T); };
+  var g = '';
+  if (기준) g += '<line x1="' + L + '" x2="' + R + '" y1="' + Y(기준) + '" y2="' + Y(기준) + '" stroke="#15803d" stroke-dasharray="4 3"/><text x="' + R + '" y="' + (Y(기준) - 4) + '" font-size="9.5" fill="#15803d" text-anchor="end">기준 ' + won(기준) + '</text>';
+  var 앞 = null;
+  vals.forEach(function (v, i) {
+    g += '<text x="' + X(i) + '" y="' + (H - 4) + '" font-size="9" fill="#8b93a1" text-anchor="middle">' + esc(v.라벨) + '</text>';
+    if (v.v == null) return;
+    var x1 = v.표 === '1회성';
+    g += '<circle cx="' + X(i) + '" cy="' + Y(v.v) + '" r="4" fill="' + (x1 ? '#fff' : v.빈 ? '#fff' : '#5d6573') + '" stroke="' + (x1 ? '#b45309' : '#5d6573') + '" stroke-width="1.6"/>';
+    if (v.v !== 앞 || i === n - 1 || x1) g += '<text x="' + X(i) + '" y="' + (Y(v.v) - 8) + '" font-size="9.5" fill="' + (x1 ? '#b45309' : 'currentColor') + '" text-anchor="middle">' + won(v.v) + (x1 ? ' 1회성' : '') + '</text>';
+    앞 = v.v;
+  });
+  return '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="max-width:' + W + 'px;color:var(--fg)">' + g + '</svg>';
+}
+function 펼침(r) {
+  var k = r.자 || !r.노 ? '자' : '노';
+  var 줄 = r.기록들.map(function (x) {
+    return '<tr class="' + (x.표 === '1회성' ? 'x' : '') + '"><td>' + esc(x.키) + (x.표 ? ' <span class="pill p-gray">' + esc(x.표) + '</span>' : '') + '</td><td class="n">' + won(x.자) + '</td><td class="n">' + won(x.노) + '</td><td class="n">' + (x.수량 == null ? '' : x.수량) + '</td><td class="n sm">' + esc(x.행) + '</td></tr>';
+  }).join('');
+  var vals = r.기록들.map(function (x) { return { 라벨: x.키.slice(2, 6).replace(/^(\d\d)(\d\d)$/, '$1/$2'), v: k === '자' ? x.자 : x.노, 빈: !x.수량, 표: x.표 }; });
+  var 계 = r.구성 ? 원가계산(r.구성) : null;
+  var 확인 = r.확인 ? '<div class="sm" style="color:var(--warn);margin-top:6px">⚠ ' + esc(r.확인) + '</div>' : '';
+  return '<div class="more" onclick="event.stopPropagation()">'
+    + '<div class="box"><h5>상세내역 · 견적별 기록</h5><div class="full">' + esc(r.상세) + '</div>' + 확인
+    + '<table class="rec" style="margin-top:6px"><tr class="sm"><td>견적</td><td class="n">자재비</td><td class="n">노무비</td><td class="n">수량</td><td class="n">행</td></tr>' + 줄 + '</table></div>'
+    + '<div class="box"><h5>견적별 ' + (k === '자' ? '자재비' : '노무비') + ' · 원/' + esc(r.단위) + '</h5>' + 점차트(vals, 320, 104, r.상태 === '확정' ? r[k] : (계 && 계.가능 && k === '자' ? 계.규칙 : null))
+    + (r.근거 ? '<div class="sm" style="margin-top:6px">근거 · ' + esc(r.근거) + '</div>' : '')
+    + (r.상태 === '확정' ? '<div class="sm">확정 ' + esc(r.확정일 || '') + ' · ' + esc(r.확정자 || '') + '</div>' : '') + '</div>'
+    + '<div class="acts"><span class="sm">' + (r.상태 === '확정' ? '확정된 회사 기준입니다' : '아직 후보입니다 — 지난 견적 값이라 회사 기준이 아닙니다') + '</span>'
+    + '<button class="btn pri" style="margin-left:auto" onclick="서랍(\'' + r.id + '\')">' + (r.상태 === '확정' ? '확정값 고치기 · 되돌리기' : '이 사양 단가 정하기 →') + '</button></div></div>';
+}
+
+// ───── 단가 정하기 서랍 ─────
+var D = null;
+function 서랍(id) {
+  var r = S.줄.filter(function (x) { return x.id === id; })[0]; if (!r) return;
+  var 쓸 = r.기록들.filter(function (x) { return x.표 !== '1회성'; });
+  var 묶 = {}; 쓸.forEach(function (x) { var k = x.자 + '/' + x.노; (묶[k] = 묶[k] || { 자: x.자, 노: x.노, 키들: [] }).키들.push(x.키); });
+  var 마지막 = 쓸.slice(-1)[0];
+  var 계 = r.구성 ? 원가계산(r.구성) : null;
+  var 옵 = [];
+  if (계) 옵.push({ id: '규칙', 이름: '규칙값', 자: 계.규칙, 노: r.노 || 0, 막힘: !계.가능, 설명: 계.가능 ? '원가 ' + won(계.원가) + ' × ' + 배수 + ' · 천원 절사' : (계.가정 ? '소요량 가정이 있어 규칙값으로 확정할 수 없습니다' : '공급가 없는 자재: ' + 계.빠짐.join(', ')) });
+  if (마지막) 옵.push({ id: '최근', 이름: '최근 견적값', 자: 마지막.자, 노: 마지막.노, 설명: 마지막.키 });
+  Object.keys(묶).forEach(function (k) {
+    var b = 묶[k]; if (마지막 && b.자 === 마지막.자 && b.노 === 마지막.노) return;
+    옵.push({ id: 'v' + k, 이름: '앞선 견적값', 자: b.자, 노: b.노, 설명: b.키들[0] + (b.키들.length > 1 ? ' ~ ' + b.키들.slice(-1)[0] + ' · ' + b.키들.length + '건' : '') });
+  });
+  r.기록들.filter(function (x) { return x.표 === '1회성'; }).forEach(function (x) { 옵.push({ id: 'x' + x.키, 이름: x.키 + ' 견적값', 자: x.자, 노: x.노, 막힘: true, 설명: '1회성 예외 — 기준으로 고를 수 없음' }); });
+  옵.push({ id: '직접', 이름: '직접 입력', 직접: true });
+  var 첫 = 옵.filter(function (o) { return !o.막힘 && !o.직접; })[0];
+  D = { r: r, 옵: 옵, 고른: r.상태 === '확정' ? null : (첫 ? 첫.id : '직접'), 자: r.자 || 0, 노: r.노 || 0, 사유: '', 계: 계, busy: false };
+  if (D.고른 && 첫) { D.자 = 첫.자; D.노 = 첫.노; }   // 고른 칸의 값으로 시작합니다 — 버튼 금액과 고른 칸이 다르면 안 됩니다
+  drawDrawer();
+}
+function drawDrawer() {
+  if (!D) { el('drawerRoot').innerHTML = ''; return; }
+  var r = D.r, 계 = D.계;
+  var h = '<div class="dim" onclick="닫기()"></div><div class="drawer">'
+    + '<button class="btn gh" onclick="닫기()">← 단가표로 돌아가기</button>'
+    + '<h2>' + esc(r.항목) + ' ' + 상태칸(r) + '</h2><div class="sm" style="font-size:12.5px;color:var(--mut)">' + esc(r.상세) + ' · ' + esc(r.공종) + ' · 단위 ' + esc(r.단위) + '</div>';
+  if (r.확인) h += '<div class="err" style="background:var(--warn2);color:var(--warn)">⚠ ' + esc(r.확인) + '</div>';
+  if (계) {
+    h += '<div class="sec gl"><h4>자재 구성 · 1m 당 ' + (계.가능 ? '<span class="pill p-ok">계산 가능</span>' : '<span class="pill p-warn">' + (계.가정 ? '가정 계산' : '공급가 빠짐') + '</span>') + '</h4><table class="comp">'
+      + 계.줄.map(function (x) { return '<tr><td>' + esc(x.이름) + '<div class="sm">' + esc(x.근거) + ' · ' + (x.단가 ? '마스터 ' + won(x.단가) + (x.기준일 ? ' (' + esc(x.기준일) + ')' : ' · 기준일 없음') : '공급가 없음') + '</div></td><td class="n">' + (Math.round(x.량 * 1000) / 1000) + ' ' + esc(x.단위 || '') + '</td><td class="n"><b>' + (x.단가 ? won(x.단가 * x.량) : '—') + '</b></td></tr>'; }).join('')
+      + '<tr><td><b>자재 원가</b></td><td></td><td class="n"><b class="big" style="font-size:17px">' + won(계.원가) + '</b></td></tr></table>'
+      + '<div class="sm" style="margin-top:4px">규칙: 원가 × ' + 배수 + ' = ' + won(계.원가 * 배수) + ' → 천원 절사 → <b style="color:var(--ok)">' + won(계.규칙) + '</b> · 공급가는 📚 자재 품목 마스터 「최근 단가」(명세서 대조 때 갱신)</div></div>';
+  }
+  if (r.상태 === '확정') {
+    h += '<div class="sec gl"><h4>지금 확정값</h4><div style="font-size:15px">자재비 <b class="big">' + won(r.자) + '</b> · 노무비 <b class="big">' + won(r.노) + '</b></div><div class="sm">' + esc(r.확정일 || '') + ' · ' + esc(r.확정자 || '') + (r.근거 ? ' · ' + esc(r.근거) : '') + '</div>'
+      + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="D.고른=D.고른||\'직접\';drawDrawer()">값 바꾸기</button><button class="btn gh" onclick="되돌리기()"' + (r.이력들.length ? '' : ' disabled') + '>직전 값으로 되돌리기</button></div></div>';
+  }
+  if (r.상태 !== '확정' || D.고른) {
+    h += '<div class="sec gl"><h4>단가 정하기</h4>' + D.옵.map(function (o) {
+      var on = D.고른 === o.id;
+      if (o.직접) return '<div class="opt' + (on ? ' on' : '') + '" onclick="고르기(\'' + o.id + '\')"><i></i>직접 입력 <span class="r">자재비 <input class="in" inputmode="numeric" value="' + (D.자 || '') + '" onclick="event.stopPropagation();고르기(\'직접\')" oninput="D.자=+this.value.replace(/[^0-9]/g,\'\')||0;버튼글()"> 노무비 <input class="in" inputmode="numeric" value="' + (D.노 || '') + '" onclick="event.stopPropagation();고르기(\'직접\')" oninput="D.노=+this.value.replace(/[^0-9]/g,\'\')||0;버튼글()"></span></div>';
+      return '<div class="opt' + (on ? ' on' : '') + (o.막힘 ? ' no' : '') + '" onclick="' + (o.막힘 ? '' : '고르기(\'' + esc(o.id) + '\')') + '"><i></i>' + esc(o.이름) + ' <b>' + won(o.자) + ' / ' + won(o.노) + '</b><span class="r">' + esc(o.설명 || '') + '</span></div>';
+    }).join('')
+      + '<input class="in wide" style="margin-top:10px" placeholder="사유 (선택) — 예: 10/21 신성목재 명세서 기준, 팀장 단가 협의" value="' + esc(D.사유) + '" oninput="D.사유=this.value">'
+      + '<div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap"><button class="btn pri" id="saveBtn" style="padding:10px 16px;font-size:13.5px" onclick="확정()">확정</button><button class="btn gh" onclick="닫기()">취소</button>'
+      + '<span class="sm" style="margin-left:auto">확정하면 단가표에 진한 숫자로 바뀌고, 근거·이력이 같이 저장됩니다 · 되돌리기 가능</span></div><div id="saveErr"></div></div>';
+  }
+  h += '<div class="sec gl"><h4>조건 · 안 쓰기</h4><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">조건 <select onchange="고치기({조건:this.value})">'
+    + ['일반','수량 미정','별도 견적','고객 별도','현장별 총액','자재+시공 일괄'].map(function (c) { return '<option' + (c === r.조건 ? ' selected' : '') + '>' + c + '</option>'; }).join('')
+    + '</select><button class="btn gh" onclick="고치기({안씀:' + (r.상태 !== '안 씀') + '})">' + (r.상태 === '안 씀' ? '다시 쓰기' : '이 사양 안 씀') + '</button>'
+    + (r.확인 ? '<button class="btn gh" onclick="고치기({확인:\'\'})">확인 사유 지우기(확인함)</button>' : '') + '</div>'
+    + '<div class="sm" style="margin-top:6px">조건은 금액과 따로 저장됩니다. 「안 씀」은 단가표에서 숨기기만 하고 지우지 않습니다.</div></div>';
+  if (r.이력들.length) h += '<div class="sec gl"><h4>이력</h4>' + r.이력들.slice().reverse().map(function (x) { return '<div class="sm" style="color:var(--mut);padding:3px 0;border-top:1px solid var(--line)">' + esc(x.t) + ' · ' + esc(x.누가) + ' · <b>' + esc(x.일) + '</b> ' + (x.후 ? won(x.후.자) + ' / ' + won(x.후.노) : '') + (x.전 ? ' ← ' + won(x.전.자) + ' / ' + won(x.전.노) + ' (' + esc(x.전.상태) + ')' : '') + (x.사유 ? ' · ' + esc(x.사유) : '') + (x.내용 ? ' · ' + esc(x.내용) : '') + '</div>'; }).join('') + '</div>';
+  h += '</div>';
+  el('drawerRoot').innerHTML = h; 버튼글();
+}
+function 고르기(id) {
+  D.고른 = id; var o = D.옵.filter(function (x) { return x.id === id; })[0];
+  if (o && !o.직접) { D.자 = o.자; D.노 = o.노; }
+  drawDrawer();
+}
+function 버튼글() {
+  var b = el('saveBtn'); if (!b) return;
+  var 부분 = []; if (D.자) 부분.push('자재비 ' + won(D.자) + '원'); if (D.노) 부분.push('노무비 ' + won(D.노) + '원');
+  b.textContent = D.busy ? '저장 중…' : (부분.length ? 부분.join(' · ') + '으로 확정' : '금액을 넣어 주세요');
+  b.disabled = D.busy || !부분.length || !D.고른;
+}
+function 닫기() { if (D && D.busy) return; D = null; drawDrawer(); }
+function 바꿔넣기(새) { 풀기(새); S.줄 = S.줄.map(function (x) { return x.id === 새.id ? 새 : x; }); }
+function 결과처리(r, 말) {
+  D.busy = false;
+  if (r && r.ok) { 바꿔넣기(r.줄); D.r = r.줄; toast(말); drawAll(); 서랍(r.줄.id); return; }
+  if (r && r.충돌 && r.줄) { 바꿔넣기(r.줄); drawAll(); }
+  drawDrawer(); var e = el('saveErr') || el('drawerRoot'); e.insertAdjacentHTML('beforeend', '<div class="err">저장하지 못했습니다 — ' + esc(서버말(r)) + '</div>');
+}
+function 확정() {
+  if (!D || D.busy) return;
+  var o = D.옵.filter(function (x) { return x.id === D.고른; })[0];
+  D.busy = true; 버튼글();
+  var 근거 = o && o.id === '규칙' ? '규칙값 = 원가 ' + won(D.계.원가) + ' × ' + 배수 + ' (마스터 공급가 ' + D.계.줄.map(function (x) { return x.이름 + ' ' + won(x.단가); }).join(', ') + ')'
+    : o && !o.직접 ? o.이름 + ' · ' + (o.설명 || '') : '직접 입력';
+  api('priceDecide', { id: D.r.id, 고친시각: D.r.고친시각, 자: D.자 || null, 노: D.노 || null, 방식: o ? o.이름 : '직접 입력', 사유: D.사유, 근거: 근거 })
+    .then(function (r) { 결과처리(r, '확정했습니다'); })
+    .catch(function (e) { 결과처리({ ok: false, error: e.message }, ''); });
+}
+function 되돌리기() {
+  if (!D || D.busy) return; if (!confirm('직전 값으로 되돌릴까요? (이력에 「되돌림」으로 남습니다)')) return;
+  D.busy = true;
+  api('priceUndo', { id: D.r.id, 고친시각: D.r.고친시각 }).then(function (r) { 결과처리(r, '되돌렸습니다'); }).catch(function (e) { 결과처리({ ok: false, error: e.message }, ''); });
+}
+function 고치기(바꿀) {
+  if (!D || D.busy) return; D.busy = true;
+  var d = { id: D.r.id, 고친시각: D.r.고친시각 }; for (var k in 바꿀) d[k] = 바꿀[k];
+  api('priceEdit', d).then(function (r) { 결과처리(r, '저장했습니다'); }).catch(function (e) { 결과처리({ ok: false, error: e.message }, ''); });
+}
+
+// ───── 단가 맞추기 ─────
+function drawTune() {
+  var 할 = S.줄.filter(정할것);
+  el('tuneHead').innerHTML = '<b>정할 것 ' + 할.length + '줄</b> — 견적마다 값이 달랐던 줄(후보 여러 개), 확인이 필요한 줄, 목공 원가로 규칙값을 낼 수 있는 줄입니다. 전부 정리하려 하지 마시고 <b>실제로 쓰는 항목부터</b> 확정하시면 됩니다. 확정한 줄은 여기서 빠집니다.';
+  var h = '';
+  공종들.forEach(function (g) {
+    var rs = 할.filter(function (r) { return r.공종 === g; }).sort(function (a, b) { return (a.순서 || 0) - (b.순서 || 0); });
+    if (!rs.length) return;
+    h += '<div class="cs gl"><div class="csh"><b>' + esc(g) + '</b><span class="sm">' + rs.length + '줄</span></div>' + rs.map(function (r) {
+      var 계 = r.구성 ? 원가계산(r.구성) : null;
+      var 값들 = {}; r.기록들.forEach(function (x) { if (x.표 !== '1회성') { var k = won(x.자) + '/' + won(x.노); 값들[k] = (값들[k] || 0) + 1; } });
+      var 이유 = [];
+      if (r.확인) 이유.push('⚠ ' + r.확인);
+      if (r.후보수 > 1) 이유.push('견적마다 다름: ' + Object.keys(값들).map(function (k) { return k + (값들[k] > 1 ? ' ×' + 값들[k] : ''); }).join(' · '));
+      if (계) 이유.push(계.가능 ? '규칙값 ' + won(계.규칙) + ' (원가 ' + won(계.원가) + ')' : '원가 ' + won(계.원가) + ' — ' + (계.가정 ? '소요량 가정' : '공급가 빠짐'));
+      return '<div class="ck"><span class="rn">' + esc(r.단위) + '</span><div><b>' + esc(r.항목) + '</b> <span class="sm">' + esc(r.상세) + '</span><div class="why">' + 이유.map(esc).join('<br>') + '</div>'
+        + '<div style="margin-top:6px"><button class="btn" onclick="서랍(\'' + r.id + '\')">이 사양 단가 정하기 →</button></div></div></div>';
+    }).join('') + '</div>';
+  });
+  el('tuneBody').innerHTML = h || '<div class="note gl">정할 것이 없습니다.</div>';
+}
+
+// ───── 공급 단가 ─────
+function drawSup() {
+  var q = (el('supQ').value || '').toLowerCase();
+  var rs = S.공급.filter(function (s) { return !q || (s.품목 + ' ' + s.규격 + ' ' + s.분류 + ' ' + s.유형).toLowerCase().indexOf(q) >= 0; })
+    .sort(function (a, b) { return (a.유형 + a.분류 + a.품목) < (b.유형 + b.분류 + b.품목) ? -1 : 1; });
+  el('supBody').innerHTML = '<table class="sup"><tr><th>유형 · 분류</th><th>품목</th><th>규격</th><th>단위</th><th style="text-align:right">최근 단가</th><th>기준일</th><th>기본 발주처</th></tr>'
+    + rs.map(function (s) { return '<tr><td class="sm">' + esc(s.유형) + ' · ' + esc(s.분류) + '</td><td><b>' + esc(s.품목) + '</b></td><td class="sm">' + esc(s.규격) + '</td><td class="sm">' + esc(s.단위) + '</td><td class="n">' + (s.단가 ? won(s.단가) : '<span class="sm">—</span>') + '</td><td class="sm">' + (s.기준일 || '없음') + '</td><td class="sm">' + esc(s.발주처) + '</td></tr>'; }).join('')
+    + '</table>' + (rs.length ? '' : '<div class="loading">맞는 품목이 없습니다</div>');
+}
+
+// ───── 견적 올리기 ─────
+(function () {
+  var d = el('drop');
+  ['dragenter','dragover'].forEach(function (e) { d.addEventListener(e, function (ev) { ev.preventDefault(); d.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function (e) { d.addEventListener(e, function (ev) { ev.preventDefault(); d.classList.remove('over'); }); });
+  d.addEventListener('drop', function (ev) { var f = ev.dataTransfer.files[0]; if (f) readFile(f); });
+})();
+function readFile(f) {
+  if (!f) return;
+  if (typeof XLSX === 'undefined') { el('upBody').innerHTML = '<div class="err">엑셀 읽기 도구를 불러오지 못했습니다 — 인터넷 연결 확인 뒤 새로고침</div>'; return; }
+  el('upBody').innerHTML = '<div class="loading">읽는 중…</div>';
+  var rd = new FileReader();
+  rd.onload = function () {
+    try {
+      var wb = XLSX.read(new Uint8Array(rd.result), { type: 'array', cellFormula: true, cellNF: false });
+      S.up = { 파일: f.name, wb: wb, 시트들: wb.SheetNames.filter(function (n) { return n.indexOf('최초견적') >= 0; }) };
+      if (!S.up.시트들.length) { el('upBody').innerHTML = '<div class="err">「최초견적」 시트가 없습니다 — 시트: ' + esc(wb.SheetNames.join(', ')) + '</div>'; return; }
+      // 「최초견적」「최초견적 (2)」처럼 여럿이면 마음대로 고르지 않습니다 — 총액을 보여주고 고르게 합니다
+      if (S.up.시트들.length === 1) { S.up.시트 = S.up.시트들[0]; 분석(); }
+      else 시트고르기();
+    } catch (e) { el('upBody').innerHTML = '<div class="err">파일을 읽지 못했습니다 — ' + esc(e.message || e) + '</div>'; }
+  };
+  rd.readAsArrayBuffer(f);
+}
+function 시트총액(ws) { for (var rr = 20; rr <= 47; rr++) { var a = 값(셀(ws, 'A' + rr)); if (typeof a === 'string' && /ToT \(총 금액\)/.test(a)) return 수(셀(ws, 'G' + rr)) || 수(셀(ws, 'H' + rr)) || 수(셀(ws, 'K' + rr)); } return null; }
+function 시트고르기() {
+  var U = S.up;
+  el('upBody').innerHTML = '<div class="note gl"><b>' + esc(U.파일) + '</b>에 「최초견적」 시트가 ' + U.시트들.length + '개 있습니다. 이번 견적이 어느 쪽인지 골라 주세요.<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
+    + U.시트들.map(function (n) { var t = 시트총액(U.wb.Sheets[n]); return '<button class="btn" onclick="S.up.시트=this.dataset.n;분석()" data-n="' + esc(n) + '">' + esc(n) + (t ? ' · 총액 ' + won(t) : '') + '</button>'; }).join('') + '</div></div>';
+}
+function 셀(ws, a) { return ws[a] || null; }
+function 값(c) { return c ? c.v : null; }
+function 수(c) { var v = c ? c.v : null; return typeof v === 'number' ? v : null; }
+function 공종번호(s) { var t = String(s || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }); var m = t.match(/^\s*(\d+)\s*\./); return m ? +m[1] : 0; }
+function 분석() {
+  var U = S.up, ws = U.wb.Sheets[U.시트];
+  var 범위 = XLSX.utils.decode_range(ws['!ref'] || 'A1:K600');
+  var 수식있음 = Object.keys(ws).some(function (k) { return k[0] !== '!' && ws[k].f; });
+  var 줄 = [], g = 0, 부록 = false;
+  for (var r = 48; r <= Math.min(범위.e.r, 700); r++) {
+    var R = r + 1, A = 값(셀(ws, 'A' + R)), F = 값(셀(ws, 'F' + R));
+    if (typeof A === 'string' && /APPENDIX/i.test(A)) { 부록 = true; continue; }
+    if (typeof A === 'string' && 공종번호(A) && (F === '소 계' || F == null || F === '')) { g = 공종번호(A); 부록 = false; continue; }
+    if (부록 || !g || typeof A !== 'string' || !공백(A) || /^시공 항목$|REMARK/.test(공백(A))) continue;
+    var H = 수(셀(ws, 'H' + R)), I = 수(셀(ws, 'I' + R)), G = 수(셀(ws, 'G' + R));
+    var Jc = 셀(ws, 'J' + R), Kc = 셀(ws, 'K' + R);
+    if (H == null && I == null && !(G > 0)) continue;
+    줄.push({ 행: R, g: g, 항목: 공백(A), 상세: 공백(값(셀(ws, 'C' + R))), 단위: 공백(F), 수량: G, 자: H || 0, 노: I || 0,
+      J: 수(Jc), J식: Jc && Jc.f, K: 수(Kc), K식: Kc && Kc.f, K있음: !!(Kc && (Kc.v != null || Kc.f)) });
+  }
+  U.줄 = 줄; U.수식있음 = 수식있음;
+  // 총액 (요약 표) — 있으면 같이 보여줍니다
+  var 총 = null; for (var rr = 20; rr <= 47; rr++) { var a = 값(셀(ws, 'A' + rr)); if (typeof a === 'string' && /ToT \(총 금액\)/.test(a)) { 총 = 수(셀(ws, 'G' + rr)) || 수(셀(ws, 'H' + rr)) || 수(셀(ws, 'K' + rr)); break; } }
+  U.총액 = 총;
+  점검(); 비교(); drawUp();
+}
+function 점검() {
+  var U = S.up, 금액 = [], 확인 = [], 문구 = [];
+  U.줄.forEach(function (x) {
+    var 가구 = x.g === 11;
+    if (/SPARE|공란|N\/A/i.test(x.항목 + ' ' + x.상세) && (x.K || 0) > 0) 금액.push({ 행: x.행, 제목: x.항목 + ' · ' + x.상세, 왜: '공란·SPARE·N/A 줄인데 금액 <b>' + won(x.K) + '</b> 이 소계에 들어갑니다' });
+    if (U.수식있음 && x.J != null && !x.J식 && (x.자 || x.노) && Math.round(x.J) !== Math.round(x.자 + x.노))
+      금액.push({ 행: x.행, 제목: x.항목 + ' · ' + (x.수량 == null ? '' : x.수량 + ' ' + x.단위), 왜: '단가 칸(J)에 <b>' + won(x.J) + '</b> 이 숫자로 직접 들어가 있습니다 — 자재비+노무비는 <b>' + won(x.자 + x.노) + '</b>. 금액은 ' + won(x.K) + ' (의도한 값이면 그대로 두세요)' });
+    if ((x.수량 || 0) > 0 && (x.자 || x.노) && !x.K있음) 금액.push({ 행: x.행, 제목: x.항목 + ' · ' + x.수량 + ' ' + x.단위 + ' × ' + won(x.자 + x.노), 왜: '금액 칸(K)이 비어 있어 <b>소계·총액에서 빠집니다</b>' });
+    if ((x.수량 || 0) > 0 && !x.자 && !x.노 && !/연계|별도|포함|무상|협의/.test(x.상세)) 확인.push({ 행: x.행, 제목: x.항목 + ' · ' + x.상세, 왜: '수량은 ' + x.수량 + ' 인데 가격이 0 — 무상·다른 항목 포함·미산정 중 무엇인지 적어 두면 좋습니다' });
+    if (x.단위 === 'M' || /^\s|\s$/.test(x.단위 || '')) 문구.push({ 행: x.행, 제목: '단위 「' + x.단위 + '」 → m', 왜: x.항목 });
+    if (/\[전체공사\]|\[전체\]/.test(x.상세)) 문구.push({ 행: x.행, 제목: '[전체공사]/[전체] → [전체공간]', 왜: x.항목 });
+    [['베라낟','베란다'],['욕싶','욕실'],['라디에디터','라디에이터'],['땜땅','땜빵']].forEach(function (t) { if ((x.항목 + x.상세).indexOf(t[0]) >= 0) 문구.push({ 행: x.행, 제목: t[0] + ' → ' + t[1], 왜: x.항목 }); });
+    if (/연계 품목/.test(x.상세)) 문구.push({ 행: x.행, 제목: '「고객 업체 연계 품목」 → 「고객 별도 발주·결제 · 본 견적 미포함」', 왜: x.상세 });
+  });
+  U.점검 = { 금액: 금액, 확인: 확인, 문구: 문구 };
+}
+function 사양키(x) { return [x.공종 || 공종들[x.g - 1], 공백(x.항목), 공백(x.상세), 공백(x.단위)].join('|'); }
+function 비교() {
+  var U = S.up, 표 = {}; S.줄.forEach(function (r) { 표[사양키(r)] = r; });
+  var 금액행 = {}; U.점검.금액.forEach(function (c) { 금액행[c.행] = 1; });
+  U.비교 = U.줄.filter(function (x) { return x.자 || x.노; }).map(function (x) {
+    var r = 표[사양키(x)], 상태 = '새', 비슷 = [];
+    if (r) 상태 = (Math.round(r.자 || 0) === Math.round(x.자) && Math.round(r.노 || 0) === Math.round(x.노)) ? '같음' : '다름';
+    else 비슷 = S.줄.filter(function (y) { return y.공종 === 공종들[x.g - 1] && 공백(y.항목) === x.항목 && 공백(y.단위) === x.단위; }).slice(0, 6);
+    return { x: x, r: r, 상태: 상태, 비슷: 비슷, 체크: !금액행[x.행] && 상태 !== '같음' ? true : (상태 === '같음'), 묶을: '' };
+  });
+  if (!U.키) {
+    // 파일 이름에서 현장 이름만 — 맨 앞 「홍길동_」 같은 고객 이름은 빼고, 견적서·복구본 같은 말도 뺍니다
+    var d = new Date(); U.날짜 = ymd(d);
+    var 토막 = U.파일.replace(/\.[^.]+$/, '').split(/[_\s]+/).filter(String);
+    if (토막.length > 1 && /^[가-힣]{2,4}$/.test(토막[0])) 토막.shift();
+    var 이름 = 토막.join(' ').replace(/(가|최초|1차|2차)?견적서?|복구본|님|\d{6}/g, '').replace(/\s+/g, ' ').trim().slice(0, 20);
+    U.키 = U.날짜.slice(2).replace(/-/g, '') + ' ' + (이름 || '새 견적');
+  }
+}
+function drawUp() {
+  var U = S.up, P = U.점검;
+  var 같음 = U.비교.filter(function (c) { return c.상태 === '같음'; }).length, 다름 = U.비교.filter(function (c) { return c.상태 === '다름'; }), 새 = U.비교.filter(function (c) { return c.상태 === '새'; });
+  var 이미 = S.견적.filter(function (e) { return e.키 === U.키; })[0];
+  var h = '<div class="note gl"><b>' + esc(U.파일) + '</b> · 시트 <select onchange="S.up.시트=this.value;분석()">' + U.시트들.map(function (n) { return '<option' + (n === U.시트 ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>'
+    + ' · 읽은 줄 ' + U.줄.length + (U.총액 ? ' · 총액 ' + won(U.총액) + ' (VAT 별도)' : '') + (U.수식있음 ? '' : ' · <b>이 파일에서는 수식을 읽지 못해 단가 칸 점검을 건너뜁니다</b>') + '</div>';
+  h += '<div class="sumr"><span class="sb bad"><b>' + P.금액.length + '</b>금액 먼저</span><span class="sb"><b>' + P.확인.length + '</b>확인만</span><span class="sb acc"><b>' + P.문구.length + '</b>문구 통일</span><span class="sb ok"><b>' + 같음 + '</b>단가표와 같음</span><span class="sb warn"><b>' + 다름.length + '</b>값이 다름</span><span class="sb warn"><b>' + 새.length + '</b>새 사양</span></div>';
+  function 칸(줄들, cls, 제목, 설명, 접기) {
+    if (!줄들.length) return '';
+    return '<div class="cs gl"><div class="csh"><span class="dot ' + cls + '"></span><b>' + 제목 + '</b><span class="sm">' + 줄들.length + '건 · ' + 설명 + '</span></div>'
+      + (접기 && !S.up['펼' + cls] ? '<div style="padding:0 14px 10px"><button class="btn gh" onclick="S.up[\'펼' + cls + '\']=1;drawUp()">펼치기 ▾</button></div>' :
+      줄들.map(function (c) { return '<div class="ck ' + (cls === 'bad' ? 'bad' : '') + '"><span class="rn">' + c.행 + '행</span><div><b>' + esc(c.제목) + '</b><div class="why">' + c.왜 + '</div></div></div>'; }).join('')) + '</div>';
+  }
+  h += 칸(P.금액, 'bad', '금액이 틀어질 수 있음', '견적서에서 확인하세요 — 여기서는 고치지 않습니다');
+  h += 칸(P.확인, 'gray', '확인만', '의도한 거면 그대로');
+  h += 칸(P.문구, 'acc', '문구 통일 제안', '한 번에 고치면 좋은 것', true);
+  function 비교줄(c, i) {
+    var x = c.x, 앞 = c.r ? '<s>단가표 ' + won(c.r.자) + ' / ' + won(c.r.노) + (c.r.상태 === '확정' ? ' (확정)' : '') + '</s>' : '';
+    var 묶 = c.상태 === '새' && c.비슷.length ? '<select onchange="S.up.비교[' + i + '].묶을=this.value"><option value="">새 사양으로 올림</option>' + c.비슷.map(function (y) { return '<option value="' + y.id + '"' + (c.묶을 === y.id ? ' selected' : '') + '>같은 사양으로 묶기: ' + esc(y.상세.slice(0, 40)) + ' (' + won(y.자) + '/' + won(y.노) + ')</option>'; }).join('') + '</select>' : '';
+    return '<div class="cr"><input type="checkbox"' + (c.체크 ? ' checked' : '') + ' onchange="S.up.비교[' + i + '].체크=this.checked;버튼수()"><span class="rn2 sm">' + x.행 + '행</span><span class="gg sm">' + esc(공종들[x.g - 1]) + '</span><div><b>' + esc(x.항목) + '</b> <span class="sm">' + esc(x.단위) + '</span><div class="why">' + esc(x.상세) + '</div>' + 묶 + '</div><span class="vv">' + won(x.자) + ' / ' + won(x.노) + 앞 + '</span></div>';
+  }
+  var idx = function (c) { return U.비교.indexOf(c); };
+  if (다름.length) h += '<div class="cs gl"><div class="csh"><span class="dot warn"></span><b>단가표와 값이 다른 줄</b><span class="sm">체크한 줄만 「견적 기록」에 더합니다 · 확정값은 바뀌지 않습니다</span></div>' + 다름.map(function (c) { return 비교줄(c, idx(c)); }).join('') + '</div>';
+  if (새.length) h += '<div class="cs gl"><div class="csh"><span class="dot warn"></span><b>새 사양</b><span class="sm">단가표에 없는 항목·상세 — 그 공종 끝에 후보로 생깁니다. 비슷한 기존 사양이 있으면 묶을 수 있습니다</span></div>' + 새.map(function (c) { return 비교줄(c, idx(c)); }).join('') + '</div>';
+  h += '<div class="cs gl"><div class="csh"><span class="dot gray"></span><b>단가표와 같은 줄 ' + 같음 + '</b><span class="sm">체크된 채로 두면 견적 기록에 이 견적이 더해집니다(같은 견적·같은 행은 두 번 안 들어갑니다)</span></div></div>';
+  h += '<div class="nx">견적 이름 <input class="in" style="width:200px;text-align:left" value="' + esc(U.키) + '" oninput="S.up.키=this.value"> 견적일 <input class="in" type="date" style="width:150px" value="' + esc(U.날짜) + '" oninput="S.up.날짜=this.value">'
+    + (이미 ? '<span class="pill p-warn">같은 이름으로 올린 적 있음 — 빠진 줄만 더해집니다</span>' : '')
+    + '<button class="btn pri" id="upBtn" style="margin-left:auto;padding:10px 16px" onclick="올리기()"></button></div><div id="upRes"></div>';
+  el('upBody').innerHTML = h; 버튼수();
+}
+function 버튼수() { var b = el('upBtn'); if (!b) return; var n = S.up.비교.filter(function (c) { return c.체크; }).length; b.textContent = S.up.busy ? '저장 중…' : '체크한 ' + n + '줄 견적 기록에 더하기'; b.disabled = !n || S.up.busy; }
+function 지문(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h >>> 0).toString(16); }
+function 올리기() {
+  var U = S.up; if (U.busy) return;
+  var 키 = 공백(U.키); if (!키 || 키.indexOf(' · ') >= 0) { toast('견적 이름을 넣어 주세요 (「 · 」은 쓸 수 없습니다)'); return; }
+  var 붙일 = [], 새로 = [];
+  U.비교.forEach(function (c) {
+    if (!c.체크) return; var x = c.x;
+    var 줄 = [키, Math.round(x.자), Math.round(x.노), x.수량 == null ? '' : Math.round(x.수량 * 100) / 100, 'r' + x.행].join(' · ');
+    var 대상 = c.r ? c.r.id : c.묶을;
+    if (대상) 붙일.push({ id: 대상, 줄: 줄 });
+    else {
+      var 같은공종 = S.줄.filter(function (y) { return y.공종 === 공종들[x.g - 1]; }), 끝 = Math.max.apply(null, 같은공종.map(function (y) { return y.순서 || 0; }).concat([0]));
+      새로.push({ 공종: 공종들[x.g - 1], 항목: x.항목, 상세: x.상세, 단위: x.단위, 자: x.자, 노: x.노, 순서: Math.max(끝, 4000) + 10 + 새로.length, 줄: 줄,
+        조건: x.g === 11 && /별첨/.test(x.상세) ? '현장별 총액' : /연계 품목|고객 별도/.test(x.상세) ? '고객 별도' : /추후|협의|디자인 미팅/.test(x.상세) ? '별도 견적' : /실측 후/.test(x.상세) ? '수량 미정' : '일반' });
+    }
+  });
+  var 요약 = '금액 먼저 ' + U.점검.금액.length + ' · 확인 ' + U.점검.확인.length + ' · 문구 ' + U.점검.문구.length + (U.점검.금액.length ? ' — ' + U.점검.금액.map(function (c) { return c.행 + '행'; }).join(', ') : '');
+  U.busy = true; 버튼수();
+  api('priceUpload', { 견적: { 키: 키, 날짜: U.날짜, 이름: 키, 지문: 지문(JSON.stringify(U.줄)), 줄수: U.줄.length, 점검요약: 요약 }, 붙일: 붙일, 새로: 새로 })
+    .then(function (r) {
+      U.busy = false;
+      var res = r && r.결과;
+      el('upRes').innerHTML = res ? '<div class="note gl"><b>' + (r.ok ? '저장했습니다' : '일부만 저장했습니다') + '</b> — 기록 더함 ' + res.붙임 + ' · 새 사양 ' + res.새로 + ' · 이미 있던 줄 ' + res.이미 + (res.실패.length ? '<div class="err">' + esc(r.error) + '<br>' + res.실패.slice(0, 10).map(function (f) { return esc(f.줄) + ' — ' + esc(f.이유); }).join('<br>') + '</div>' : '') + '</div>'
+        : '<div class="err">저장하지 못했습니다 — ' + esc(서버말(r)) + '</div>';
+      버튼수(); if (res) load(false);
+    }).catch(function (e) { U.busy = false; 버튼수(); el('upRes').innerHTML = '<div class="err">연결에 실패했습니다 — ' + esc(e.message) + ' · 다시 눌러도 같은 줄이 두 번 들어가지 않습니다</div>'; });
+}
+
+document.addEventListener('keydown', function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); go('tbl'); el('qIn').focus(); }
+  if (e.key === 'Escape' && D) 닫기();
+});
+try { var t0 = localStorage.getItem('dsf_price_tab'); if (t0 && t0 !== 'up') setTimeout(function () { go(t0); }, 0); } catch (e) {}
+start();
+</script>
+</body></html>
