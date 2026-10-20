@@ -274,7 +274,8 @@
   function 타일제안(실측, loss) {
     var m = 수(실측); if (!m) return null;
     var l = (loss != null && loss !== '') ? 수(loss) : 기준.타일.loss;
-    return Math.ceil(맞춤(m * (1 + l / 100)) * 100) / 100;
+    // 100 을 곱한 뒤에 꼬리를 정리해야 합니다 — 정리한 뒤 곱하면 1.10 이 110.00000000000001 이 되어 1.11 로 올라갔습니다(10/20 GPT R1-22)
+    return Math.ceil(맞춤(m * (1 + l / 100) * 100)) / 100;
   }
   // 줄눈 합계 — 같은 제품·색끼리 실측 면적을 합칩니다(소요량은 안 셈)
   function 줄눈합계(lines) {
