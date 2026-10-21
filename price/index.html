@@ -142,6 +142,7 @@ svg text{font-family:var(--sans)}
 </style>
 <link rel="stylesheet" href="workspace.css?v=20261021-1">
 <link rel="stylesheet" href="wood-sheet.css?v=20261021-1">
+<link rel="stylesheet" href="price-reference.css?v=20261021-1">
 </head><body>
 <div id="toast"></div>
 <div class="wrap">
@@ -208,7 +209,7 @@ svg text{font-family:var(--sans)}
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
 var LS_KEY = 'dsf_key';          // 발주앱과 같은 키 (같은 주소라 한 번 넣으면 같이 씁니다)
-var APP_VER = '2026-10-21-workspace1.3.1';
+var APP_VER = '2026-10-21-reference2.0';
 var 공종들 = ['1 철거','2 설비','3 전기','4 창호','5 목공','6 타일','7 욕실','8 필름·도장','9 마루','10 도배','11 가구','12 마감·기타'];
 var S = { 줄: [], 견적: [], 공급: [], q: '', f: '전체', open: null, othOpen: {}, tab: 'tbl', up: null, 불러온: null };
 
@@ -707,5 +708,6 @@ start();
 </script>
 <script src="cost-engine.js?v=20261021-1"></script>
 <script src="workspace.js?v=20261021-4"></script>
-<script src="wood-sheet.js?v=20261021-2"></script>
+<script src="wood-sheet.js?v=20261021-3"></script>
+<script src="price-reference.js?v=20261021-1"></script>
 </body></html>
