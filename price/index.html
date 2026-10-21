@@ -140,6 +140,7 @@ svg text{font-family:var(--sans)}
 }
 .mm{display:contents}
 </style>
+<link rel="stylesheet" href="workspace.css?v=20261021-1">
 </head><body>
 <div id="toast"></div>
 <div class="wrap">
@@ -190,7 +191,7 @@ svg text{font-family:var(--sans)}
    <div class="note gl"><b>쓴 견적 파일(.xlsx · .xlsb)을 올리면</b> ① 금액이 틀어질 수 있는 줄을 먼저 보여주고 ② 단가표와 비교해서 ③ 체크한 줄만 「견적 기록」에 더합니다. <b>견적서는 고치지 않고, 확정 단가도 바꾸지 않습니다.</b> 파일은 이 브라우저에서만 읽고, 고른 줄의 숫자만 노션에 저장합니다.</div>
    <label class="drop gl" id="drop">
     <input type="file" id="fileIn" accept=".xlsx,.xlsb,.xlsm,.xls" class="hide" onchange="readFile(this.files[0])">
-    <div style="font-size:22px">📄</div><b>여기에 견적 파일을 끌어 놓거나 눌러서 고르세요</b><div class="sm">「최초견적」 시트를 읽습니다</div>
+    <div style="font-size:22px">📄</div><b>여기에 견적 파일을 끌어 놓거나 눌러서 고르세요</b><div class="sm">견적 양식의 공종·수량·단가 열을 확인합니다</div>
    </label>
    <div id="upBody"></div>
   </section>
@@ -206,7 +207,7 @@ svg text{font-family:var(--sans)}
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbym4-GzQSpHY9yEK7nm6NGbXRf1AIZve1-TmeiZsL7PPbU6qllWhdDzGphpLROHsw/exec';
 var LS_KEY = 'dsf_key';          // 발주앱과 같은 키 (같은 주소라 한 번 넣으면 같이 씁니다)
-var APP_VER = '2026-10-21a';
+var APP_VER = '2026-10-21-workspace1';
 var 공종들 = ['1 철거','2 설비','3 전기','4 창호','5 목공','6 타일','7 욕실','8 필름·도장','9 마루','10 도배','11 가구','12 마감·기타'];
 var S = { 줄: [], 견적: [], 공급: [], q: '', f: '전체', open: null, othOpen: {}, tab: 'tbl', up: null, 불러온: null };
 
@@ -543,6 +544,16 @@ function drawSup() {
   ['dragleave','drop'].forEach(function (e) { d.addEventListener(e, function (ev) { ev.preventDefault(); d.classList.remove('over'); }); });
   d.addEventListener('drop', function (ev) { var f = ev.dataTransfer.files[0]; if (f) readFile(f); });
 })();
+function 견적시트(ws) {
+  var g = 0;
+  for (var R = 49; R <= 701; R++) {
+    var A = 값(셀(ws, 'A' + R)), F = 값(셀(ws, 'F' + R));
+    if (typeof A !== 'string') continue;
+    if (공종번호(A) && (F === '소 계' || F == null || F === '')) { g = 공종번호(A); continue; }
+    if (g >= 1 && g <= 공종들.length && 공백(A) && typeof F === 'string' && 공백(F) && (수(셀(ws, 'H' + R)) != null || 수(셀(ws, 'I' + R)) != null)) return true;
+  }
+  return false;
+}
 function readFile(f) {
   if (!f) return;
   if (typeof XLSX === 'undefined') { el('upBody').innerHTML = '<div class="err">엑셀 읽기 도구를 불러오지 못했습니다 — 인터넷 연결 확인 뒤 새로고침</div>'; return; }
@@ -551,8 +562,8 @@ function readFile(f) {
   rd.onload = function () {
     try {
       var wb = XLSX.read(new Uint8Array(rd.result), { type: 'array', cellFormula: true, cellNF: false });
-      S.up = { 파일: f.name, wb: wb, 시트들: wb.SheetNames.filter(function (n) { return n.indexOf('최초견적') >= 0; }) };
-      if (!S.up.시트들.length) { el('upBody').innerHTML = '<div class="err">「최초견적」 시트가 없습니다 — 시트: ' + esc(wb.SheetNames.join(', ')) + '</div>'; return; }
+      S.up = { 파일: f.name, wb: wb, 시트들: wb.SheetNames.filter(function (n) { return 견적시트(wb.Sheets[n]); }) };
+      if (!S.up.시트들.length) { el('upBody').innerHTML = '<div class="err">지원하는 견적 양식을 찾지 못했습니다 (A 공종·항목 / F 단위 / G 수량 / H·I 단가) — 시트: ' + esc(wb.SheetNames.join(', ')) + '</div>'; return; }
       // 「최초견적」「최초견적 (2)」처럼 여럿이면 마음대로 고르지 않습니다 — 총액을 보여주고 고르게 합니다
       if (S.up.시트들.length === 1) { S.up.시트 = S.up.시트들[0]; 분석(); }
       else 시트고르기();
@@ -693,4 +704,6 @@ document.addEventListener('keydown', function (e) {
 try { var t0 = localStorage.getItem('dsf_price_tab'); if (t0 && t0 !== 'up') setTimeout(function () { go(t0); }, 0); } catch (e) {}
 start();
 </script>
+<script src="cost-engine.js?v=20261021-1"></script>
+<script src="workspace.js?v=20261021-1"></script>
 </body></html>
