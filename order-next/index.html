@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-20-check4';
+var APP_VER = '2026-10-21-nav1';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -8239,7 +8239,7 @@ var StatementApp = (function () {
       return;
     }
     if (e.type !== 'click') return;
-    if (a === 'close') close();
+    if (a === 'close') goInput();
     if (a === 'report') window.open('https://nagwoon.github.io/layout-meeting/report/', '_blank');
     if (a === 'settle') { close(); goSettle(); }
     if (a === 'pick') el('stmtFile').click();
@@ -8292,20 +8292,31 @@ var StatementApp = (function () {
 </script>
 <script>A4Preview.watch();</script>
 <script>
-// 「기록」·「명세서」에서 브라우저 뒤로가기를 누르면 발주 화면으로 (2026-10-20 대표)
-// 화면만 바꾸는 방식이라 브라우저는 페이지를 옮긴 줄 몰라, 뒤로가기가 앱 밖으로 나가 버렸습니다.
-// 들어갈 때 기록을 하나 남기고(pushState), 뒤로가기(popstate)가 오면 발주 화면으로 돌아옵니다.
+// 기록·명세서와 브라우저 뒤로/앞으로 이동을 같은 화면 상태로 맞춥니다.
 (function () {
-  function 남기기(v) { try { if (!history.state || history.state.v !== v) history.pushState({ v: v }, ''); } catch (e) { } }
-  var 기록열기 = goSettle;
-  goSettle = function () { 남기기('settle'); return 기록열기.apply(this, arguments); };
-  var 명세서열기 = StatementApp.open;
-  StatementApp.open = function () { 남기기('stmt'); return 명세서열기.apply(this, arguments); };
+  var 발주열기 = goInput, 기록열기 = goSettle;
+  var 명세서열기 = StatementApp.open, 명세서닫기 = StatementApp.close;
+  function 남기기(v) {
+    try {
+      if (!history.state || history.state.orderView !== v) {
+        history.pushState(Object.assign({}, history.state, { orderView: v }), '');
+      }
+    } catch (e) { }
+  }
+  function 보이기(v) {
+    명세서닫기();
+    if (v === 'settle') return 기록열기();
+    발주열기();
+    if (v === 'stmt') return 명세서열기();
+  }
+  // 새로고침하면 앱도 발주 화면에서 시작하므로 현재 방문 기록만 맞춥니다.
+  try { history.replaceState(Object.assign({}, history.state, { orderView: 'input' }), ''); } catch (e) { }
+  goInput = function () { 남기기('input'); return 보이기('input'); };
+  goSettle = function () { 남기기('settle'); return 보이기('settle'); };
+  StatementApp.open = function () { 남기기('stmt'); return 보이기('stmt'); };
+  StatementApp.close = function () { return goInput(); };
   addEventListener('popstate', function (e) {
-    var v = e.state && e.state.v;
-    if (v === 'settle' || v === 'stmt') return;   // 앞으로가기로 다시 들어온 경우는 그대로
-    if (!el('stmtApp').hidden) StatementApp.close();
-    if (!el('scr-settle').classList.contains('hide')) goInput();
+    보이기(e.state && e.state.orderView || 'input');
   });
 })();
 </script>
