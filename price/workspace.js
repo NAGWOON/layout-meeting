@@ -13,7 +13,7 @@
   ['양면 벽체 · 석고',[row('소송 건조 투바이','length','단',.472,1,1,0),row('일반 석고보드','board','장',2,1.62,1,0)]],
   ['필름 바탕 · 석고 + MDF',[row('합판 다루끼 (LVL) 8자','length','단',.472,1,1,0),row('일반 석고보드','board','장',1,1.62,1,0),row('고밀도 MDF 9T (U-30) 수입','board','장',1,2.9768,1,0)]],
   ['타일 바탕 · 방수석고',[row('합판 다루끼 (LVL) 8자','length','단',.472,1,1,0),row('방수 석고보드','board','장',1,1.62,1,0)]],
-  ['단열 · 50T 2겹 + 석고',[row('합판 다루끼 (LVL) 8자','length','단',.472,1,1,0),row('아이소핑크 50T','board','장',2,1.62,1,0),row('일반 석고보드','board','장',1,1.62,1,0)]]
+  ['단열 · 50T 2겹 + 석고',[row('합판 다루끼 (LVL) 8자','length','단',.472,1,1,0),row('아이소핑크 50T (특호)','board','장',2,1.62,1,0),row('일반 석고보드','board','장',1,1.62,1,0)]]
  ],tile:[['타일 · 접착제 · 줄눈',[row('타일','area','㎡',1,1,'',0),row('접착제','area','kg','',1,'',0),row('줄눈재','area','kg','',1,'',0)]],['타일 자재만',[row('타일','area','㎡',1,1,'',0)]]],film:[['필름 · 프라이머',[row('인테리어 필름','film','m',1,'',1,0),row('프라이머','area','L','',1,'',0)]],['필름 자재만',[row('인테리어 필름','film','m',1,'',1,0)]]]};
  let c;
  function reset(t,i){trade=t;const p=presets[t][i||0];c={trade:t,name:p[0],width:t==='film'?.9:2.4,height:2.35,count:1,edge:0,frameChecked:false,taxChecked:false,costBasis:'purchase',sale:'',labor:'',extra:'',rows:structuredClone(p[1])};c.rows.forEach(r=>{const s=S.공급.find(s=>s.품목===r.name&&s.단위===r.unit);if(s){r.price=s.단가==null?'':s.단가;r.date=s.기준일||'';r.source='노션 자재 마스터 · '+s.품목;}});}
