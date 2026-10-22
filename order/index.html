@@ -654,7 +654,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-</head>
+<link rel="stylesheet" href="lighting-order.css"></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-20-check4';
+var APP_VER = '2026-10-22-lighting2';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -5277,7 +5277,7 @@ function text(s = state()) {
     if (root.hidden) return;
     el('bar').classList.add('hide');
     // 목자재는 제목 옆에 산출기 버튼 (2026-10-15 · 왼쪽 아래 「계산기 열기」만으로는 못 찾으셨음)
-    el('unifiedTitle').innerHTML = esc(S.type) + ' 주문표' + (S.type === '목자재' ? ' <button type="button" onclick="계산기열기()" style="margin-left:10px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer">🧮 산출기</button>' : '');
+    el('unifiedTitle').innerHTML = esc(S.type) + ' 주문표' + (S.type === '조명·스위치' ? ' <button type="button" onclick="LightingOrder.open()">실측 불러오기</button>' : '') + (S.type === '목자재' ? ' <button type="button" onclick="계산기열기()" style="margin-left:10px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer">🧮 산출기</button>' : '');
     el('unifiedCount').textContent =
       picked().length + '품목 · ' + sheetsUsed().length + '장 · 현재 ' + S.cur + '장';
     const button = el('submitBtn');
@@ -8309,5 +8309,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-</body>
+<script src="lighting-calc.js"></script><script src="lighting-order.js"></script></body>
 </html>

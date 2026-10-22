@@ -582,7 +582,7 @@
         <div><div class="t">일일 보고</div><div class="d">오늘 공정 · 현장 사진 · 지시 확인<br>노션 공정 일지에 등록됩니다</div></div>
         <div class="go">›</div>
       </div>
-      <div class="modecard" onclick="누름(this, startSurvey)">
+      <div class="modecard" onclick="location.href='lighting.html?site='+encodeURIComponent(state.site.id)"><div class="ic">💡</div><div><div class="t">간접조명 실측</div><div class="d">실측할 위치를 하나씩 확인<br>길이 · 배선 확인 · 사무실 공유</div></div><div class="go">›</div></div><div class="modecard" onclick="누름(this, startSurvey)">
         <div class="ic">📐</div>
         <div><div class="t">실측 사진</div><div class="d">찍어둔 사진을 공간별로 정리<br>드라이브 · 노션에 동시 저장됩니다</div></div>
         <div class="go">›</div>
@@ -752,7 +752,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-20b';
+var APP_VER = '2026-10-22-lighting2';
 
 var state = {
   sites: [], site: null, detail: null,
