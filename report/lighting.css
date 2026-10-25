@@ -8,3 +8,5 @@ header{box-shadow:0 1px 0 rgba(0,0,0,.03),0 6px 16px rgba(0,0,0,.05)}
 .chosen,.chosen:hover{color:#fff;background:#16181d}
 .savebar .primary{color:#fff}.savebar .primary:hover{background:#2b2e33}
 .item[data-status=done] .badge{color:#1f6b45}
+/* 발주 실측 탭 — 간접조명 / 스위치·콘센트 (10/25) */
+.kinds{display:flex;gap:6px;margin:0 0 12px}.kinds a{flex:1;text-align:center;padding:11px 6px;border-radius:12px;background:#fff;color:#6b6f76;text-decoration:none;font-size:14px;font-weight:600;border:1px solid #e8e9eb}.kinds a.on{background:#16181d;color:#fff;border-color:#16181d}
