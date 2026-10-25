@@ -1,14 +1,15 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>간접조명 실측</title><link rel="stylesheet" href="lighting.css?v=6"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>간접조명 실측</title><link rel="stylesheet" href="lighting.css?v=8"></head><body>
 <main><header><a href="./index.html">‹ 현장관리</a><span>발주 실측</span><h1 id="siteTitle">실측 목록</h1><button id="refresh" aria-label="최신 목록 새로고침">새로고침</button></header>
 <nav class="kinds"><a class="on" aria-current="page">💡 간접조명</a><a id="toWiring" href="#">🔌 스위치·콘센트</a></nav>
 <section id="login" hidden><label>접속키<input id="accessKey" type="password" autocomplete="current-password"></label><button id="loginBtn">접속</button></section>
 <p id="message" role="status" aria-live="polite">실측 목록을 불러옵니다.</p>
 <div id="workspace" hidden><section class="summary"><div><strong id="progress">0 / 0</strong><span>실측 완료</span></div><progress id="meter" value="0" max="1"></progress><small id="remaining"></small></section>
 <div class="layout"><section class="listpanel"><nav><button data-filter="pending" class="chosen">남은 곳</button><button data-filter="done">완료</button><button data-filter="all">전체</button><button data-filter="excluded">제외</button></nav><div id="list"></div><button id="add" class="add">＋ 빠진 위치 추가</button></section>
-<section id="editorPanel" hidden><form id="editor"><div class="editorTop"><button type="button" id="close">‹ 목록</button><small id="rowMeta"></small></div><small id="roomName"></small><h2 id="editTitle">실측 입력</h2><p id="productInfo" hidden></p>
-<details id="locationFields"><summary>위치 이름 수정</summary><label>공간<input name="room" maxlength="250" required></label><label>설치 위치<input name="location" maxlength="250" required></label></details>
-<h3>길이 <small>mm</small></h3><div id="segments"></div><div class="lengthTools"><button type="button" id="addSegment">＋ 구간</button><strong id="total"></strong></div>
-<details id="noteFields"><summary>메모가 필요할 때</summary><textarea name="note" maxlength="2000" placeholder="특이사항만 남겨주세요"></textarea></details>
-<details class="exclude"><summary>시공하지 않는 위치</summary><label>사유<input name="reason" maxlength="250"></label><button type="button" id="skip">시공 안 함</button><button type="button" id="remove">중복 위치 삭제</button></details>
-<div class="savebar"><small id="saveState">길이를 입력하고 저장하세요</small><div><button type="button" id="draftSave">임시 저장</button><button class="primary" type="submit">완료 · 다음 위치</button></div></div>
-</form></section></div></div></main><script src="lighting.js?v=6"></script></body></html>
+<section id="editorPanel" hidden><form id="editor"><div class="editorTop"><button type="button" id="close">‹ 목록</button><small id="rowMeta"></small></div><small id="roomName"></small><h2 id="editTitle">실측 입력</h2><p id="productInfo" hidden></p><div id="nameTop"></div>
+<h3>길이 <small>mm · 한쪽 끝부터 1구간, 2구간…</small></h3><div id="segments"></div><div class="lengthTools"><button type="button" id="addSegment">＋ 구간 추가</button><strong id="total"></strong></div>
+<h3>배선 <small>전선 나온 가닥 수 · 모르면 비워두기</small></h3><div class="wires"><button type="button" id="wireMinus" aria-label="한 가닥 빼기">−</button><input name="wires" id="wires" type="number" inputmode="numeric" min="0" max="50" step="1" placeholder="—" aria-label="배선 가닥 수"><button type="button" id="wirePlus" aria-label="한 가닥 더">＋</button><span>가닥</span></div>
+<details id="noteFields"><summary>메모 (특이사항)</summary><textarea name="note" maxlength="2000" placeholder="예: 천장 몰딩 간섭, 인입선 오른쪽 끝"></textarea></details>
+<details class="exclude"><summary>이 위치 빼기</summary><p class="hint">시공하지 않거나 잘못 등록된 위치일 때만 · 이유를 적고 하나를 누르세요</p><label>이유<input name="reason" maxlength="250" placeholder="예: 고객이 간접등 빼기로 함"></label><div class="excludeBtns"><button type="button" id="skip">고객이 안 하기로 함</button><button type="button" id="remove">잘못 등록 (중복)</button></div></details>
+<div id="nameSpot"><details id="locationFields"><summary>이름 고치기</summary><label>공간<input name="room" maxlength="250" required></label><label>설치 위치<input name="location" maxlength="250" required></label></details></div>
+<div class="savebar"><small id="saveState">길이를 입력하고 저장하세요</small><div><button type="button" id="draftSave">나중에 마저</button><button class="primary" type="submit">완료 · 다음 위치</button></div></div>
+</form></section></div></div></main><script src="lighting.js?v=8"></script></body></html>

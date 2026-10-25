@@ -132,7 +132,7 @@ function renderEditor() {
     + (sw
       ? `<div class="mgrid">${SWITCH.map(m => `<button class="mb ${p.modules[0] === m ? 'on' : ''}" data-sw="${m}">${plateSvg([m], .5)}${NAME[m]}</button>`).join('')}</div><p class="sum" style="margin-top:8px">4로·일괄소등·디밍·4구 이상은 「다른 모양」 + 사진</p>`
       : `<div class="slots">${p.modules.map((m, i) => `<button data-slot="${i}" class="${i === slot ? 'on' : ''}">${NUM[i]} ${m ? NAME[m] : '비어 있음'}</button>`).join('')}${p.modules.length < 6 ? '<button data-addslot="1">＋ 구 추가</button>' : ''}</div>`
-        + `<p class="sum" style="margin:-4px 2px 6px">${NUM[slot] || ''} 에 넣을 것</p>`
+        + `<p class="sum" style="margin:-4px 2px 6px">${NUM[slot] || ''}에 넣을 것</p>`
         + `<div class="mgrid">${OUTLET.map(m => `<button class="mb ${p.modules[slot] === m ? 'on' : ''}" data-mod="${m}">${plateSvg([m], .5)}${NAME[m]}</button>`).join('')}<button class="mb" data-delslot="1" ${p.modules.length > 1 ? '' : 'disabled'}>고른 구<br>지우기</button></div>`
         + `<div class="seg" style="margin-top:12px"><button data-wet="yes" class="${p.wet === 'yes' ? 'on' : ''}">방우 (뚜껑)</button><button data-wet="no" class="${p.wet === 'no' ? 'on' : ''}">방우 아님</button><button data-wet="unknown" class="${p.wet === 'unknown' ? 'on' : ''}">모르겠음</button></div>`)
     + `<div class="row2"><span>같은 구성 몇 개?</span><span class="step"><button data-qty="-1" aria-label="하나 빼기">−</button><b>${p.qty}</b><button data-qty="1" aria-label="하나 더">＋</button></span></div>`

@@ -51,3 +51,12 @@ textarea{min-height:70px;resize:vertical}label{display:block;font-size:13px;colo
 details{margin-top:12px;border-top:1px solid var(--line);padding-top:6px}summary{font-size:13px;color:var(--sub);padding:8px 0;cursor:pointer}
 .danger{color:var(--bad)}
 @media(min-width:721px){main{padding-top:24px}.mgrid{grid-template-columns:repeat(7,minmax(0,1fr))}}
+
+/* 10/25 폰 최종 점검: 누르는 곳은 모두 44px 이상, 접기 글씨 14px */
+header a{display:inline-flex;align-items:center;min-height:44px;margin:-14px 0 -14px -6px;padding:0 10px 0 6px}
+.kinds a{min-height:48px;display:flex;align-items:center;justify-content:center}
+summary{padding:12px 0;font-size:14px}
+input,textarea{min-height:46px}
+.slots button{min-height:44px;padding:8px 12px}
+details>summary,.exclude summary{padding:13px 0;font-size:14px;min-height:46px;box-sizing:border-box}header button{font-size:13px}
+header button{min-height:44px}

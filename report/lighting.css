@@ -10,3 +10,17 @@ header{box-shadow:0 1px 0 rgba(0,0,0,.03),0 6px 16px rgba(0,0,0,.05)}
 .item[data-status=done] .badge{color:#1f6b45}
 /* 발주 실측 탭 — 간접조명 / 스위치·콘센트 (10/25) */
 .kinds{display:flex;gap:6px;margin:0 0 12px}.kinds a{flex:1;text-align:center;padding:11px 6px;border-radius:12px;background:#fff;color:#6b6f76;text-decoration:none;font-size:14px;font-weight:600;border:1px solid #e8e9eb}.kinds a.on{background:#16181d;color:#fff;border-color:#16181d}
+/* 10/25 현장 편집 다시 정리: 구간 번호 · 배선 가닥 · 빼기 */
+.segment{grid-template-columns:56px minmax(0,1fr) 40px}.segment label{font-size:14px;font-weight:700;color:#2b2e33}
+.wires{display:grid;grid-template-columns:52px 92px 52px auto;align-items:center;gap:8px;margin:6px 0 4px}.wires button{min-height:52px;font-size:22px;padding:0}
+.wires input{font-size:24px;font-weight:650;text-align:center;min-height:52px;padding:6px}.wires span{font-size:15px;color:#6b6f76}
+.exclude .hint{font-size:12.5px;color:#80858c;margin:2px 0 4px}.excludeBtns{display:flex;gap:8px;flex-wrap:wrap}.excludeBtns button{flex:1;min-width:140px;font-size:14px}
+#nameTop details{border-top:0;margin-top:0;padding-top:0}
+
+/* 10/25 폰 최종 점검: 누르는 곳은 모두 44px 이상, 접기 글씨 14px */
+header a{display:inline-flex;align-items:center;min-height:44px;margin:-14px 0 -14px -6px;padding:0 10px 0 6px}
+.kinds a{min-height:48px;display:flex;align-items:center;justify-content:center}
+summary{padding:12px 0;font-size:14px}
+input,textarea{min-height:46px}
+.segment{grid-template-columns:56px minmax(0,1fr) 48px}.segment button{min-height:52px;font-size:20px}
+details>summary,.exclude summary{padding:13px 0;font-size:14px;min-height:46px;box-sizing:border-box}header button{font-size:13px}
