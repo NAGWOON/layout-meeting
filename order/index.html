@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-25-lighting3';
+var APP_VER = '2026-10-26-link1';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -2505,6 +2505,9 @@ function 합치기(lines) {
     }
     통[k].qty += Number(x.qty) || 0;
     if (x.calc != null) 통[k].calc = (Number(통[k].calc) || 0) + Number(x.calc);
+    // 어느 실측에서 온 줄인지 — 합쳐도 출처는 모두 남깁니다. 버리면 같은 위치를 두 번 발주해도 모릅니다 (10/25 GPT R1 Top 3)
+    var 출처 = x.sources || (x.lightingSource ? [{ kind: 'lighting', id: x.lightingSource.id, site: x.lightingSource.site, revision: x.lightingSource.revision }] : []);
+    if (출처.length) 통[k].sources = (통[k].sources || []).concat(출처);
   });
   return 순서.map(function (k) { return 통[k]; });
 }
@@ -3673,7 +3676,8 @@ function submit() {
       + '<br><a href="' + r.pageUrl + '" target="_blank" style="color:var(--accent)">노션에서 열기</a>'
       + (r.fileUrl ? ' · <a href="' + r.fileUrl + '" target="_blank" style="color:var(--accent)">드라이브 발주서</a>' : '')
       // 드라이브 저장이 조용히 실패하면 없어진 줄도 모릅니다
-      + (r.fileError ? '<div class="warn">⚠ 드라이브에 발주서를 남기지 못했습니다 — ' + esc(r.fileError) + '</div>' : '');
+      + (r.fileError ? '<div class="warn">⚠ 드라이브에 발주서를 남기지 못했습니다 — ' + esc(r.fileError) + '</div>' : '')
+      + (r.linkWarning ? '<div class="warn">⚠ ' + esc(r.linkWarning) + '</div>' : '');
     if(outputPages.length>1){
       const id=(r.pageUrl||'').match(/([0-9a-f]{32}|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})(?:[/?#]|$)/i)?.[1];
       if(id){legacyImageJobs.push({pageId:id,no:r.orderNo,images:outputPages,next:r.fileError?0:1});await retryLegacyImages();}
@@ -8309,5 +8313,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="lighting-order.js?v=3"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="lighting-order.js?v=4"></script></body>
 </html>
