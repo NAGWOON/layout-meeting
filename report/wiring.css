@@ -61,3 +61,16 @@ input,textarea{min-height:46px}
 details>summary,.exclude summary{padding:13px 0;font-size:14px;min-height:46px;box-sizing:border-box}header button{font-size:13px}
 header button{min-height:44px}
 .seg button{white-space:nowrap}
+/* 10/25 저녁: 카드 = 누르면 열기 + 오른쪽 삭제 · 브랜드 고르기 · 편집 아래 [삭제][저장] */
+.plate{display:flex;align-items:stretch;padding:0;gap:0}
+.plateMain{flex:1;min-width:0;display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:center;text-align:left;border:0;background:none;padding:10px;min-height:88px;border-radius:14px 0 0 14px}
+.plateMain .pic{height:66px;display:flex;align-items:center;justify-content:center;background:var(--soft);border-radius:10px;overflow:hidden}
+.plateMain b{display:block;font-size:15px}.plateMain small{display:block;font-size:12.5px;color:var(--sub);margin-top:3px;overflow-wrap:anywhere}.plateMain .qty{display:inline;font-size:13px;color:var(--ink)}
+.delBtn{border:0;border-left:1px solid var(--line);border-radius:0 14px 14px 0;min-width:62px;color:var(--bad);background:none;font-size:14px}
+.delAsk{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px;border-left:1px solid var(--line)}.delAsk button{min-height:44px;min-width:64px;font-size:14px}
+.dangerBtn{background:#b4402a;border-color:#b4402a;color:#fff;font-weight:700}
+.delWide{color:var(--bad)}
+.editBar{grid-template-columns:1fr 2fr}
+.brandCard b{font-size:14px}.brandCard small{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+.roomName{font-size:22px;margin:4px 2px 10px}
+.brandSeg button{min-height:44px;font-weight:600}
