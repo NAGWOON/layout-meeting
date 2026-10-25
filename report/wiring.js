@@ -64,7 +64,7 @@ const isSwitch = m => SWITCH.includes(m[0]);
 function sentence(p) {
   if (!p.modules.length) return '';
   const what = isSwitch(p.modules) ? NAME[p.modules[0]] : p.modules.length + '구 · ' + p.modules.map(m => m ? NAME[m] : '비어 있음').join(' + ');
-  return [p.room + ' ' + (p.location || '(위치 없음)'), what, '같은 구성 ' + p.qty + '개', isSwitch(p.modules) ? '' : (WET[p.wet] || '방우 여부 안 고름')].filter(Boolean).join(' / ');
+  return [p.room + ' ' + (p.location || '(위치 없음)'), what, '이 방에 ' + p.qty + '개', isSwitch(p.modules) ? '' : (WET[p.wet] || '방우 여부 안 고름')].filter(Boolean).join(' / ');
 }
 
 // ── 자료 ──
@@ -126,7 +126,7 @@ function renderEditor() {
   const p = cur, sw = isSwitch(p.modules), r = roomOf(p.roomKey);
   const photo = p.photo ? p.photo : p.photo === null ? '' : (p.photos?.[0]?.url || '');
   $('screen').innerHTML = `<div class="roomTop"><button id="edBack">‹ ${esc(r ? r.room : '방')}</button><small style="color:var(--mute)">${p.revision ? '등록됨' : '새로 추가'}</small></div>`
-    + `<label for="loc">위치</label><input id="loc" maxlength="60" value="${esc(p.location)}" placeholder="예: 침대 옆, TV 벽, 현관 쪽">`
+    + `<label for="loc">위치</label><input id="loc" maxlength="60" value="${esc(p.location)}" placeholder="예: 현관문 옆 / 신발장 옆 외 2곳">`
     + `<div class="seg" style="margin-top:12px"><button data-kind="switch" class="${sw ? 'on' : ''}">스위치</button><button data-kind="outlet" class="${sw ? '' : 'on'}">콘센트</button></div>`
     + `<div class="big">${plateSvg(p.modules.length ? p.modules : [null], 1.45, p.wet === 'yes', sw ? -1 : slot)}</div>`
     + (sw
@@ -134,8 +134,8 @@ function renderEditor() {
       : `<div class="slots">${p.modules.map((m, i) => `<button data-slot="${i}" class="${i === slot ? 'on' : ''}">${NUM[i]} ${m ? NAME[m] : '비어 있음'}</button>`).join('')}${p.modules.length < 6 ? '<button data-addslot="1">＋ 구 추가</button>' : ''}</div>`
         + `<p class="sum" style="margin:-4px 2px 6px">${NUM[slot] || ''}에 넣을 것</p>`
         + `<div class="mgrid">${OUTLET.map(m => `<button class="mb ${p.modules[slot] === m ? 'on' : ''}" data-mod="${m}">${plateSvg([m], .5)}${NAME[m]}</button>`).join('')}<button class="mb" data-delslot="1" ${p.modules.length > 1 ? '' : 'disabled'}>고른 구<br>지우기</button></div>`
-        + `<div class="seg" style="margin-top:12px"><button data-wet="yes" class="${p.wet === 'yes' ? 'on' : ''}">방우 (뚜껑)</button><button data-wet="no" class="${p.wet === 'no' ? 'on' : ''}">방우 아님</button><button data-wet="unknown" class="${p.wet === 'unknown' ? 'on' : ''}">모르겠음</button></div>`)
-    + `<div class="row2"><span>같은 구성 몇 개?</span><span class="step"><button data-qty="-1" aria-label="하나 빼기">−</button><b>${p.qty}</b><button data-qty="1" aria-label="하나 더">＋</button></span></div>`
+        + `<div class="seg" style="margin-top:12px"><button data-wet="yes" class="${p.wet === 'yes' ? 'on' : ''}">방우 맞음</button><button data-wet="no" class="${p.wet === 'no' ? 'on' : ''}">방우 아님</button><button data-wet="unknown" class="${p.wet === 'unknown' ? 'on' : ''}">모르겠음</button></div>`)
+    + `<div class="row2"><span>이 구성이 이 방에 몇 개?<br><small style="color:var(--mute);font-size:12px">똑같은 건 한 번만, 개수로</small></span><span class="step"><button data-qty="-1" aria-label="하나 빼기">−</button><b>${p.qty}</b><button data-qty="1" aria-label="하나 더">＋</button></span></div>`
     + `<div class="photoRow">${photo ? `<img src="${esc(photo)}" alt="콘센트·스위치 사진"><button data-photo="del">사진 지우기</button>` : ''}<button data-photo="take">📷 ${photo ? '다시 찍기' : '사진'}</button>${undo.length ? '<button id="undo">되돌리기</button>' : ''}</div>`
     + `<details ${p.memo ? 'open' : ''}><summary>메모 ${p.memo ? '' : '(필요할 때만)'}</summary><textarea id="memo" maxlength="400" placeholder="예: 기존 통합수구 · 가로형">${esc(p.memo)}</textarea></details>`
     + `<div class="say">${esc(sentence(p))}</div>`

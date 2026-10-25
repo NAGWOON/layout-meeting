@@ -60,3 +60,4 @@ input,textarea{min-height:46px}
 .slots button{min-height:44px;padding:8px 12px}
 details>summary,.exclude summary{padding:13px 0;font-size:14px;min-height:46px;box-sizing:border-box}header button{font-size:13px}
 header button{min-height:44px}
+.seg button{white-space:nowrap}
