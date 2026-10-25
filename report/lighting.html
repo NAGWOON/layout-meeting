@@ -1,19 +1,13 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>간접조명 실측</title><link rel="stylesheet" href="lighting.css?v=1"></head><body>
-<main><header><a href="./index.html">‹ 현장관리</a><span>간접조명 · 1차</span><h1 id="siteTitle">간접조명 실측</h1><p>목록을 따라 확인하고, 빠진 곳은 추가하세요.</p></header>
-<section id="login" hidden><h2>현장관리 접속</h2><label>접속키<input id="accessKey" type="password" autocomplete="current-password"></label><button id="loginBtn">접속</button></section>
-<section class="toolbar"><label>현장<select id="sites"><option value="">현장을 선택하세요</option></select></label><button id="refresh">새로 불러오기</button></section>
-<p id="message" role="status" aria-live="polite">서버 연결을 확인합니다.</p>
-<div id="workspace" hidden><section class="summary"><div><strong id="progress">0 / 0</strong><span>실측 완료</span></div><p id="remaining"></p><progress id="meter" value="0" max="1"></progress></section>
-<nav><button data-filter="active" class="chosen">전체</button><button data-filter="pending">남은 실측</button><button data-filter="done">완료</button><button data-filter="excluded">시공 안 함·삭제</button></nav>
-<div class="layout"><section class="listpanel"><div class="row"><h2>실측 위치</h2><button id="add">＋ 위치 추가</button></div><div id="list"></div>
-<details><summary>사무실 · 목록 준비 / 내보내기</summary><p>한 줄에 하나씩 <b>공간 | 설치 위치</b>를 적으세요. 길이는 현장에서 입력합니다.</p><textarea id="bulk" placeholder="거실 | 커튼 간접&#10;안방 | 커튼 간접"></textarea><button id="bulkAdd">목록을 공유 저장</button><button id="backup">실측 원본 내려받기</button><button id="exportText">발주 검토용 글 내려받기</button><p>내려받기는 발주 전 검토 자료입니다. 실제 발주서는 아직 생성하지 않습니다.</p></details>
-</section><section id="editorPanel" hidden><form id="editor"><div class="row"><h2 id="editTitle">실측 입력</h2><button type="button" id="close">목록으로</button></div>
-<p id="rowMeta"></p><div class="two"><label>공간<input name="room" maxlength="250" required></label><label>설치 위치<input name="location" maxlength="250" required></label></div>
-<label>조명 종류 / 제품명<input name="product" maxlength="250" placeholder="직접 입력 · LED바, 스트립, 방습 스트립 등"></label>
-<h3>실측 길이 <small>mm</small></h3><p class="hint">ㄷ자는 세 변을 각각 입력하세요. 아직 재지 않은 칸은 비워두세요.</p><div id="segments"></div><button type="button" id="addSegment">＋ 구간 추가</button><strong id="total"></strong>
-<h3>배선 확인</h3><div class="two"><label>계획 배선 (선택)<input name="plannedWires" type="number" min="0" max="50" step="1" inputmode="numeric" placeholder="미확인"></label><label>실제 배선 (갈래)<input name="actualWires" type="number" min="0" max="50" step="1" inputmode="numeric" placeholder="현장에서 확인"></label></div><p id="wireWarn" class="warning" hidden></p>
-<label>전선이 나오는 위치<input name="wirePosition" maxlength="250" placeholder="예: 왼쪽 끝 / 사진 참고"></label><label>스위치 묶음<input name="switchGroup" maxlength="250" placeholder="미정이면 비워두세요"></label><label>확인 내용 / 제작 요청<textarea name="note" maxlength="2000" placeholder="배선 차이, 반입 제약, 연결 요청 등을 기록"></textarea></label>
-<label class="photoBtn">사진 추가 (최대 3장)<input id="photos" type="file" accept="image/*" multiple></label><div id="photoList"></div>
-<details><summary>시공 안 함 / 위치 삭제</summary><label>사유<input name="reason" maxlength="250"></label><button type="button" id="skip">시공 안 함으로 저장</button><button type="button" id="remove">삭제 기록 남기기</button><p>기록을 지우지 않습니다. 제외 목록에서 다시 열어 복원할 수 있습니다.</p></details>
-<div class="savebar"><p id="saveState">입력 후 공유 저장해주세요.</p><button type="button" id="draftSave">진행 중으로 저장</button><button class="primary" type="submit">실측 완료 · 공유 저장</button></div>
-<details><summary>변경 기록</summary><div id="history"></div></details></form></section></div></div></main><script src="lighting.js?v=1"></script></body></html>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>간접조명 실측</title><link rel="stylesheet" href="lighting.css?v=4"></head><body>
+<main><header><a href="./index.html">‹ 현장관리</a><span>간접조명 실측</span><h1 id="siteTitle">실측 목록</h1><button id="refresh" aria-label="최신 목록 새로고침">새로고침</button></header>
+<section id="login" hidden><label>접속키<input id="accessKey" type="password" autocomplete="current-password"></label><button id="loginBtn">접속</button></section>
+<p id="message" role="status" aria-live="polite">실측 목록을 불러옵니다.</p>
+<div id="workspace" hidden><section class="summary"><div><strong id="progress">0 / 0</strong><span>실측 완료</span></div><progress id="meter" value="0" max="1"></progress><small id="remaining"></small></section>
+<div class="layout"><section class="listpanel"><nav><button data-filter="pending" class="chosen">남은 곳</button><button data-filter="done">완료</button><button data-filter="all">전체</button><button data-filter="excluded">제외</button></nav><div id="list"></div><button id="add" class="add">＋ 빠진 위치 추가</button></section>
+<section id="editorPanel" hidden><form id="editor"><div class="editorTop"><button type="button" id="close">‹ 목록</button><small id="rowMeta"></small></div><small id="roomName"></small><h2 id="editTitle">실측 입력</h2><p id="productInfo" hidden></p>
+<details id="locationFields"><summary>위치 이름 수정</summary><label>공간<input name="room" maxlength="250" required></label><label>설치 위치<input name="location" maxlength="250" required></label></details>
+<h3>길이 <small>mm</small></h3><div id="segments"></div><div class="lengthTools"><button type="button" id="addSegment">＋ 구간</button><strong id="total"></strong></div>
+<details id="noteFields"><summary>메모가 필요할 때</summary><textarea name="note" maxlength="2000" placeholder="특이사항만 남겨주세요"></textarea></details>
+<details class="exclude"><summary>시공하지 않는 위치</summary><label>사유<input name="reason" maxlength="250"></label><button type="button" id="skip">시공 안 함</button><button type="button" id="remove">중복 위치 삭제</button></details>
+<div class="savebar"><small id="saveState">길이를 입력하고 저장하세요</small><div><button type="button" id="draftSave">임시 저장</button><button class="primary" type="submit">완료 · 다음 위치</button></div></div>
+</form></section></div></div></main><script src="lighting.js?v=4"></script></body></html>
