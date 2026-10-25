@@ -64,7 +64,7 @@ const isSwitch = m => SWITCH.includes(m[0]);
 function sentence(p) {
   if (!p.modules.length) return '';
   const what = isSwitch(p.modules) ? NAME[p.modules[0]] : p.modules.length + '구 · ' + p.modules.map(m => m ? NAME[m] : '비어 있음').join(' + ');
-  return [p.room + ' ' + (p.location || '(자리 이름 없음)'), what, '같은 구성 ' + p.qty + '개', isSwitch(p.modules) ? '' : (WET[p.wet] || '방우 여부 안 고름')].filter(Boolean).join(' / ');
+  return [p.room + ' ' + (p.location || '(위치 없음)'), what, '같은 구성 ' + p.qty + '개', isSwitch(p.modules) ? '' : (WET[p.wet] || '방우 여부 안 고름')].filter(Boolean).join(' / ');
 }
 
 // ── 자료 ──
@@ -94,15 +94,15 @@ function render() {
 }
 function roomLine(r) {
   const ps = platesOf(r.id).filter(p => p.status !== 'removed'), unk = ps.filter(p => p.status === 'unknown').length, pend = ps.filter(p => p.status === 'pending').length;
-  if (r.status === 'done') return ['다 봤음 · ' + ps.length + '자리' + (unk ? ' · 모름 ' + unk : ''), unk ? 'warn' : 'ok'];
-  if (r.status === 'none') return ['교체 대상 없음', 'ok'];
-  return [(ps.length ? ps.length + '자리 등록' : '아직 등록한 자리 없음') + (pend ? ' · 확인할 자리 ' + pend : '') + (unk ? ' · 모름 ' + unk : ''), ''];
+  if (r.status === 'done') return ['확인 완료 · ' + ps.length + '개' + (unk ? ' · 모름 ' + unk : ''), unk ? 'warn' : 'ok'];
+  if (r.status === 'none') return ['바꿀 것 없음', 'ok'];
+  return [(ps.length ? ps.length + '개 등록' : '아직 등록한 것 없음') + (pend ? ' · 확인할 것 ' + pend : '') + (unk ? ' · 모름 ' + unk : ''), ''];
 }
 function renderRooms() {
   const rs = rooms(), left = rs.filter(r => r.status === 'pending').length;
   $('screen').innerHTML = `<p class="sum">방 ${rs.length} · 확인 남은 방 ${left}</p>`
     + (rs.map(r => { const [t, c] = roomLine(r);
-      return `<button class="roomItem" data-room="${esc(r.id)}"><span><b>${esc(r.room)}</b><small>${esc(t)}</small></span><span class="pill ${r.work === 'new' ? 'new' : 'rep'}">${r.work === 'new' ? '신규' : '교체'}</span>${r.status !== 'pending' ? `<span class="pill ${c}">${r.status === 'done' ? '다 봤음' : '대상 없음'}</span>` : ''}</button>`; }).join('')
+      return `<button class="roomItem" data-room="${esc(r.id)}"><span><b>${esc(r.room)}</b><small>${esc(t)}</small></span><span class="pill ${r.work === 'new' ? 'new' : 'rep'}">${r.work === 'new' ? '신규' : '교체'}</span>${r.status !== 'pending' ? `<span class="pill ${c}">${r.status === 'done' ? '확인 완료' : '바꿀 것 없음'}</span>` : ''}</button>`; }).join('')
       || '<div class="card"><b>아직 등록된 방이 없습니다</b><p class="sum" style="margin:6px 0 0">사무실이 방을 등록하면 여기에 나옵니다. 지금 바꿀 콘센트·스위치가 있는 방을 직접 추가해도 됩니다.</p></div>')
     + `<div class="card"><label for="newRoom">방 추가 — 사무실 목록에 없는 방</label><div class="seg"><button data-work="replace" class="${newWork === 'replace' ? 'on' : ''}">있는 것 교체</button><button data-work="new" class="${newWork === 'new' ? 'on' : ''}">새로 만듦</button></div>`
     + `<div class="addRoom"><input id="newRoom" maxlength="40" placeholder="예: 작은방, 드레스룸"><button id="addRoom" class="primary">추가</button></div></div>`;
@@ -112,21 +112,21 @@ function renderRoom() {
   const ps = platesOf(r.id), live = ps.filter(p => p.status !== 'removed'), gone = ps.filter(p => p.status === 'removed');
   const drafts = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!k.startsWith('dsf_wiring_draft:' + site + ':')) continue;
     try { const d = JSON.parse(localStorage.getItem(k)); if (d.roomKey === r.id && !rows.some(x => x.id === d.id)) drafts.push(d); } catch (e) { } }
-  const card = (p, draft) => `<button class="plate ${draft ? 'unknown' : p.status}" data-plate="${esc(p.id)}"${draft ? ' data-draft="1"' : ''}><span class="pic">${plateSvg(p.modules.length ? p.modules : [null], .62, p.wet === 'yes')}</span><span><b>${esc(p.location || '자리 이름 없음')}</b><small>${esc(isSwitch(p.modules) ? NAME[p.modules[0]] : p.modules.map(m => m ? NAME[m] : '?').join(' + '))} · ${p.qty}개${p.wet === 'yes' ? ' · 방우' : ''}</small>`
-    + `<small>${draft ? '저장 안 한 자리 — 눌러서 이어서' : p.status === 'pending' ? '사무실이 적어둔 자리 — 눌러서 확인' : p.status === 'unknown' ? '모름 — 사무실이 사진 보고 확인' : p.photos?.length ? '확인 · 사진 있음' : '확인'}</small></span></button>`;
+  const card = (p, draft) => `<button class="plate ${draft ? 'unknown' : p.status}" data-plate="${esc(p.id)}"${draft ? ' data-draft="1"' : ''}><span class="pic">${plateSvg(p.modules.length ? p.modules : [null], .62, p.wet === 'yes')}</span><span><b>${esc(p.location || '위치 없음')}</b><small>${esc(isSwitch(p.modules) ? NAME[p.modules[0]] : p.modules.map(m => m ? NAME[m] : '?').join(' + '))} · ${p.qty}개${p.wet === 'yes' ? ' · 방우' : ''}</small>`
+    + `<small>${draft ? '저장 안 함 — 눌러서 이어서' : p.status === 'pending' ? '사무실이 적어둔 것 — 눌러서 확인' : p.status === 'unknown' ? '모름 — 사무실이 사진 보고 확인' : p.photos?.length ? '확인 · 사진 있음' : '확인'}</small></span></button>`;
   $('screen').innerHTML = `<div class="roomTop"><button id="toRooms">‹ 방 목록</button><span class="pill ${r.work === 'new' ? 'new' : 'rep'}">${r.work === 'new' ? '신규' : '교체'}</span></div><h2 style="font-size:22px;margin:4px 2px 10px">${esc(r.room)}</h2>`
     + live.map(p => card(p)).join('') + drafts.map(d => card(d, true)).join('')
-    + `<button id="addPlate" class="dash">＋ 자리 추가 — 콘센트·스위치 한 곳</button>`
-    + (gone.length ? `<details><summary>뺀 자리 ${gone.length}</summary>${gone.map(p => card(p)).join('')}</details>` : '')
+    + `<button id="addPlate" class="dash">＋ 콘센트·스위치 추가</button>`
+    + (gone.length ? `<details><summary>뺀 것 ${gone.length}</summary>${gone.map(p => card(p)).join('')}</details>` : '')
     + `<div class="bottom">` + (r.status === 'pending'
-      ? `<button id="roomDone" class="primary">이 방 바꿀 곳을 모두 등록했습니다</button>${live.length ? '' : '<button id="roomNone">이 방은 교체 대상 없음</button>'}<small>다 등록한 뒤 눌러야 사무실이 「이 방은 끝」으로 봅니다</small>`
-      : `<small>${r.status === 'done' ? '이 방은 다 봤음으로 저장됨' : '교체 대상 없음으로 저장됨'}</small><button id="roomReopen">다시 확인하기</button>`) + `</div>`;
+      ? `<button id="roomDone" class="primary">이 방 확인 완료</button>${live.length ? '' : '<button id="roomNone">이 방은 바꿀 것 없음</button>'}<small>빠진 콘센트·스위치가 없을 때 누르세요</small>`
+      : `<small>${r.status === 'done' ? '이 방은 확인 완료' : '이 방은 바꿀 것 없음'}</small><button id="roomReopen">다시 확인하기</button>`) + `</div>`;
 }
 function renderEditor() {
   const p = cur, sw = isSwitch(p.modules), r = roomOf(p.roomKey);
   const photo = p.photo ? p.photo : p.photo === null ? '' : (p.photos?.[0]?.url || '');
-  $('screen').innerHTML = `<div class="roomTop"><button id="edBack">‹ ${esc(r ? r.room : '방')}</button><small style="color:var(--mute)">${p.revision ? '등록된 자리' : '새 자리'}</small></div>`
-    + `<label for="loc">어느 자리</label><input id="loc" maxlength="60" value="${esc(p.location)}" placeholder="예: 침대 옆, TV 벽, 현관 쪽">`
+  $('screen').innerHTML = `<div class="roomTop"><button id="edBack">‹ ${esc(r ? r.room : '방')}</button><small style="color:var(--mute)">${p.revision ? '등록됨' : '새로 추가'}</small></div>`
+    + `<label for="loc">위치</label><input id="loc" maxlength="60" value="${esc(p.location)}" placeholder="예: 침대 옆, TV 벽, 현관 쪽">`
     + `<div class="seg" style="margin-top:12px"><button data-kind="switch" class="${sw ? 'on' : ''}">스위치</button><button data-kind="outlet" class="${sw ? '' : 'on'}">콘센트</button></div>`
     + `<div class="big">${plateSvg(p.modules.length ? p.modules : [null], 1.45, p.wet === 'yes', sw ? -1 : slot)}</div>`
     + (sw
@@ -140,7 +140,7 @@ function renderEditor() {
     + `<details ${p.memo ? 'open' : ''}><summary>메모 ${p.memo ? '' : '(필요할 때만)'}</summary><textarea id="memo" maxlength="400" placeholder="예: 기존 통합수구 · 가로형">${esc(p.memo)}</textarea></details>`
     + `<div class="say">${esc(sentence(p))}</div>`
     + `<div class="bottom"><button id="save" class="primary">저장</button></div>`
-    + (p.revision ? `<details><summary class="danger">이 자리 빼기 (잘못 등록·없어짐)</summary><p class="sum">메모에 이유를 적고 누르세요</p><button id="remove">이 자리 빼기</button></details>` : '');
+    + (p.revision ? `<details><summary class="danger">목록에서 빼기 (잘못 넣음·없어짐)</summary><p class="sum">메모에 이유를 적고 누르세요</p><button id="remove">목록에서 빼기</button></details>` : '');
 }
 
 // ── 편집 ──
@@ -169,14 +169,14 @@ function change(fn) { if ($('message').classList.contains('error')) msg(''); und
 async function savePlate(removing) {
   if (busy || !cur) return;
   cur.location = $('loc').value.trim(); cur.memo = ($('memo')?.value || '').trim();
-  if (!cur.location) { msg('어느 자리인지 적어주세요 (예: 침대 옆)', true); $('loc').focus(); return; }
+  if (!cur.location) { msg('위치를 적어주세요 (예: 침대 옆)', true); $('loc').focus(); return; }
   if (cur.modules.some(m => !m)) { msg('비어 있는 구가 있습니다. 채우거나 「고른 구 지우기」를 눌러주세요', true); return; }
   if (!isSwitch(cur.modules) && !cur.wet) { msg('방우인지 골라주세요 (모르면 「모르겠음」)', true); return; }
   if (cur.modules[0] === '다른모양' && !cur.memo && !cur.photo && !cur.photos?.length) { msg('다른 모양은 사진을 찍거나 메모를 남겨주세요', true); return; }
-  if (removing && !cur.memo) { msg('이 자리를 빼는 이유를 메모에 적어주세요', true); return; }
+  if (removing && !cur.memo) { msg('빼는 이유를 메모에 적어주세요', true); return; }
   const row = {id: cur.id, kind: 'plate', room: cur.room, roomKey: cur.roomKey, location: cur.location, modules: cur.modules, qty: cur.qty,
     wet: isSwitch(cur.modules) ? 'na' : cur.wet, memo: cur.memo, status: removing ? 'removed' : 'auto', fieldToken: cur.fieldToken, photo: cur.photo};
-  await send(row, cur.revision || 0, removing ? '자리를 뺐습니다' : '저장 · ' + cur.room + ' ' + cur.location);
+  await send(row, cur.revision || 0, removing ? '목록에서 뺐습니다' : '저장 · ' + cur.room + ' ' + cur.location);
 }
 async function send(row, expectedRevision, done) {
   const fp = JSON.stringify(row), holder = row.kind === 'plate' ? cur : (rows.find(x => x.id === row.id) || {});
@@ -237,7 +237,7 @@ $('screen').addEventListener('click', async e => {
   const r = roomOf(roomId);
   if (b.id === 'roomDone' || b.id === 'roomNone' || b.id === 'roomReopen') {
     const status = b.id === 'roomDone' ? 'done' : b.id === 'roomNone' ? 'none' : 'pending';
-    return send({id: r.id, kind: 'room', room: r.room, location: r.location, work: r.work, status, fieldToken: r.fieldToken}, r.revision, status === 'done' ? r.room + ' — 다 봤음으로 저장했습니다' : status === 'none' ? r.room + ' — 교체 대상 없음' : r.room + ' — 다시 확인 중');
+    return send({id: r.id, kind: 'room', room: r.room, location: r.location, work: r.work, status, fieldToken: r.fieldToken}, r.revision, status === 'done' ? r.room + ' — 확인 완료' : status === 'none' ? r.room + ' — 바꿀 것 없음' : r.room + ' — 다시 확인 중');
   }
   if (!cur) return;
   cur.location = $('loc')?.value.trim() ?? cur.location; cur.memo = ($('memo')?.value ?? cur.memo).trim();
