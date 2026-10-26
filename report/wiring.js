@@ -80,7 +80,7 @@ function roomLine(r) {
 const swatches = (b, current, attr) => `<div class="sw">${cat.colors(b).map(c => `<button data-${attr}="${esc(c.name)}" class="${current === c.name ? 'on' : ''}" aria-label="${esc(c.name)}"><i style="background:${K.swatch(c)}"></i>${esc(c.name)}</button>`).join('')}<button data-${attr}="" class="${current ? '' : 'on'}"><i class="none"></i>모름</button></div>`;
 function renderRooms() {
   const rs = rooms(), left = rs.filter(r => r.status === 'pending').length, b = siteBrand || 'apella';
-  $('screen').innerHTML = (serverVer === 'wiring1' ? '<p class="banner">서버 업데이트 전입니다 — 색·구성 상세는 사무실이 서버를 올린 뒤부터 저장됩니다</p>' : '')
+  $('screen').innerHTML = (serverVer === 'wiring1' ? '<p class="banner">서버 업데이트 전입니다 — 둘러보기만 되고, 콘센트·스위치 저장은 사무실이 서버를 올린 뒤에 됩니다</p>' : '')
     + `<div class="card brandCard"><b>이 현장 기본</b><small>새로 넣는 콘센트·스위치가 이걸로 시작합니다 · 하나씩 바꿀 수도 있음</small>`
     + `<div class="seg brandSeg">${Object.keys(BRAND).map(k => `<button data-site-brand="${k}" class="${siteBrand === k ? 'on' : ''}">${BRAND[k]}</button>`).join('')}</div>`
     + (siteBrand ? `<label>기본 색 · ${esc(K.BRANDS[b])}</label>${swatches(b, siteColor[b] || '', 'site-color')}` : '') + `</div>`
@@ -170,6 +170,8 @@ function change(fn) { if ($('message').classList.contains('error')) msg(''); ask
 
 async function savePlate(removing) {
   if (busy || !cur) return;
+  // 옛 서버는 구성 상세를 몰라 칸 목록만 바꿉니다 — 둘이 어긋나지 않게, 서버 업데이트 전에는 저장하지 않습니다 (입력은 폰에 남음)
+  if (serverVer === 'wiring1') { keep(); msg('서버 업데이트 전이라 아직 저장할 수 없습니다 — 입력은 이 폰에 보관했습니다. 사무실이 서버를 올린 뒤 다시 눌러주세요', true); return; }
   cur.location = $('loc').value.trim(); cur.memo = ($('memo')?.value || '').trim(); if ($('pname')) cur.name = $('pname').value.trim();
   const b = brandOf(cur), g = K.normalize(b, cur.gangs);
   if (!removing) {
@@ -187,6 +189,7 @@ async function savePlate(removing) {
 }
 async function deleteSaved(id) {
   const p = rows.find(x => x.id === id); if (!p) return;
+  if (serverVer === 'wiring1') { msg('서버 업데이트 전이라 아직 지울 수 없습니다 — 사무실이 서버를 올린 뒤 다시 눌러주세요', true); return; }
   cur = clone(p); cur.gangs = gangsOf(p); cur.base = fieldPart(cur);
   const b = brandOf(p), g = gangsOf(p), lg = K.toLegacy(b, g);
   const row = {id: p.id, kind: 'plate', room: p.room, roomKey: p.roomKey, location: p.location || '(위치 없음)', modules: p.modules && p.modules.length ? p.modules : lg.modules, qty: p.qty, wet: p.wet || lg.wet,
