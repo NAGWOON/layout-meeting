@@ -74,3 +74,30 @@ header button{min-height:44px}
 .brandCard b{font-size:14px}.brandCard small{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
 .roomName{font-size:22px;margin:4px 2px 10px}
 .brandSeg button{min-height:44px;font-weight:600}
+
+/* 10/26 실물 그림 · 색 · 구성 상세 (wiring-kit.js) */
+.banner{background:var(--warn-s);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 10px}
+.brandCard label{margin-top:14px}
+.sw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px;margin-top:6px}
+.sw button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--sub);padding:2px 0;min-height:64px;white-space:nowrap}
+.sw button i{width:44px;height:44px;border-radius:8px;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.1)}
+.sw button i.none{background:repeating-linear-gradient(135deg,#fff 0 6px,#eee 6px 8px)}
+.sw button.on{color:var(--ink);font-weight:700}.sw button.on i{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
+.plateMain .pic{background:#ebeae6}.plateMain .pic svg{max-width:92px}
+.flag{font-style:normal;font-size:11.5px;padding:1px 6px;border-radius:6px;background:var(--bad-s);color:var(--bad)}
+.stage{background:radial-gradient(120% 90% at 30% 20%,#f1f0ec,#e3e2dd);border-radius:16px;padding:22px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;margin:6px 0 4px}
+.stage svg{max-width:100%;height:auto}.stage small{font-size:12px;color:var(--mute);text-align:center}
+.blk{background:var(--card);border-radius:16px;padding:14px 14px 12px;margin:10px 0}
+.blk h4{font-size:14px;margin:0 0 10px;display:flex;gap:8px;align-items:baseline}.blk h4 em{font-style:normal;font-size:11px;color:var(--mute);letter-spacing:.08em}.blk h4 span{margin-left:auto;font-size:12.5px;color:var(--mute);font-weight:500}
+.brands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.brands button{text-align:left;padding:10px;min-height:62px;display:flex;flex-direction:column;justify-content:center}
+.brands button b{font-size:14px}.brands button small{font-size:11px;color:var(--mute);margin-top:2px}
+.brands button.on{border:2px solid var(--ink)}
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:4px 0 6px}
+.pb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:96px;padding:8px 4px;font-size:12px;font-weight:600;line-height:1.25;text-align:center}
+.pb svg{display:block}.pb.on{border:2px solid var(--ink);background:#fafaf8}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 10px;margin:4px 0 6px}
+.mode{display:grid;grid-template-columns:20px 1fr;gap:4px;align-items:center}.mode b{font-size:12px;color:var(--sub);text-align:center}.mode .seg{margin:0;gap:3px}.mode .seg button{padding:6px 2px;font-size:13px;min-height:44px}
+.slot{display:grid;grid-template-columns:24px 48px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.slot .no{font-size:13px;color:var(--mute)}.slot .mini{height:44px;width:48px;display:flex;align-items:center;justify-content:center;background:#ebeae6;border-radius:8px}
+.slot b{font-size:14px}.slot .x{min-height:44px;font-size:13px;color:var(--bad);border-color:transparent}
