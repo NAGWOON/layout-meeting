@@ -62,6 +62,8 @@ var LightingOrder = (function () {
         if (pr && o.wattsPerM != null) { const k = o.wattsPerM + '|' + (o.voltage || 24); if (seen[pr] && seen[pr] !== k && !W[pr].touched) W[pr].conflict = true; seen[pr] = seen[pr] || k; }
         if (o.smpsGroup && o.smpsGroup !== NONE && !G.some(g => g.name === o.smpsGroup)) G.push({name: o.smpsGroup, place: o.smpsPlace || '', cap: o.smpsCap || 150, util: o.utilization || 80});
       });
+      // 가구 조명용 SMPS 는 노션 행이 없어 이 컴퓨터 보관본에서 늘 되살림 — 「노션에 저장」 뒤에도 사라지지 않게 (10/27 GPT 나4)
+      ((local && local.G) || []).filter(g => g.alone && !G.some(x => x.name === g.name)).forEach(g => G.push(g));
       if (!G.length) G.push({name: 'SMPS ①', place: '', cap: 150, util: 80});
       render();
       if (redo.length) { say('현장 실측이 바뀐 ' + redo.length + '곳은 새 실측으로 다시 불러왔습니다: ' + redo.join(', '), true); return; }

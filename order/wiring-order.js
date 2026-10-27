@@ -189,12 +189,14 @@ var WiringOrder = (function () {
         const g = G[i], modes = (g.modes || []).slice(), last = modes.pop() || '단로';
         G.splice(i, 1, Object.assign({}, g, {n: g.n - 1, modes}), {k: '스위치', n: 1, modes: [last]});
       }
+      const gone = [];
       while (G.length > want) {
         const x = G[G.length - 1], y = G[G.length - 2];
         if (x.k === '막음') { G.pop(); continue; }
         if (y && x.k === '스위치' && y.k === '스위치' && y.n + x.n <= 4) { y.modes = (y.modes || []).concat(x.modes || []); y.n += x.n; G.pop(); continue; }
-        G.pop();
+        gone.push(K.partName('jung', x)); G.pop();
       }
+      if (gone.length) setTimeout(() => say('프레임을 줄이며 뺐습니다: ' + gone.join(', ') + ' — 잘못 줄였으면 프레임을 다시 키우고 그 자리를 고르세요', true), 0);   // GPT 나6
       l.gangs = K.normalize(a.p.brand, G);
     }
     else if (t.dataset.act === 'qty') { const a = at(t.dataset.at); a.p.lines[a.li].qty = Math.max(1, Math.min(99, Math.round(Number(t.value) || 1))); }
