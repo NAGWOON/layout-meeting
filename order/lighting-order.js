@@ -11,7 +11,7 @@ var LightingOrder = (function () {
   'use strict';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const NO = '①②③④⑤⑥⑦⑧⑨⑩', CAPS = [60, 100, 150, 200, 250, 300, 350, 400, 500], NONE = '전원 내장';
-  let dialog, siteId = '', siteName = '', rows = [], P = {}, W = {}, G = [], sel = '', busy = false, dirty = false, serverVer = '';
+  let dialog, siteId = '', siteName = '', rows = [], P = {}, W = {}, G = [], sel = '', busy = false, dirty = false, serverVer = '', guard = '';
   const key = () => 'dsf_lighting_smps:' + siteId;
   const keep = () => { dirty = true; try { localStorage.setItem(key(), JSON.stringify({P, W, G, dirty: true, at: Date.now()})); } catch (e) { } };
   const say = (t, bad) => { const m = dialog.querySelector('[data-msg]'); if (m) { m.textContent = t || ''; m.classList.toggle('bad', !!bad); } };
@@ -37,7 +37,7 @@ var LightingOrder = (function () {
     try {
       const r = await api('lightingGet', {sitePageId: siteId});
       if (!r || !r.ok) throw Error((r && r.error) || '실측을 불러오지 못했습니다');
-      serverVer = r.version || '';
+      serverVer = r.version || ''; guard = r.orderGuard || '';
       rows = r.document.rows.filter(x => x.status === 'done' || (x.status === 'pending' && x.needsMeasurement === false));
       let local = null; try { local = JSON.parse(localStorage.getItem(key()) || 'null'); } catch (e) { }
       const fromNotion = rows.some(x => x.office && (x.office.smpsGroup || x.office.orderLengths));
@@ -50,7 +50,10 @@ var LightingOrder = (function () {
       const seen = {};
       rows.forEach(x => {
         const o = x.office || {};
-        if (!P[x.id]) P[x.id] = {use: !ordered(x), product: x.product || '', lengths: o.orderLengths || (needsDrawing(x) ? '' : x.segments.map(s => s.mm).join('/')), group: o.smpsGroup || '', token: x.sourceToken};
+        // 노션에 저장된 발주 길이는 그때 본 실측(basis)과 지금이 같을 때만 믿습니다 (GPT R2-3)
+        const trust = o.orderLengths && o.basis === x.sourceToken;
+        if (o.orderLengths && !trust && !P[x.id]) redo.push(x.room + ' ' + x.location);
+        if (!P[x.id]) P[x.id] = {use: !ordered(x), product: x.product || '', lengths: trust ? o.orderLengths : (needsDrawing(x) ? '' : x.segments.map(s => s.mm).join('/')), group: o.smpsGroup || '', token: x.sourceToken};
         const pr = P[x.id].product;
         if (pr && !W[pr]) W[pr] = {w: o.wattsPerM ?? '', v: o.voltage || 24};
         // 같은 제품 이름인데 노션에 위치마다 다른 W/m·전압이 적혀 있으면 첫 값으로 합치지 않고 맞추라고 막음 (GPT R1-2)
@@ -183,8 +186,10 @@ var LightingOrder = (function () {
   }
 
   async function save() {
+    const clash = Object.keys(W).filter(pr => W[pr].conflict && rows.some(r => P[r.id].product === pr));
+    if (clash.length) return say(clash.join(', ') + ': 노션에 위치마다 다른 W/m·전압이 있습니다 — 위 칸에서 한 값으로 맞춘 뒤 저장해주세요', true);   // GPT R2-2
     const items = rows.filter(r => !ordered(r)).map(r => { const p = P[r.id], g = G.find(x => x.name === p.group) || {}, w = W[p.product] || {};
-      return {id: r.id, product: p.product, orderLengths: p.use ? lens(r).join('/') : '', wattsPerM: w.w === '' || w.w == null ? null : Number(w.w), voltage: Number(w.v) || null,
+      return {id: r.id, basis: p.token || '', product: p.product, orderLengths: p.use ? lens(r).join('/') : '', wattsPerM: w.w === '' || w.w == null ? null : Number(w.w), voltage: Number(w.v) || null,
         smpsGroup: p.use ? p.group : '', smpsPlace: g.place || '', smpsCap: g.cap || null, utilization: g.util || null}; });
     if (!items.length) return say('저장할 위치가 없습니다', true);
     busy = true; say('노션에 저장하는 중…');
@@ -209,14 +214,15 @@ var LightingOrder = (function () {
     try {
       const live2 = await api('lightingGet', {sitePageId: siteId});
       if (!live2 || !live2.ok) throw Error((live2 && live2.error) || '원본을 다시 읽지 못했습니다');
-      const moved = used.filter(r => { const x = live2.document.rows.find(z => z.id === r.id); return !x || x.sourceToken !== r.sourceToken || ordered(x); });
+      if ((live2.orderGuard || '') !== 'recheck2') throw Error('서버(Order.gs·Lighting.gs)를 새로 올린 뒤에 담을 수 있습니다 — 발주 기록 직전 실측 재확인이 아직 없습니다');
+      const moved = used.filter(r => { const x = live2.document.rows.find(z => z.id === r.id); return !x || x.sourceToken !== P[r.id].token || ordered(x); });
       if (moved.length) throw Error('그사이 현장에서 바뀐(또는 발주된) 위치가 있습니다: ' + moved.map(r => r.room + ' ' + r.location).join(', ') + ' — 「노션 최신 다시 읽기」 후 담아주세요');
       const ev = elev(), over = used.filter(r => ev.long && lens(r).some(mm => mm > ev.long));
       const sheet = Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0) + 1; S.typeBy[sheet] = '조명·스위치';
       used.forEach(r => { const p = P[r.id], l = lens(r), w = W[p.product] || {};
         const item = {id: 'lighting-' + r.id + '-' + r.revision, name: r.room + ' ' + r.location, spec: p.product + ' · ' + l.map(fmt).join(' / ') + 'mm' + (l.length > 1 ? ' (' + l.length + '구간)' : '') + (r.actualWires == null ? ' · 배선 수 현장 확인' : ' · 배선 ' + r.actualWires + '가닥') + (p.group === NONE ? ' · 전원 내장' : ' · ' + p.group),
           cut: '', unit: '세트', qty: 1, type: '조명·스위치', group: '간접조명', lightingSource: {kind: 'lighting', id: r.id, revision: r.revision, sourceToken: r.sourceToken, site: siteId},
-          sources: [{kind: 'lighting', id: r.id, site: siteId, revision: r.revision, token: r.sourceToken}]};
+          sources: [{kind: 'lighting', id: r.id, site: siteId, revision: r.revision, token: P[r.id].token}]};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
       G.forEach(g => { const s = groupLoad(g); if (!s.rs.length) return; const v = Number((W[P[s.rs[0].id].product] || {}).v) || 24;
         const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: v + 'V ' + g.cap + 'W · 부하 ' + Math.round(s.load) + 'W · ' + [...new Set(s.rs.map(r => r.room))].join('·') + ' ' + s.rs.length + '곳', cut: '', unit: '개', qty: 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)'};

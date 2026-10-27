@@ -13,6 +13,7 @@ var WiringOrder = (function () {
   const clone = x => JSON.parse(JSON.stringify(x));
   const VENDOR = {apella: '르그랑 아펠라 (대리점)', jung: '융 LS990 (네오라이팅)', other: '기타 (직접 발주)'};
   const STALE = '그사이 현장이 바뀜 — 「노션 최신 다시 읽기」';
+  let guard = '';
   let dialog, siteId = '', siteName = '', rows = [], cat = K.catalog(null), catNote = '', plans = {}, busy = false, filter = 'all', tab = 'apella', serverVer = '';
 
   const key = () => 'dsf_wiring_office:' + siteId;
@@ -47,7 +48,7 @@ var WiringOrder = (function () {
     try {
       const r = await api('wiringGet', {sitePageId: siteId});
       if (!r || !r.ok) throw Error((r && r.error) || '실측을 불러오지 못했습니다');
-      serverVer = r.version || '';
+      serverVer = r.version || ''; guard = r.orderGuard || '';
       cat = K.catalog(r.catalog); catNote = r.catalogError || (cat.source === 'default' ? '노션 목록을 아직 못 받아 기본 목록으로 보여 줍니다 (서버 업데이트 전)' : '');
       rows = r.rows.filter(x => x.kind === 'plate' && x.status !== 'removed');
       rows.forEach(x => { if (fresh || !plans[x.id] || plans[x.id].base !== x.fieldVersion || plans[x.id].token !== x.fieldToken) plans[x.id] = startPlan(x); });
@@ -200,7 +201,7 @@ var WiringOrder = (function () {
     busy = true; say('노션에 검토를 저장하는 중…');
     try {
       const items = live.map(r => { const p = plans[r.id], iss = rowIssues(r);
-        return {id: r.id, fieldVersion: r.fieldVersion, review: iss.length ? '확인 필요' : '검토 완료',
+        return {id: r.id, fieldVersion: p.base, fieldToken: p.token, review: iss.length ? '확인 필요' : '검토 완료',
           orderSpec: lineOrders(r).map(o => o.lines.map(l => l.name + ' · ' + l.spec + ' ×' + l.qty).join(' / ')).join(' / ').slice(0, 500),
           orderData: {v: 1, brand: p.brand, color: p.color, name: p.name, lines: p.lines, note: p.note}}; });
       const r = await api('wiringReview', {sitePageId: siteId, items});
@@ -218,7 +219,7 @@ var WiringOrder = (function () {
     if (!S.site || S.site.id !== siteId) return say('현장이 바뀌었습니다. 다시 열어주세요', true);
     const by = preview(), vendors = Object.keys(by).filter(v => by[v].length);
     if (!vendors.length) return say('담을 판이 없습니다', true);
-    if (serverVer !== 'wiring2') return say('서버(Wiring.gs·Order.gs)를 올린 뒤에 담을 수 있습니다 — 옛 서버는 발주 기록 때 판에 발주 완료를 못 적습니다', true);
+    if (serverVer !== 'wiring2' || guard !== 'recheck2') return say('서버(Wiring.gs·Order.gs)를 새로 올린 뒤에 담을 수 있습니다 — 발주 기록 직전 실측 재확인이 아직 없습니다', true);
     if (S.extra.some(z => z.qty > 0 && (z.sources || []).some(s => s.kind === 'wiring' && s.site === siteId))) return say('이 현장의 콘센트·스위치가 이미 발주 초안에 있습니다 — 기존 초안을 확인해주세요', true);
     busy = true; say('노션 원본과 한 번 더 맞춰 보는 중…');
     try {
