@@ -118,7 +118,7 @@
 
   // ── 인터넷 주문 (대표 10/27: 다운라이트는 네오·칸트 사이트에서 주문 — 그래도 검수가 돼야 하니 같은 「발주 기록」으로 남김) ──
   // 발주처 이름에 「인터넷」이 들어가면: 장바구니에 옮길 목록 복사 · 버튼 이름 「주문 기록」 · 배송은 택배로
-  const NET = ['네오라이팅 (인터넷)', '칸트라이팅 (인터넷)'];
+  const NET = ['네이버 (인터넷)', '네오라이팅 (인터넷)', '칸트라이팅 (인터넷)'];   // 10/27 대표: 네이버로도 삼
   const isNet = n => /인터넷|온라인/.test(venOf(n) || '');
   const netPick = document.createElement('div'); netPick.className = 'v6-net';
   netPick.innerHTML = '<span>인터넷 주문</span>' + NET.map(v => '<button type="button" data-net="' + esc(v) + '">' + esc(v.replace(' (인터넷)', '')) + '</button>').join('');
