@@ -654,7 +654,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=2"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=3"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1067,7 +1067,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-27-measure5';
+var APP_VER = '2026-10-27-measure6';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -2500,7 +2500,7 @@ function 합치기(lines) {
     var k = x.name + '|' + (x.spec || '') + '|' + (x.cut || '') + '|' + (x.film || '') + '|' + (x.unit || '');
     if (!통[k]) {
       통[k] = { name:x.name, spec:x.spec, cut:x.cut, film:x.film, unit:x.unit,
-                group:x.group, price:x.price, type:x.type, qty:0, calc:null };
+                group:x.group, price:x.price, type:x.type, qty:0, calc:null, measure:x.measure };
       순서.push(k);
     }
     통[k].qty += Number(x.qty) || 0;
@@ -2932,8 +2932,11 @@ function draw() {
     return '· ' + (key ? '<span class="key">' + esc(t) + '</span>' : esc(t));
   });
 
+  // 발주 실측(간접조명·아펠라·융)만으로 된 장은 업체가 보기 쉬운 모양으로 (measure-sheet.js · 10/27 시안 「나」)
+  var 업체판 = window.MeasureSheet && MeasureSheet.build(lines);
+  if (업체판) { n = 업체판.count; 총수량 = 0; }
   el('sheet').innerHTML = a4Frame({count:n,no:S.orderNo, vendor:venOf(S.cur), site:d?.name, address:d?.address, due, ship:shipOf(S.cur), lift:liftOf(S.cur), notes:footLines()},
-    '<table class="stbl"><thead><tr><th class="no">NO</th><th>품　명</th>'+(hasCut?'<th class="c">재단</th>':'')+'<th class="c">단위</th><th class="r">수량</th></tr></thead><tbody>'+rows+'</tbody></table><div class="ntot"><span class="l">TOTAL</span><span class="v">'+n+' 품목 · '+총수량.toLocaleString('ko-KR')+' EA</span></div>');
+    업체판 ? 업체판.html : '<table class="stbl"><thead><tr><th class="no">NO</th><th>품　명</th>'+(hasCut?'<th class="c">재단</th>':'')+'<th class="c">단위</th><th class="r">수량</th></tr></thead><tbody>'+rows+'</tbody></table><div class="ntot"><span class="l">TOTAL</span><span class="v">'+n+' 품목 · '+총수량.toLocaleString('ko-KR')+' EA</span></div>');
   el('sheet').classList.remove('sheet');
   try { el('sheet').dataset.a4Error=''; el('sheet').innerHTML=A4Preview.pages('<section class="sheet a4-sheet">'+el('sheet').innerHTML+'</section>'); }
   catch(e){el('sheet').dataset.a4Error=e.message;toast(e.message);}
@@ -8313,5 +8316,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=8"></script><script src="wiring-order.js?v=4"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=9"></script><script src="wiring-order.js?v=5"></script><script src="measure-sheet.js?v=1"></script></body>
 </html>

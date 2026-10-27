@@ -232,10 +232,12 @@ var LightingOrder = (function () {
       used.forEach(r => { const p = P[r.id], l = lens(r), w = W[p.product] || {};
         const item = {id: 'lighting-' + r.id + '-' + r.revision, name: r.room + ' ' + r.location, spec: p.product + ' · ' + l.map(fmt).join(' / ') + 'mm' + (l.length > 1 ? ' (' + l.length + '구간)' : '') + (r.actualWires == null ? ' · 배선 수 현장 확인' : ' · 배선 ' + r.actualWires + '가닥') + (p.group === NONE ? ' · 전원 내장' : ' · ' + p.group),
           cut: '', unit: '세트', qty: 1, type: '조명·스위치', group: '간접조명', lightingSource: {kind: 'lighting', id: r.id, revision: r.revision, sourceToken: r.sourceToken, site: siteId},
-          sources: [{kind: 'lighting', id: r.id, site: siteId, revision: r.revision, token: P[r.id].token}]};
+          sources: [{kind: 'lighting', id: r.id, site: siteId, revision: r.revision, token: P[r.id].token}],
+          measure: {k: 'light', room: r.room, loc: r.location, product: p.product, lens: l, wires: r.actualWires ?? null, smps: p.group, ev: ev.long || 0}};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
       G.forEach(g => { const s = groupLoad(g); if (!s.rs.length) return; const v = Number((W[P[s.rs[0].id].product] || {}).v) || 24;
-        const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: v + 'V ' + g.cap + 'W · 부하 ' + Math.round(s.load) + 'W · ' + [...new Set(s.rs.map(r => r.room))].join('·') + ' ' + s.rs.length + '곳', cut: '', unit: '개', qty: 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)'};
+        const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: v + 'V ' + g.cap + 'W · 부하 ' + Math.round(s.load) + 'W · ' + [...new Set(s.rs.map(r => r.room))].join('·') + ' ' + s.rs.length + '곳', cut: '', unit: '개', qty: 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)',
+          measure: {k: 'smps', name: g.name, place: g.place, v, cap: g.cap, load: Math.round(s.load), count: s.rs.length}};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
       S.noteBy[sheet] = ['간접조명 길이는 위치별 실제 설치 길이입니다 · 조각 나누기는 맡기겠습니다',
         over.length ? '엘리베이터(' + ev.text + ')에 통째로 안 들어가는 곳: ' + over.map(r => r.room + ' ' + r.location).join(', ') + ' — 나눠서 보내주세요 (반반 또는 2400 + 재단 모두 괜찮습니다)' : '',

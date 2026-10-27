@@ -51,7 +51,7 @@ var WiringOrder = (function () {
       const r = await api('wiringGet', {sitePageId: siteId});
       if (!r || !r.ok) throw Error((r && r.error) || '실측을 불러오지 못했습니다');
       serverVer = r.version || ''; guard = r.orderGuard || '';
-      cat = K.catalog(r.catalog); catNote = r.catalogError || (cat.source === 'default' ? '노션 목록을 아직 못 받아 기본 목록으로 보여 줍니다 (서버 업데이트 전)' : '');
+      cat = K.catalog(r.catalog); window.WiringOrderCatalog = r.catalog || null; catNote = r.catalogError || (cat.source === 'default' ? '노션 목록을 아직 못 받아 기본 목록으로 보여 줍니다 (서버 업데이트 전)' : '');
       rows = r.rows.filter(x => x.kind === 'plate' && x.status !== 'removed');
       rows.forEach(x => { if (fresh || !plans[x.id] || plans[x.id].base !== x.fieldVersion || plans[x.id].token !== x.fieldToken) plans[x.id] = startPlan(x); });
       Object.keys(plans).forEach(id => { if (!rows.some(x => x.id === id)) delete plans[id]; });
@@ -81,9 +81,17 @@ var WiringOrder = (function () {
   const orderIssues = r => rowIssues(r).filter(t => !/다시 불러옴|목록에 맞는 제품 없음/.test(t) && t !== STALE);   // 제품 없음은 줄에 이미 「확인 필요:」로 찍힘
   function preview() {
     const by = {apella: [], jung: [], other: []};
-    rows.filter(r => !ordered(r) && plans[r.id].use).forEach(r => { const iss = orderIssues(r); lineOrders(r).forEach(o => o.lines.forEach(l => { if (iss.length) l.spec += ' · ⚠️ 확인 필요: ' + iss.join(' / '); (by[o.vendor] || by.other).push(Object.assign(l, {where: r.room + ' ' + r.location})); })); });
+    rows.filter(r => !ordered(r) && plans[r.id].use).forEach(r => { const iss = orderIssues(r), p = plans[r.id]; lineOrders(r).forEach((o, li) => o.lines.forEach(l => { if (iss.length) l.spec += ' · ⚠️ 확인 필요: ' + iss.join(' / '); (by[o.vendor] || by.other).push(Object.assign(l, {where: r.room + ' ' + r.location, measure: sheetMeta(o.vendor, r, p, p.lines[li], l, iss)})); })); });
     by.apella = K.merge(by.apella); by.other = K.merge(by.other);
     return by;
+  }
+  // 업체별 발주서(measure-sheet.js)가 그림·색·부품 목록을 그릴 재료 — 글(spec)은 그대로 두고 따로 실음
+  function sheetMeta(vendor, r, p, line, l, iss) {
+    const g = line.gangs, issue = iss.join(' / ');
+    if (vendor === 'jung') return {k: 'jung', gangs: g, color: p.color, colorOrder: l.spec.split(' · ')[0], room: r.room, loc: r.location, issue,
+      parts: g.map(x => { const q = K.findPart(cat, 'jung', x); return q ? q.order + ((q.modes || []).length > 1 && x.modes ? ' [' + x.modes.join('·') + ']' : '') : '확인 필요: ' + K.partName('jung', x); })};
+    if (vendor === 'apella') return {k: 'apella', gang: g[0], color: p.color, issue, modes: g[0].modes && g[0].modes.some(m => m !== '단로') ? g[0].modes.join('·') : ''};
+    return {k: 'other', color: p.color, where: ''};
   }
   // 융: 네오 조합 프로그램에 넣을 때 쓰는 합계 (프레임 크기별 · 기능별)
   function jungTotals() {
@@ -233,7 +241,8 @@ var WiringOrder = (function () {
       const jt = jungTotals(), group = {apella: '콘센트·스위치 · 르그랑 아펠라', jung: '콘센트·스위치 · 융 LS990', other: '콘센트·스위치 · 기타'};
       vendors.forEach(v => {
         sheet++; S.typeBy[sheet] = '조명·스위치';
-        by[v].forEach((x, i) => { const item = {id: 'wiring-' + v + '-' + siteId.slice(0, 8) + '-' + i + '-' + Date.now().toString(36), name: v === 'jung' ? '조합 · ' + x.name : x.name, spec: x.spec, cut: '', unit: x.unit, qty: x.qty, type: '조명·스위치', group: group[v], sources: x.sources};
+        by[v].forEach((x, i) => { const item = {id: 'wiring-' + v + '-' + siteId.slice(0, 8) + '-' + i + '-' + Date.now().toString(36), name: v === 'jung' ? '조합 · ' + x.name : x.name, spec: x.spec, cut: '', unit: x.unit, qty: x.qty, type: '조명·스위치', group: group[v], sources: x.sources,
+          measure: Object.assign({}, x.measure, v === 'other' ? {where: [].concat(x.where || []).join(', ')} : {})};
           S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
         S.noteBy[sheet] = v === 'jung' ? '네오라이팅 조합 기준 · 프레임 ' + Object.entries(jt.frames).map(([k, n]) => k + ' ' + n).join(' · ') + ' · 「확인 필요」 표시는 통화로 확인 부탁드립니다'
           : v === 'apella' ? '색은 품목마다 적었습니다 · 방우는 방우형으로 부탁드립니다' : '제품 이름·색은 현장 사진 기준 — 비슷한 제품이면 사진 보내드립니다';
