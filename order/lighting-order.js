@@ -11,7 +11,7 @@ var LightingOrder = (function () {
   'use strict';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const NO = '①②③④⑤⑥⑦⑧⑨⑩', CAPS = [60, 100, 150, 200, 250, 300, 350, 400, 500], NONE = '전원 내장';
-  let dialog, siteId = '', siteName = '', rows = [], P = {}, W = {}, G = [], sel = '', busy = false, dirty = false, serverVer = '', guard = '';
+  let dialog, siteId = '', siteName = '', rows = [], P = {}, W = {}, G = [], sel = '', busy = false, dirty = false, serverVer = '', guard = '', PL = [], plErr = '';
   const key = () => 'dsf_lighting_smps:' + siteId;
   const keep = () => { dirty = true; try { localStorage.setItem(key(), JSON.stringify({P, W, G, dirty: true, at: Date.now()})); } catch (e) { } };
   const say = (t, bad) => { const m = dialog.querySelector('[data-msg]'); if (m) { m.textContent = t || ''; m.classList.toggle('bad', !!bad); } };
@@ -37,7 +37,7 @@ var LightingOrder = (function () {
     try {
       const r = await api('lightingGet', {sitePageId: siteId});
       if (!r || !r.ok) throw Error((r && r.error) || '실측을 불러오지 못했습니다');
-      serverVer = r.version || ''; guard = r.orderGuard || '';
+      serverVer = r.version || ''; guard = r.orderGuard || ''; PL = Array.isArray(r.products) ? r.products : []; plErr = r.productsError || '';
       rows = r.document.rows.filter(x => x.status === 'done' || (x.status === 'pending' && x.needsMeasurement === false));
       let local = null; try { local = JSON.parse(localStorage.getItem(key()) || 'null'); } catch (e) { }
       const fromNotion = rows.some(x => x.office && (x.office.smpsGroup || x.office.orderLengths));
@@ -55,7 +55,9 @@ var LightingOrder = (function () {
         if (o.orderLengths && !trust && !P[x.id]) redo.push(x.room + ' ' + x.location);
         if (!P[x.id]) P[x.id] = {use: !ordered(x), product: x.product || '', lengths: trust ? o.orderLengths : (needsDrawing(x) ? '' : x.segments.map(s => s.mm).join('/')), group: o.smpsGroup || '', token: x.sourceToken};
         const pr = P[x.id].product;
-        if (pr && !W[pr]) W[pr] = {w: o.wattsPerM ?? '', v: o.voltage || 24};
+        // W/m: 이 현장에 저장된 값 → 없으면 노션 「배선기구·조명 목록」(제품마다 한 번 적어 둔 값) (대표 10/27)
+        const pl = PL.find(z => z.name === pr);
+        if (pr && !W[pr]) W[pr] = o.wattsPerM != null ? {w: o.wattsPerM, v: o.voltage || 24} : pl && pl.wattsPerM != null ? {w: pl.wattsPerM, v: pl.voltage || 24, fromList: true} : {w: '', v: (pl && pl.voltage) || 24};
         // 같은 제품 이름인데 노션에 위치마다 다른 W/m·전압이 적혀 있으면 첫 값으로 합치지 않고 맞추라고 막음 (GPT R1-2)
         if (pr && o.wattsPerM != null) { const k = o.wattsPerM + '|' + (o.voltage || 24); if (seen[pr] && seen[pr] !== k && !W[pr].touched) W[pr].conflict = true; seen[pr] = seen[pr] || k; }
         if (o.smpsGroup && o.smpsGroup !== NONE && !G.some(g => g.name === o.smpsGroup)) G.push({name: o.smpsGroup, place: o.smpsPlace || '', cap: o.smpsCap || 150, util: o.utilization || 80});
@@ -124,6 +126,14 @@ var LightingOrder = (function () {
       ${sel ? `<div class="mo-hint">여기 눌러 「${esc((rows.find(r => r.id === sel) || {}).location || '')}」 넣기</div>` : ''}
       ${!s.rs.length && G.length > 1 ? `<button class="mo-link" data-act="gdel" data-g="${i}">이 SMPS 지우기</button>` : ''}</div>`;
   }
+  // 이 제품의 W/m 가 어디서 왔는지 — 노션 목록에 없거나 비어 있으면 「한 번 적어 두면 다음부터 자동」
+  function listTag(pr) {
+    const pl = PL.find(z => z.name === pr), w = W[pr] || {};
+    if (w.fromList && !w.touched) return '<small class="mo-src">목록 값</small>';
+    if (!pl) return '<small class="mo-src need">노션 목록에 없음 — 💡 조명에 한 줄 넣으면 다음부터 자동</small>';
+    if (pl.wattsPerM == null) return '<small class="mo-src need">노션 목록에 W/m 비어 있음 — 적어 두면 다음부터 자동</small>';
+    return Number(w.w) !== Number(pl.wattsPerM) ? '<small class="mo-src">이 현장만 ' + esc(w.w) + ' (목록 ' + esc(pl.wattsPerM) + ')</small>' : '<small class="mo-src">목록 값</small>';
+  }
   function render() {
     const ev = elev(), rs = rows, used = live(), prob = problems();
     const products = [...new Set(used.map(r => P[r.id].product).filter(Boolean))];
@@ -134,8 +144,8 @@ var LightingOrder = (function () {
       <div class="mo-headbtn"><button data-act="reload">노션 최신 다시 읽기</button><button data-act="close">닫기</button></div></header>
       ${serverVer && serverVer !== 'lighting-notion4' ? '<p class="mo-banner">서버가 아직 옛 판입니다 — 「노션에 저장」은 Lighting.gs·Code.gs 배포 뒤에 됩니다. 지금 정한 것은 이 컴퓨터에 보관됩니다.</p>' : ''}
       <div class="mo-tools"><span class="mo-elev">🛗 ${ev.text ? '엘리베이터 ' + esc(ev.text) + ' → 통째로 들어가는 길이 약 <b>' + fmt(ev.long) + 'mm</b>' : '엘리베이터 크기가 없습니다 — 발주앱 「엘리베이터」 칸에 넣으면 여기 반영'}</span>
-        ${products.map(pr => `<label class="mo-w">${esc(pr)} <input type="number" step="any" min="0" data-act="w" data-p="${esc(pr)}" value="${esc((W[pr] || {}).w ?? '')}" placeholder="W/m" class="${Number((W[pr] || {}).w) > 0 ? '' : 'need'}">W/m <select data-act="v" data-p="${esc(pr)}">${[24, 12].map(v => `<option ${Number((W[pr] || {}).v || 24) === v ? 'selected' : ''}>${v}</option>`).join('')}</select>V</label>`).join('')}</div>
-      <datalist id="mo-products">${[...new Set(rows.map(r => P[r.id].product).filter(Boolean).concat(['24V LED바', '방습 LED 스트립(24V)', '얇은 스트립 (24V)']))].map(x => `<option value="${esc(x)}">`).join('')}</datalist>
+        ${products.map(pr => `<label class="mo-w">${esc(pr)} <input type="number" step="any" min="0" data-act="w" data-p="${esc(pr)}" value="${esc((W[pr] || {}).w ?? '')}" placeholder="W/m" class="${Number((W[pr] || {}).w) > 0 ? '' : 'need'}">W/m <select data-act="v" data-p="${esc(pr)}">${[24, 12].map(v => `<option ${Number((W[pr] || {}).v || 24) === v ? 'selected' : ''}>${v}</option>`).join('')}</select>V${listTag(pr)}</label>`).join('')}${plErr ? `<span class="bad">${esc(plErr)}</span>` : ''}</div>
+      <datalist id="mo-products">${[...new Set(PL.map(z => z.name).concat(rows.map(r => P[r.id].product).filter(Boolean)))].map(x => `<option value="${esc(x)}">`).join('')}</datalist>
       <div class="mo-body"><main><h4>위치 — 눌러서 고른 뒤 오른쪽 SMPS 카드를 누르면 묶입니다 <small>막대 = 길이 비율${ev.long ? ' · 점선 = 엘리베이터 한계' : ''}</small></h4>${rs.map(r => rowHtml(r, ev.long)).join('')}</main>
       <aside><h4>SMPS</h4><div class="mo-cards">${G.map(cardHtml).join('')}<button class="mo-addsmps" data-act="gadd">＋ SMPS 추가</button></div>
         <h4>업체에 나가는 내용</h4>${previewHtml(ev, over)}
@@ -157,7 +167,7 @@ var LightingOrder = (function () {
   function onChange(e) {
     const t = e.target, card = t.closest('[data-row]'), p = card ? P[card.dataset.row] : null;
     if (t.dataset.act === 'use' && p) p.use = t.checked;
-    else if (t.dataset.act === 'product' && p) { p.product = t.value.trim(); if (p.product && !W[p.product]) W[p.product] = {w: '', v: 24}; }
+    else if (t.dataset.act === 'product' && p) { p.product = t.value.trim(); if (p.product && !W[p.product]) { const pl = PL.find(z => z.name === p.product); W[p.product] = pl && pl.wattsPerM != null ? {w: pl.wattsPerM, v: pl.voltage || 24, fromList: true} : {w: '', v: (pl && pl.voltage) || 24}; } }
     else if (t.dataset.act === 'lengths' && p) p.lengths = t.value.split('/').map(x => x.replace(/\D/g, '')).filter(Boolean).join('/');
     else if (t.dataset.act === 'group' && p) p.group = t.value;
     else if (t.dataset.act === 'w') W[t.dataset.p] = Object.assign(W[t.dataset.p] || {v: 24}, {w: t.value, conflict: false, touched: true});
