@@ -130,9 +130,15 @@ var LightingOrder = (function () {
       </div>${diffHtml(r)}`}
       <div class="mo-strips">${strips(r, ev)}</div></section>`;
   }
+  // 놓을 곳 바로 고르기 (10/27 대표) — 묶인 위치의 방 + 자주 쓰는 자리 + 「현장에서 정함」
+  function placeChips(g, i, s) {
+    const rooms = [...new Set(s.rs.map(r => r.room))].slice(0, 2);
+    const opts = [...rooms.map(rm => rm + ' 천장 점검구'), '우물천장 안', '가구 안', '현장에서 정함'];
+    return `<div class="mo-place">${opts.map(v => `<button type="button" data-act="placepick" data-g="${i}" data-v="${esc(v)}" class="${g.place === v ? 'on' : ''}">${esc(v)}</button>`).join('')}</div>`;
+  }
   function cardHtml(g, i) {
     const s = groupLoad(g), pct = Math.min(100, s.load / g.cap * 100);
-    return `<div class="mo-smps ${sel ? 'target' : ''}" data-g="${i}"><div class="mo-sh">${smpsPic()}<div><b>${esc(g.name)}</b><input data-act="place" data-g="${i}" value="${esc(g.place)}" placeholder="놓을 곳 (예: 안방 천장 점검구)"></div>
+    return `<div class="mo-smps ${sel ? 'target' : ''}" data-g="${i}"><div class="mo-sh">${smpsPic()}<div><b>${esc(g.name)}</b><input data-act="place" data-g="${i}" value="${esc(g.place)}" placeholder="놓을 곳 (예: 안방 천장 점검구)">${placeChips(g, i, s)}</div>
         <select data-act="cap" data-g="${i}">${[...new Set(CAPS.concat(g.cap))].sort((a, b) => a - b).map(c => `<option ${c === g.cap ? 'selected' : ''}>${c}</option>`).join('')}</select><span class="mo-u">W</span></div>
       <div class="mo-meter"><i style="width:${pct}%" class="${s.rs.length && !s.ok ? 'bad' : ''}"></i><u style="left:${g.util}%"></u></div>
       <div class="mo-mrow"><span>부하 <b>${Math.round(s.load)}W</b> / 정격 ${g.cap}W · ${g.util}%까지</span><span class="${!s.rs.length ? '' : s.ok ? 'ok' : 'bad'}">${!s.rs.length ? '비어 있음' : s.volts.length > 1 ? '전압 섞임' : s.ok ? '여유 ' + Math.round(s.lim - s.load) + 'W' : '모자람 ' + Math.ceil(s.load - s.lim) + 'W'}</span></div>
@@ -203,6 +209,7 @@ var LightingOrder = (function () {
     else if (act === 'unassign') P[b.dataset.id].group = '';
     else if (act === 'gadd') { const used = G.map(g => g.name); let i = 0; while (used.includes('SMPS ' + (NO[i] || i + 1))) i++; G.push({name: 'SMPS ' + (NO[i] || i + 1), place: '', cap: 150, util: 80}); }   // 빈 번호부터 — 지운 뒤 더해도 이름이 겹치지 않게 (GPT R1-9)
     else if (act === 'gdel') G.splice(+b.dataset.g, 1);
+    else if (act === 'placepick') G[+b.dataset.g].place = b.dataset.v;
     else if (act === 'save') return save();
     else if (act === 'import') return importDraft();
     else return;

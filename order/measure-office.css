@@ -133,3 +133,7 @@
 .mo-diff em.plus{color:#2f5fd0;background:#eef2fc}
 .mo-diff.same{color:var(--mute)}
 .mo-strip b.mo-ghost{position:absolute;left:0;top:2px;height:12px;border-radius:6px;border:1.5px dashed #9a958a;box-sizing:border-box;background:transparent}
+/* SMPS 놓을 곳 바로 고르기 */
+.mo-place{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.mo-place button{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #cdd8f3;background:#eef2fc;color:#2f5fd0;cursor:pointer;line-height:1.4}
+.mo-place button.on{background:#2f5fd0;color:#fff;border-color:#2f5fd0}
