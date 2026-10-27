@@ -23,11 +23,13 @@ var WiringOrder = (function () {
   // 현장 기록 → 사무실 초안. 검토 뒤 현장이 바뀌었으면(현장 버전이 다르면) 현장 것으로 다시 시작
   function fieldGangs(r) { return r.gangs && r.gangs.length ? K.normalize(r.brand, r.gangs) : (K.fromLegacy(r.brand, r.modules, r.wet) || []); }
   function startPlan(r) {
-    const od = r.orderData && Array.isArray(r.orderData.lines) && r.orderData.lines.length && (r.reviewBase == null || r.reviewBase === r.fieldVersion) ? r.orderData : null;
+    // 저장된 검토는 그때 본 현장(버전·변경표시)과 지금이 같을 때만 씀 (GPT R3). 검토 전 초안(reviewBase 없음)은 「사무실 초안」 표시와 함께 씀
+    const okReview = r.reviewBase != null && r.reviewBase === r.fieldVersion && r.orderData && r.orderData.basisToken === r.fieldToken;
+    const od = r.orderData && Array.isArray(r.orderData.lines) && r.orderData.lines.length && (r.reviewBase == null || okReview) ? r.orderData : null;
     const brand = (od && od.brand) || (K.BRANDS[r.brand] ? r.brand : 'apella');
     const lines = od ? od.lines.map(l => ({gangs: l.gangs && l.gangs.length ? K.normalize(brand, l.gangs) : fieldGangs(r), qty: Number(l.qty) || 1})) : [{gangs: fieldGangs(r), qty: r.qty}];
     return {use: true, brand, color: (od && od.color) || r.color || '', name: (od && od.name) || r.name || '', lines, base: r.fieldVersion, token: r.fieldToken, note: od && od.note || '',
-      reloaded: !!(r.orderData && r.reviewBase != null && r.reviewBase !== r.fieldVersion)};
+      reloaded: !!(r.orderData && r.reviewBase != null && !okReview)};
   }
 
   function init() {
