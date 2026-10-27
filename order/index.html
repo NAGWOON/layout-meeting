@@ -635,7 +635,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .sheet.a4-sheet .ngrid dt{font-size:10px;color:#8a8a92;background:#f7f7f8;white-space:nowrap;font-weight:400}.sheet.a4-sheet .ngrid dd{font-size:11.5px;font-weight:600;color:#1b1b1f;min-width:0}
 .sheet.a4-sheet .ngrid .addr{grid-column:4 / -1;font-size:11.5px;font-weight:600}
 .sheet.a4-sheet .sfoot{display:flex;gap:8px;margin:8px 0 2px;padding:6px 10px;border:0;border-left:3px solid #1b1b1f;border-radius:0;background:#f7f7f8;font-size:11px}
-.sheet.a4-sheet .sfoot b{font-size:11px;font-weight:800;color:#1b1b1f;margin:0;white-space:nowrap;letter-spacing:0}.sheet.a4-sheet .sfoot p{font-size:11px;color:#1b1b1f;line-height:1.35;margin:0}
+.sheet.a4-sheet .sfoot b{font-size:11px;font-weight:800;color:#1b1b1f;margin:0;white-space:nowrap;letter-spacing:0}.sheet.a4-sheet .sfoot p{font-size:11px;color:#1b1b1f;line-height:1.5;margin:0}.sheet .sfoot .sf-l{display:block;padding-left:9px;text-indent:-9px}.sheet .sfoot .sf-l::before{content:'· '}
 .sheet.a4-sheet .pad{padding:0}.sheet.a4-sheet .stbl{margin-top:10px;font-size:11.5px;table-layout:fixed}
 .sheet.a4-sheet .stbl th{font-size:9.5px;color:#8a8a92;font-weight:600;letter-spacing:.06em;padding:6px;border-bottom:1.5px solid #1b1b1f}
 .sheet.a4-sheet .stbl th.r{color:#1b1b1f;font-weight:800;font-size:10.5px}
@@ -657,7 +657,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=8"><link rel="stylesheet" href="order-shell.css?v=5"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=9"><link rel="stylesheet" href="order-shell.css?v=6"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1070,7 +1070,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-27-shell8';
+var APP_VER = '2026-10-27-shell9';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -2885,7 +2885,7 @@ function a4Frame(m, body) {
     +'<div class="nto"><div class="who">'+h(m.vendor||'—')+' 귀중</div><div class="sub">아래와 같이 발주합니다.</div></div>'
     +'<dl class="ngrid"><dt>현장</dt><dd>'+h(name)+'</dd><dt>납품요청</dt><dd class="big">'+(due?h(due.slice(5).replace('-','. '))+dow(due):'—')+'</dd><dt>배송</dt><dd>'+h(m.ship||'—')+'</dd><dt>양중</dt><dd>'+h(m.lift||'—')+'</dd><dt>현장주소</dt><dd class="addr">'+h(m.address||'—')+'</dd></dl>'
     // 현장 대시보드의 하차·양중 조건은 대표가 적은 말에 붙이지 않고 회색 「현장 규칙」 한 줄로(10/7 — 곰방 뒤에 「엘리베이터」가 붙어 한 문장처럼 읽힘)
-    +'<div class="sfoot"><b>특기사항</b><p>'+(m.notes||[]).filter(Boolean).map(x=>h(String(x).trim()).replace(/\n/g,'<br>')).join(' · ')+(m.rule?'<span class="a4-rule">현장 규칙 · '+h(m.rule)+'</span>':'')+'</p></div>'
+    +'<div class="sfoot"><b>특기사항</b><p>'+(m.notes||[]).filter(Boolean).map(x=>h(String(x).trim()).replace(/\n/g,'<br>')).map(x=>'<span class="sf-l">'+x+'</span>').join('')+(m.rule?'<span class="a4-rule">현장 규칙 · '+h(m.rule)+'</span>':'')+'</p></div>'
     +'<div class="a4-cont-head"><b>'+h(CO.name)+' · 발주서 계속</b><b>'+h(m.no||'')+' · <span class="a4-page-number"></span></b></div>'
     +'<div class="a4-cont-meta"><span>'+h(m.vendor||'—')+' 귀중 · '+h(name)+'</span><span>납품요청 '+h(due)+dow(due)+' · 상세 조건은 1장 참조</span></div>'
     +'<div class="pad a4-body">'+box.innerHTML+(reference?'<p class="a4-reference">헤베는 박스당 1.44m² 기준입니다</p>':'')+'<div class="ntot"><span></span><b>품목 '+count+'건</b></div></div><div class="grow"></div><div class="nfoot"><span>'+h(CO.en||CO.name)+'</span><span>'+h(m.no||'')+' · <span class="a4-page-number"></span></span></div>';
@@ -8331,5 +8331,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=14"></script><script src="wiring-order.js?v=5"></script><script src="measure-sheet.js?v=2"></script><script src="order-shell.js?v=5"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=3"></script><script src="lighting-order.js?v=14"></script><script src="wiring-order.js?v=6"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=6"></script></body>
 </html>

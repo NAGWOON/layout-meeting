@@ -12,6 +12,8 @@ var MeasureSheet = (function () {
   const two = n => (n < 10 ? '0' : '') + n;
   const K = () => window.WiringKit;
   const cat = () => K() ? K().catalog(window.WiringOrderCatalog || null) : null;
+  // 이미지(html2canvas)에서 작은 그라디언트가 얼룩져 보여 발주서 견본은 단색으로 (10/27)
+  const solid = (k, col) => { const m = k.material(col); return m.metal ? m.metal[Math.floor(m.metal.length / 2)] : m.f[0]; };
   const catRow = (cols, t, sub) => `<tr class="cat"><td colspan="${cols}"><span>${esc(t)}${sub ? ' <small class="ms-sub">' + esc(sub) + '</small>' : ''}</span></td></tr>`;
 
   // 이 장의 줄이 모두 실측에서 왔고, 한 종류(조명 / 아펠라 / 융 / 기타)일 때만 업체 모양으로
@@ -54,9 +56,9 @@ var MeasureSheet = (function () {
       if (!xs.length) return;
       h += catRow(5, name, xs.reduce((a, x) => a + (Number(x.qty) || 0), 0) + '개');
       xs.forEach(x => { const m = x.measure, col = k && c ? k.colorOf(c, 'apella', m.color) : null; n++;
-        const pic = k && c && m.gang ? k.draw(c, {brand: 'apella', gangs: [m.gang], color: m.color}, {maxW: 34, maxH: 46}) : '';
-        h += `<tr><td class="no">${two(n)}</td><td class="ms-pic">${pic}</td><td class="nm">${esc(x.name.replace(/^아펠라 /, ''))}${m.gang && m.gang.k === '방우 콘센트' && !/방우/.test(x.name) ? ' <small class="ms-tag">방우형</small>' : ''}${m.modes ? ' <small class="ms-tag">' + esc(m.modes) + '</small>' : ''}${m.issue ? '<i class="ms-warn">⚠️ 확인 필요: ' + esc(m.issue) + '</i>' : ''}</td>`
-          + `<td class="ms-sm">${col ? `<i class="ms-sw" style="background:${k.swatch(col)}"></i>` : ''}${esc(m.color || '색 미정')}</td><td class="qt">${x.qty}</td></tr>`; });
+        const pic = k && c && m.gang ? k.draw(c, {brand: 'apella', gangs: [m.gang], color: m.color}, {maxW: 44, maxH: 46}) : '';
+        h += `<tr><td class="no">${two(n)}</td><td class="ms-pic">${pic}</td><td class="nm">${esc(x.name.replace(/^아펠라 /, ''))}${m.gang && m.gang.k === '방우 콘센트' ? ' <small class="ms-tag">' + (/방우/.test(x.name) ? '' : '방우 · ') + (m.gang.dir || '세로') + '형</small>' : ''}${m.modes ? ' <small class="ms-tag">' + esc(m.modes) + '</small>' : ''}${m.note ? '<i class="ms-memo">메모 · ' + esc(m.note) + '</i>' : ''}${m.issue ? '<i class="ms-warn">⚠️ 확인 필요: ' + esc(m.issue) + '</i>' : ''}</td>`
+          + `<td class="ms-sm">${col ? `<i class="ms-sw" style="background:${solid(k, col)}"></i>` : ''}${esc(m.color || '색 미정')}</td><td class="qt">${x.qty}</td></tr>`; });
     });
     h += '</tbody>';
     return {html: '<table class="stbl ms ms-apella">' + h + '</table>', count: n};
@@ -68,10 +70,13 @@ var MeasureSheet = (function () {
     const card = (x, i) => {
       const m = x.measure, q = Number(x.qty) || 1;
       frames[m.gangs.length + '구'] = (frames[m.gangs.length + '구'] || 0) + q;
-      (m.parts || []).forEach(p => { parts[p] = (parts[p] || 0) + q; });
+      (m.parts || []).forEach(p => { if (!/^발주 안 함/.test(p)) parts[p] = (parts[p] || 0) + q; });
       const pic = k && c ? k.draw(c, {brand: 'jung', gangs: m.gangs, color: m.color}, {maxW: 300, maxH: 74}) : '';
+      // 프레임을 한 줄로 따로 (10/27 대표 「프레임 칸」) — 네오 조합에서 프레임과 기능을 따로 담기 때문
       return `<td class="ms-card"><div class="ms-ph">${pic}</div><div class="ms-ct"><b>조합 ${i + 1} · ${esc(m.room)} ${esc(m.loc)}</b><span>× ${q}</span></div>`
-        + `<ol>${(m.parts || []).map(p => `<li class="${/^확인 필요/.test(p) ? 'ms-warn' : ''}">${esc(p)}</li>`).join('')}</ol><div class="ms-meta">${m.gangs.length}구 프레임 · ${esc(m.colorOrder || m.color || '색 미정')}</div>`
+        + `<div class="ms-frame"><b>프레임</b> ${m.gangs.length}구 · ${esc(m.colorOrder || m.color || '색 미정')}</div>`
+        + `<ol>${(m.parts || []).map(p => `<li class="${/^확인 필요/.test(p) ? 'ms-warn' : /^발주 안 함/.test(p) ? 'ms-skip' : ''}">${esc(p)}</li>`).join('')}</ol>`
+        + (m.note ? `<div class="ms-memo">메모 · ${esc(m.note)}</div>` : '')
         + (m.issue ? `<div class="ms-warn">⚠️ ${esc(m.issue)}</div>` : '') + '</td>';
     };
     for (let i = 0; i < lines.length; i += 2) h += '<tr class="ms-pair">' + card(lines[i], i) + (lines[i + 1] ? card(lines[i + 1], i + 1) : '<td></td>') + '</tr>';

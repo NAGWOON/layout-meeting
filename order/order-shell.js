@@ -76,6 +76,46 @@
   });
   grip.addEventListener('dblclick', () => { root.style.removeProperty('--v6-right'); try { localStorage.removeItem(KEY); } catch (e) { } window.dispatchEvent(new Event('resize')); });
 
+  // ── 발주처: 칸 하나에 치거나 목록에서 고르기 (10/27 대표 「발주처 적는 게 힘들다」) ──
+  //   속으로는 예전 그대로 — 목록에 있는 이름이면 vendorSel, 아니면 「직접 입력」 칸에 넣어 같은 저장 길을 탑니다
+  const venLab = lab('vendorSel'); venLab.classList.add('v6-gone'); el('vendorFreeRow').classList.add('v6-gone');
+  const venBox = document.createElement('label'); venBox.className = 'v6-w v6-ven';
+  venBox.innerHTML = '발주처 <input id="v6Ven" list="v6VenList" autocomplete="off" placeholder="거래처 이름 — 치거나 ▾에서 고르기"><datalist id="v6VenList"></datalist>';
+  cond.insertBefore(venBox, cond.firstChild);
+  const venIn = venBox.querySelector('input'), venList = venBox.querySelector('datalist');
+  const COMMON = {'조명·스위치': ['네오라이팅', '칸트라이팅', '르그랑 아펠라 대리점'], '목자재': ['신성목재'], '타일': ['신성타일'], '설비·방수': ['극동씨앤씨'], '도기': ['신성그룹']};
+  function venOptions() {
+    const set = new Set();
+    [...el('vendorSel').options].forEach(o => { if (o.value && o.value !== '__free') set.add(o.value); });
+    (COMMON[S.type] || []).forEach(v => set.add(v));
+    Object.values(S.ven || {}).forEach(v => { if (v && v.trim()) set.add(v.trim()); });
+    ((S.detail && S.detail.orders) || []).forEach(o => { const m = /·\s*([^·]+?)\s*·/.exec(o.name || ''); if (m) set.add(m[1].trim()); });
+    venList.innerHTML = [...set].map(v => '<option value="' + esc(v) + '">').join('');
+  }
+  function setVendor(v) {
+    v = v.trim();
+    if ([...el('vendorSel').options].some(o => o.value === v && v !== '__free')) { el('vendorSel').value = v; el('vendorFreeRow').classList.add('hide'); el('vendorSel').onchange(); }
+    else { el('vendorSel').value = '__free'; el('vendorFree').value = v; el('vendorFree').oninput(); }
+  }
+  venIn.addEventListener('focus', venOptions);
+  venIn.addEventListener('change', () => setVendor(venIn.value));
+  venIn.addEventListener('input', () => { clearTimeout(venIn.t); venIn.t = setTimeout(() => setVendor(venIn.value), 500); });
+
+  // ── 발주서 크게 보기: 미리보기를 누르면 화면 높이에 맞춰 크게 (닫기: 바깥·Esc) ──
+  const big = document.createElement('div'); big.className = 'v6-big'; big.hidden = true;
+  big.innerHTML = '<div class="v6-bigbar"><b>발주서 크게 보기</b><span>바깥을 누르거나 Esc 로 닫기</span><button type="button" data-x>닫기</button></div><div class="v6-bigpaper"></div>';
+  document.body.append(big);
+  const openBig = () => {
+    const paper = big.querySelector('.v6-bigpaper'); paper.innerHTML = el('sheet').innerHTML;
+    const z = Math.max(0.9, Math.min(1.3, (innerWidth - 80) / 720));   // 폭에 맞춰 크게 — 길면 아래로 내려 봄
+    paper.querySelectorAll('.sheet').forEach(x => { x.style.zoom = z; });
+    big.hidden = false;
+  };
+  el('unifiedPreview').addEventListener('click', e => { if (!e.target.closest('input,button,select,a')) openBig(); });
+  el('unifiedPreview').title = '누르면 크게 봅니다';
+  big.addEventListener('click', e => { if (e.target === big || e.target.closest('[data-x]')) big.hidden = true; });
+  addEventListener('keydown', e => { if (e.key === 'Escape') big.hidden = true; });
+
   // ── 인터넷 주문 (대표 10/27: 다운라이트는 네오·칸트 사이트에서 주문 — 그래도 검수가 돼야 하니 같은 「발주 기록」으로 남김) ──
   // 발주처 이름에 「인터넷」이 들어가면: 장바구니에 옮길 목록 복사 · 버튼 이름 「주문 기록」 · 배송은 택배로
   const NET = ['네오라이팅 (인터넷)', '칸트라이팅 (인터넷)'];
@@ -127,6 +167,7 @@
     cond.hidden = structured; sub.hidden = structured; acts.hidden = structured; count.hidden = structured; grip.hidden = false;
     root.classList.toggle('v6-structured', structured);
     if (document.activeElement !== v6Note) { v6Note.value = noteOf(S.cur); grow(); }
+    if (document.activeElement !== venIn) { venIn.value = venOf(S.cur) || ''; venOptions(); }
     root.classList.toggle('v6-light', S.type === '조명·스위치');   // 조명 탭: 아래 참고 카드·재단 칸 숨김 (대표 「굳이?」)
     const common = (el('noteIn').value || '').trim();
     v6Note.placeholder = common ? '비우면 공통 특기사항: ' + common.split('\n')[0] : '예) 오전 도착 부탁드립니다';

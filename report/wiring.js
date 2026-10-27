@@ -17,6 +17,7 @@ const BRAND_SUB = {jung: '융 · 가로 프레임', apella: '르그랑 · 세로
 const NUM = ['①', '②', '③', '④', '⑤'];
 const FIELD_MODES = ['단로', '3로', '일괄'];
 
+let dirOk = false;   // 서버가 방우 콘센트 가로형·세로형을 저장하는지 (Wiring.gs 10/27)
 let site = '', rows = [], view = 'rooms', roomId = '', cur = null, undo = [], busy = false, dirty = false, newWork = 'replace', askDel = '', siteBrand = '', siteColor = {}, cat = K.catalog(null), serverVer = '', picking = false;
 const draftKey = id => 'dsf_wiring_draft:' + site + ':' + id;
 const brandKey = () => 'dsf_wiring_brand:' + site;
@@ -56,7 +57,7 @@ async function load() {
   try {
     const r = await api('wiringGet', {sitePageId: site});
     if (!VERSIONS.includes(r.version)) throw Error('스위치·콘센트 실측 서버가 아직 반영되지 않았습니다. 사무실에 알려주세요');
-    serverVer = r.version; cat = K.catalog(r.catalog);
+    serverVer = r.version; dirOk = !!r.dirOk; cat = K.catalog(r.catalog);
     rows = r.rows; $('siteTitle').textContent = r.siteName.replace(/\s*PROJECT\s*$/, '');
     try { siteBrand = localStorage.getItem(brandKey()) || ''; siteColor = JSON.parse(localStorage.getItem(colorKey()) || '{}'); } catch (e) { siteBrand = ''; siteColor = {}; }
     if (!BRAND[siteBrand]) { const c = {}; rows.forEach(x => { if (BRAND[x.brand]) c[x.brand] = (c[x.brand] || 0) + 1; }); siteBrand = Object.keys(c).sort((a, b) => c[b] - c[a])[0] || ''; }
@@ -121,6 +122,8 @@ function presetGrid(b, g) {
     <button class="pb ${g.k === '기타' ? 'on' : ''}" data-preset="기타|1">${K.draw(cat, {brand: b, gangs: [{k: '기타', n: 1}], color: cur.color}, {maxW: 40, maxH: 52})}<span>다른 모양 · 모르겠음</span></button></div>`;
 }
 const modeRows = (g, gi) => g.modes ? `<div class="modes">${g.modes.map((m, mi) => `<div class="mode"><b>${g.n > 1 ? NUM[mi] : '방식'}</b><div class="seg">${FIELD_MODES.map(x => `<button data-mode="${gi}:${mi}:${x}" class="${m === x ? 'on' : ''}">${x}</button>`).join('')}</div></div>`).join('')}</div>` : '';
+// 방우 콘센트 가로형·세로형 (10/27 대표)
+const dirRow = (g, gi) => g.k === '방우 콘센트' ? `<div class="modes"><div class="mode"><b>방향</b><div class="seg">${['세로', '가로'].map(x => `<button data-dir="${gi}:${x}" class="${(g.dir || '세로') === x ? 'on' : ''}">${x}형</button>`).join('')}</div></div></div>` : '';
 // 융: 프레임에 기능을 하나씩 (최대 5구)
 function jungSlots(g) {
   return g.map((x, i) => `<div class="slot"><span class="no">${NUM[i]}</span><span class="mini">${K.draw(cat, {brand: 'jung', gangs: [x], color: cur.color}, {maxW: 40, maxH: 40})}</span><b>${esc(K.partName('jung', x))}</b>${g.length > 1 ? `<button class="x" data-delgang="${i}" aria-label="이 구 빼기">빼기</button>` : ''}</div>${modeRows(x, i)}`).join('')
@@ -136,7 +139,7 @@ function renderEditor() {
     + (b === 'other' ? `<label for="pname">제품 이름</label><input id="pname" maxlength="60" value="${esc(p.name)}" placeholder="예: 스텐 토글 스위치">` : '') + `</div>`
     + `<div class="blk"><h4><em>02</em>색 · 마감<span>${esc(p.color || '고르세요')}</span></h4>${swatches(b, p.color || '', 'color')}</div>`
     + `<div class="blk"><h4><em>03</em>구성${b === 'jung' ? `<span>${g.length} / 5구</span>` : ''}</h4>`
-    + (b === 'jung' ? jungSlots(g) : presetGrid(b, g[0]) + modeRows(g[0], 0)) + `</div>`
+    + (b === 'jung' ? jungSlots(g) : presetGrid(b, g[0]) + modeRows(g[0], 0) + dirRow(g[0], 0)) + `</div>`
     + `<div class="blk"><h4><em>04</em>위치 · 개수</h4><label for="loc">위치 <small style="color:var(--mute)">(대충 적어도 됨)</small></label><input id="loc" maxlength="60" value="${esc(p.location)}" placeholder="예: 현관문 옆 / 신발장 옆 외 2곳">`
     + `<div class="row2"><span>이 구성이 이 방에 몇 개?<br><small style="color:var(--mute);font-size:12px">똑같은 건 한 번만, 개수로</small></span><span class="step"><button data-qty="-1" aria-label="하나 빼기">−</button><b>${p.qty}</b><button data-qty="1" aria-label="하나 더">＋</button></span></div></div>`
     + `<div class="photoRow">${photo ? `<img src="${esc(photo)}" alt="콘센트·스위치 사진"><button data-photo="del">사진 지우기</button>` : ''}<button data-photo="take">📷 ${photo ? '다시 찍기' : '사진'}</button>${undo.length ? '<button id="undo">되돌리기</button>' : ''}</div>`
@@ -174,6 +177,7 @@ async function savePlate(removing) {
   if (serverVer === 'wiring1') { keep(); msg('서버 업데이트 전이라 아직 저장할 수 없습니다 — 입력은 이 폰에 보관했습니다. 사무실이 서버를 올린 뒤 다시 눌러주세요', true); return; }
   cur.location = $('loc').value.trim(); cur.memo = ($('memo')?.value || '').trim(); if ($('pname')) cur.name = $('pname').value.trim();
   const b = brandOf(cur), g = K.normalize(b, cur.gangs);
+  if (!removing && !dirOk && g.some(x => x.dir === '가로')) { keep(); msg('서버 업데이트 전이라 「가로형」이 저장되지 않습니다 — 입력은 이 폰에 보관했습니다. 사무실이 서버를 올린 뒤 다시 눌러주세요', true); return; }
   if (!removing) {
     if (!cur.location) { msg('위치를 적어주세요 (예: 현관문 옆)', true); $('loc').focus(); return; }
     if (g.some(x => x.k === '기타') && !cur.memo && !cur.photo && !cur.photos?.length) { msg('「다른 모양 · 모르겠음」은 사진을 찍거나 메모를 남겨주세요', true); return; }
@@ -284,6 +288,7 @@ $('screen').addEventListener('click', async e => {
   });
   if (b.dataset.color !== undefined) return change(() => { cur.color = b.dataset.color; });
   if (b.dataset.preset) return change(() => { const [k, n] = b.dataset.preset.split('|'); const keepModes = cur.gangs[0] && cur.gangs[0].k === k ? cur.gangs[0].modes : null; cur.gangs = [{k, n: +n, modes: keepModes}]; });
+  if (b.dataset.dir) return change(() => { const [gi, d] = b.dataset.dir.split(':'); cur.gangs[+gi].dir = d; });
   if (b.dataset.mode) return change(() => { const [gi, mi, m] = b.dataset.mode.split(':'); cur.gangs[+gi].modes[+mi] = m; });
   if (b.dataset.pick) { picking = !picking; render(); return; }
   if (b.dataset.addgang) return change(() => { const [k, n] = b.dataset.addgang.split('|'); cur.gangs.push({k, n: +n}); picking = false; });

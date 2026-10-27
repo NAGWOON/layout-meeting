@@ -28,7 +28,7 @@ var WiringOrder = (function () {
     const od = r.orderData && Array.isArray(r.orderData.lines) && r.orderData.lines.length && (r.reviewBase == null || okReview) ? r.orderData : null;
     const brand = (od && od.brand) || (K.BRANDS[r.brand] ? r.brand : 'apella');
     const lines = od ? od.lines.map(l => ({gangs: l.gangs && l.gangs.length ? K.normalize(brand, l.gangs) : fieldGangs(r), qty: Number(l.qty) || 1})) : [{gangs: fieldGangs(r), qty: r.qty}];
-    return {use: true, brand, color: (od && od.color) || r.color || '', name: (od && od.name) || r.name || '', lines, base: r.fieldVersion, token: r.fieldToken, note: od && od.note || '',
+    return {use: true, brand, color: (od && od.color) || r.color || '', name: (od && od.name) || r.name || '', lines, base: r.fieldVersion, token: r.fieldToken, note: od && od.note || '', vnote: od && od.vnote || '',
       reloaded: !!(r.orderData && r.reviewBase != null && !okReview)};
   }
 
@@ -81,7 +81,7 @@ var WiringOrder = (function () {
   const orderIssues = r => rowIssues(r).filter(t => !/다시 불러옴|목록에 맞는 제품 없음/.test(t) && t !== STALE);   // 제품 없음은 줄에 이미 「확인 필요:」로 찍힘
   function preview() {
     const by = {apella: [], jung: [], other: []};
-    rows.filter(r => !ordered(r) && plans[r.id].use).forEach(r => { const iss = orderIssues(r), p = plans[r.id]; lineOrders(r).forEach((o, li) => o.lines.forEach(l => { if (iss.length) l.spec += ' · ⚠️ 확인 필요: ' + iss.join(' / '); (by[o.vendor] || by.other).push(Object.assign(l, {where: r.room + ' ' + r.location, measure: sheetMeta(o.vendor, r, p, p.lines[li], l, iss)})); })); });
+    rows.filter(r => !ordered(r) && plans[r.id].use).forEach(r => { const iss = orderIssues(r), p = plans[r.id]; lineOrders(r).forEach((o, li) => o.lines.forEach(l => { if (p.vnote) l.spec += ' · 메모: ' + p.vnote; if (iss.length) l.spec += ' · ⚠️ 확인 필요: ' + iss.join(' / '); (by[o.vendor] || by.other).push(Object.assign(l, {where: r.room + ' ' + r.location, measure: sheetMeta(o.vendor, r, p, p.lines[li], l, iss)})); })); });
     by.apella = K.merge(by.apella); by.other = K.merge(by.other);
     return by;
   }
@@ -89,8 +89,9 @@ var WiringOrder = (function () {
   function sheetMeta(vendor, r, p, line, l, iss) {
     const g = line.gangs, issue = iss.join(' / ');
     if (vendor === 'jung') return {k: 'jung', gangs: g, color: p.color, colorOrder: l.spec.split(' · ')[0], room: r.room, loc: r.location, issue,
-      parts: g.map(x => { const q = K.findPart(cat, 'jung', x); return q ? q.order + ((q.modes || []).length > 1 && x.modes ? ' [' + x.modes.join('·') + ']' : '') : '확인 필요: ' + K.partName('jung', x); })};
-    if (vendor === 'apella') return {k: 'apella', gang: g[0], color: p.color, issue, modes: g[0].modes && g[0].modes.some(m => m !== '단로') ? g[0].modes.join('·') : ''};
+      note: p.vnote || '',
+      parts: g.map(x => { if (x.skip) return '발주 안 함: ' + K.partName('jung', x) + (x.memo ? ' — ' + x.memo : ''); const q = K.findPart(cat, 'jung', x); return q ? q.order + ((q.modes || []).length > 1 && x.modes ? ' [' + x.modes.join('·') + ']' : '') : '확인 필요: ' + K.partName('jung', x); })};
+    if (vendor === 'apella') return {k: 'apella', gang: g[0], color: p.color, issue, note: p.vnote || '', modes: g[0].modes && g[0].modes.some(m => m !== '단로') ? g[0].modes.join('·') : ''};
     return {k: 'other', color: p.color, where: ''};
   }
   // 융: 네오 조합 프로그램에 넣을 때 쓰는 합계 (프레임 크기별 · 기능별)
@@ -98,7 +99,7 @@ var WiringOrder = (function () {
     const frames = {}, parts = {};
     rows.filter(r => !ordered(r) && plans[r.id].use && plans[r.id].brand === 'jung').forEach(r => plans[r.id].lines.forEach(l => {
       frames[l.gangs.length + '구'] = (frames[l.gangs.length + '구'] || 0) + l.qty;
-      l.gangs.forEach(g => { const p = K.findPart(cat, 'jung', g), nm = p ? p.order : '확인 필요: ' + K.partName('jung', g); parts[nm] = (parts[nm] || 0) + l.qty; });
+      l.gangs.forEach(g => { if (g.skip) return; const p = K.findPart(cat, 'jung', g), nm = p ? p.order : '확인 필요: ' + K.partName('jung', g); parts[nm] = (parts[nm] || 0) + l.qty; });
     }));
     return {frames, parts};
   }
@@ -111,7 +112,10 @@ var WiringOrder = (function () {
     return `<span class="mo-gang"><select data-g="k" data-at="${id}">${kinds.map(k => opt(k, g.k)).join('')}</select>`
       + `<select data-g="n" data-at="${id}" title="구 수 · 스위치는 회로 수">${[1, 2, 3, 4].map(n => opt(String(n), String(g.n), n + (g.k === '스위치' && brand === 'jung' ? '회로' : '구'))).join('')}</select>`
       + (g.modes ? g.modes.map((m, mi) => `<select data-g="m${mi}" data-at="${id}" class="mo-mode">${K.MODES.map(x => opt(x, m)).join('')}</select>`).join('') : '')
-      + (brand === 'jung' ? `<button class="mo-x" data-act="gdel" data-at="${id}" title="이 구 빼기">×</button>` : '') + '</span>';
+      + (g.k === '방우 콘센트' ? `<select data-g="dir" data-at="${id}" class="mo-mode" title="방우 콘센트 방향">${['세로', '가로'].map(x => opt(x, g.dir || '세로', x + '형')).join('')}</select>` : '')
+      + (brand === 'jung' ? `<button class="mo-skip ${g.skip ? 'on' : ''}" data-act="gskip" data-at="${id}" title="이 구를 발주에서 뺍니다 (예: 온도조절기 업체가 시공)">${g.skip ? '발주 안 함' : '발주'}</button>`
+        + (g.skip ? `<input data-g="memo" data-at="${id}" value="${esc(g.memo || '')}" placeholder="이유 (예: 온도조절기 업체 시공)" class="mo-memo">` : '')
+        + `<button class="mo-x" data-act="gdel" data-at="${id}" title="이 구 빼기">×</button>` : '') + '</span>';
   }
   function rowHtml(r) {
     const p = plans[r.id], done = ordered(r), iss = done ? [] : rowIssues(r), sumQty = p.lines.reduce((a, l) => a + l.qty, 0);
@@ -122,7 +126,7 @@ var WiringOrder = (function () {
       <div class="mo-pic">${pic}</div>
       <div class="mo-info"><b>${esc(r.location)}</b> <span class="mo-q">×${r.qty}</span>
         <small>현장: ${esc(r.summary || '(구성 없음)')}${r.memo ? ' · 메모 「' + esc(r.memo) + '」' : ''}${r.photos && r.photos.length ? ` · <a href="${esc(r.photos[0].url)}" target="_blank" rel="noopener">사진</a>` : ''}</small>
-        ${done ? `<small class="mo-ok">발주 완료 · ${esc(r.order.no)}</small>` : iss.map(t => `<span class="mo-chip">${esc(t)}</span>`).join('')}${p.note ? `<small class="mo-note">${esc(p.note)}</small>` : ''}</div>
+        ${done ? `<small class="mo-ok">발주 완료 · ${esc(r.order.no)}</small>` : iss.map(t => `<span class="mo-chip">${esc(t)}</span>`).join('')}</div>
       ${done ? '' : `<div class="mo-ctl">
         <div class="mo-line1"><select data-act="brand">${Object.keys(K.BRANDS).map(b => opt(b, p.brand, K.BRANDS[b])).join('')}</select>
         <select data-act="color" class="${p.color ? '' : 'need'}"><option value="">색 고르기</option>${cols.map(c => opt(c.name, p.color)).join('')}${p.color && !cols.some(c => c.name === p.color) ? opt(p.color, p.color, p.color + ' (목록에 없음)') : ''}</select>
@@ -131,6 +135,8 @@ var WiringOrder = (function () {
           ${p.brand === 'jung' && l.gangs.length < 5 ? `<button class="mo-add" data-act="gadd" data-at="${r.id}|${li}">＋ 구</button>` : ''}
           <span class="mo-qty"><input type="number" min="1" max="99" value="${l.qty}" data-act="qty" data-at="${r.id}|${li}">개</span>
           ${p.lines.length > 1 ? `<button class="mo-x" data-act="ldel" data-at="${r.id}|${li}" title="이 줄 빼기">×</button>` : ''}</div>`).join('')}
+        ${p.note ? `<small class="mo-note">사무실 메모 · ${esc(p.note)}</small>` : ''}
+        <label class="mo-notein">발주서 메모 <input data-act="vnote" value="${esc(p.vnote || '')}" placeholder="업체에 전할 말 (예: 온도조절기는 업체가 따로 시공)"></label>
         <div class="mo-line2"><button class="mo-link" data-act="split">＋ 다른 구성으로 나누기</button>${sumQty !== r.qty ? `<span class="mo-chip info">현장 ${r.qty}개 → 주문 ${sumQty}개</span>` : ''}<button class="mo-link" data-act="reset">현장 것으로 되돌리기</button></div>
       </div>`}</section>`;
   }
@@ -166,10 +172,11 @@ var WiringOrder = (function () {
     else if (t.dataset.act === 'brand' && p) { p.brand = t.value; p.color = cat.colors(p.brand).some(c => c.name === p.color) ? p.color : ''; p.lines.forEach(l => { l.gangs = K.normalize(p.brand, l.gangs); }); }
     else if (t.dataset.act === 'color' && p) p.color = t.value;
     else if (t.dataset.act === 'name' && p) p.name = t.value.trim();
+    else if (t.dataset.act === 'vnote' && p) p.vnote = t.value.trim();   // 업체에 나가는 메모 — 사무실 안 메모(note)와 따로
     else if (t.dataset.act === 'qty') { const a = at(t.dataset.at); a.p.lines[a.li].qty = Math.max(1, Math.min(99, Math.round(Number(t.value) || 1))); }
     else if (t.dataset.g) {
       const a = at(t.dataset.at), g = a.p.lines[a.li].gangs[a.gi];
-      if (t.dataset.g === 'k') g.k = t.value; else if (t.dataset.g === 'n') g.n = +t.value; else g.modes[+t.dataset.g.slice(1)] = t.value;
+      if (t.dataset.g === 'k') g.k = t.value; else if (t.dataset.g === 'n') g.n = +t.value; else if (t.dataset.g === 'dir') g.dir = t.value; else if (t.dataset.g === 'memo') g.memo = t.value.trim(); else g.modes[+t.dataset.g.slice(1)] = t.value;
       a.p.lines[a.li].gangs = K.normalize(a.p.brand, a.p.lines[a.li].gangs);
     } else return;
     keep(); render();
@@ -185,7 +192,8 @@ var WiringOrder = (function () {
       let n = 0; dialog.querySelectorAll('[data-act="bulk"]').forEach(s => { if (!s.value) return; rows.forEach(r => { const q = plans[r.id]; if (!ordered(r) && q.use && !q.color && q.brand === s.dataset.b) { q.color = s.value; n++; } }); });
       keep(); render(); return say(n ? '색 미정 ' + n + '곳에 색을 넣었습니다 — 「검토 저장」을 눌러야 노션에 남습니다' : '넣을 색을 먼저 골라주세요', !n);
     }
-    if (act === 'gadd') { const a = at(b.dataset.at); a.p.lines[a.li].gangs.push({k: '스위치', n: 1, modes: ['단로']}); }
+    if (act === 'gskip') { const a = at(b.dataset.at); const g = a.p.lines[a.li].gangs[a.gi]; g.skip = !g.skip; if (!g.skip) delete g.memo; }
+    else if (act === 'gadd') { const a = at(b.dataset.at); a.p.lines[a.li].gangs.push({k: '스위치', n: 1, modes: ['단로']}); }
     else if (act === 'gdel') { const a = at(b.dataset.at); const l = a.p.lines[a.li]; if (l.gangs.length > 1) l.gangs.splice(a.gi, 1); }
     else if (act === 'ldel') { const a = at(b.dataset.at); a.p.lines.splice(a.li, 1); }
     else if (act === 'split' && p) { const f = p.lines[0]; if (f.qty > 1) f.qty--; p.lines.push({gangs: clone(f.gangs), qty: 1}); }
@@ -213,7 +221,7 @@ var WiringOrder = (function () {
       const items = live.map(r => { const p = plans[r.id], iss = rowIssues(r);
         return {id: r.id, fieldVersion: p.base, fieldToken: p.token, review: iss.length ? '확인 필요' : '검토 완료',
           orderSpec: lineOrders(r).map(o => o.lines.map(l => l.name + ' · ' + l.spec + ' ×' + l.qty).join(' / ')).join(' / ').slice(0, 500),
-          orderData: {v: 1, brand: p.brand, color: p.color, name: p.name, lines: p.lines, note: p.note}}; });
+          orderData: {v: 1, brand: p.brand, color: p.color, name: p.name, lines: p.lines, note: p.note, vnote: p.vnote || ''}}; });
       const r = await api('wiringReview', {sitePageId: siteId, items});
       if (!r || !r.ok) throw Error((r && r.error) || '저장하지 못했습니다');
       const extra = [r.changed.length ? '현장이 그사이 바꾼 ' + r.changed.length + '곳은 저장 안 함(다시 읽어 주세요): ' + r.changed.join(', ') : '', r.ordered.length ? '이미 발주된 ' + r.ordered.length + '곳 제외' : '', r.missing.length ? '노션에서 못 찾은 ' + r.missing.length + '곳' : ''].filter(Boolean).join(' · ');

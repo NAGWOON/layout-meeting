@@ -230,3 +230,13 @@ body.v6-nocalc #calcPill{display:none!important}
 #unifiedOrder.v6.v6-light #unifiedItems .it .cut{visibility:hidden}
 /* 특기사항 칸: 글 길이만큼 · 읽기 좋은 줄 간격 */
 #unifiedOrder.v6 .v6-cond textarea{font-size:13px;line-height:1.6;resize:none;overflow-y:auto}
+/* 발주처 한 칸 */
+#unifiedOrder.v6 .v6-ven input{font-size:15px!important;font-weight:600;padding:9px 11px!important}
+/* 발주서 크게 보기 */
+#unifiedOrder.v6 #unifiedPreview{cursor:zoom-in}
+.v6-big{position:fixed;inset:0;z-index:300;background:rgba(18,20,24,.6);display:flex;flex-direction:column;align-items:center;overflow:auto;padding:0 20px 30px}
+.v6-big[hidden]{display:none}
+.v6-bigbar{position:sticky;top:0;z-index:1;display:flex;gap:14px;align-items:center;width:100%;max-width:1100px;padding:12px 4px;color:#fff;font-size:13px}
+.v6-bigbar b{font-size:15px}.v6-bigbar span{opacity:.7}.v6-bigbar button{margin-left:auto;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer}
+.v6-bigpaper{display:flex;flex-direction:column;gap:16px;align-items:center}
+.v6-bigpaper .sheet{box-shadow:0 10px 40px rgba(0,0,0,.4)}

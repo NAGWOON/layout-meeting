@@ -74,6 +74,7 @@
     const k = KINDS.includes(g && g.k) ? g.k : '기타', n = Math.max(1, Math.min(4, Math.round(Number(g && g.n) || 1)));
     const out = {k, n};
     if (k === '스위치' || k === '토글') out.modes = Array.from({length: n}, (_, i) => MODES.includes(g.modes && g.modes[i]) ? g.modes[i] : '단로');
+    if (k === '방우 콘센트') out.dir = g.dir === '가로' ? '가로' : '세로';   // 방우 콘센트 가로형·세로형 (10/27 대표) — 정하지 않은 옛 기록은 세로
     return out;
   };
   function normalize(brand, gangs) {
@@ -114,7 +115,7 @@
     if (g.k === '막음') return '막음';
     return g.k + (brand === 'jung' && g.n === 1 ? '' : ' ' + g.n + '구');
   };
-  const modeText = g => g.modes && g.modes.some(m => m !== '단로') ? ' (' + g.modes.join('·') + ')' : '';
+  const modeText = g => (g.modes && g.modes.some(m => m !== '단로') ? ' (' + g.modes.join('·') + ')' : '') + (g.k === '방우 콘센트' ? ' (' + (g.dir || '세로') + '형)' : '');
   // 사람이 읽는 한 줄 — 노션 「현장 구성」, 목록 카드, 발주 미리보기가 같은 말을 씁니다
   function summary(brand, gangs, color, name) {
     const g = normalize(brand, gangs);
@@ -148,7 +149,7 @@
     const qty = Math.max(1, Number(row.qty) || 1), src = row.id ? [{kind: 'wiring', id: row.id, site: row.site || '', revision: row.revision || 0, token: row.token || ''}] : [];
     const colorName = col ? (col.order || col.name) : (row.color || '색 미정');
     if (brand === 'jung') {
-      const parts = gangs.map(g => { const p = findPart(cat, brand, g); if (!p) issues.push(partName(brand, g) + modeText(g) + ' — 목록에 맞는 제품 없음'); else if (p.memo) issues.push(p.name + ': ' + p.memo); return p ? p.order + ((p.modes || []).length > 1 && g.modes ? ' [' + g.modes.join('·') + ']' : '') : '확인 필요: ' + partName(brand, g) + modeText(g); });   // 겸용 제품이면 고른 방식을 [ ] 로 꼭 적음 (GPT R1-7)
+      const parts = gangs.map(g => { const p = findPart(cat, brand, g); if (!p) issues.push(partName(brand, g) + modeText(g) + ' — 목록에 맞는 제품 없음'); else if (p.memo) issues.push(p.name + ': ' + p.memo); return p ? p.order + ((p.modes || []).length > 1 && g.modes ? ' [' + g.modes.join('·') + ']' : '') + (g.k === '방우 콘센트' ? ' (' + (g.dir || '세로') + '형)' : '') : '확인 필요: ' + partName(brand, g) + modeText(g); });   // 겸용 제품이면 고른 방식을 [ ] 로 꼭 적음 (GPT R1-7)
       const grouped = []; parts.forEach(p => { const l = grouped[grouped.length - 1]; if (l && l.p === p) l.c++; else grouped.push({p, c: 1}); });
       return {vendor: 'jung', issues, lines: [{name: where.trim(), spec: colorName + ' · ' + gangs.length + '구 프레임 — ' + grouped.map(x => x.p + (x.c > 1 ? ' ×' + x.c : '')).join(' + '), qty, unit: '조합', sources: src, combo: true}]};
     }
@@ -251,6 +252,12 @@
       const n = gangs.length, W = 81 + 71 * (n - 1), H = 81;
       return {W, H, s: `<g filter="url(#${id}s)">${surf(id, m, 0, 0, W, H, 1.8)}</g>` + gangs.map((g, i) => jungGang(id, m, g, 40.5 + 71 * i, 40.5)).join('')};
     }
+    if (gangs[0].k === '방우 콘센트' && gangs[0].dir === '가로') {   // 가로형: 판을 눕히고 콘센트를 옆으로
+      const W = 118, H = 72, n = gangs[0].n; let s = `<g filter="url(#${id}s)">${surf(id, m, 0, 0, W, H, brand === 'apella' ? 3.2 : 2.4)}</g>`;
+      if (brand === 'apella') s += `<rect x="5" y="5" width="108" height="62" rx="2" fill="none" stroke="${m.dark ? '#000' : '#fff'}" stroke-opacity="${m.dark ? .25 : .6}" stroke-width=".5"/>`;
+      s += n === 1 ? socket(id, m, 59, 36, 17) : n === 2 ? socket(id, m, 33.5, 36, 16.5) + socket(id, m, 84.5, 36, 16.5) : [0, 1, 2, 3].slice(0, n).map(i => socket(id, m, 18 + i * 27.5, 36, 11.5)).join('');
+      return {W, H, s: s + cover(4, 4, 110, 64)};
+    }
     const W = 72, H = 118, g = gangs[0]; let s = `<g filter="url(#${id}s)">${surf(id, m, 0, 0, W, H, brand === 'apella' ? 3.2 : 2.4)}</g>`;
     if (brand === 'apella') s += `<rect x="5" y="5" width="62" height="108" rx="2" fill="none" stroke="${m.dark ? '#000' : '#fff'}" stroke-opacity="${m.dark ? .25 : .6}" stroke-width=".5"/>`;
     const n = g.n;
@@ -283,7 +290,7 @@
     const unk = !spec.color && o.flag ? `<g><rect x="${pad + b.W - 26}" y="${pad + 1}" width="25" height="8" rx="2" fill="#b0442c"/><text x="${pad + b.W - 13.5}" y="${pad + 6.6}" font-size="4.6" font-family="Pretendard,sans-serif" text-anchor="middle" fill="#fff">색 미정</text></g>` : '';
     return `<svg width="${Math.round(VW * k)}" height="${Math.round(VH * k)}" viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${summary(brand, g, spec.color || '색 미정').replace(/"/g, '')}">${defs(id, m)}<g transform="translate(${pad} ${pad})">${b.s}</g>${dim}${unk}</svg>`;
   }
-  const size = (brand, gangs) => brand === 'jung' ? [81 + 71 * (Math.max(1, (gangs || []).length) - 1), 81] : [72, 118];
+  const size = (brand, gangs) => brand === 'jung' ? [81 + 71 * (Math.max(1, (gangs || []).length) - 1), 81] : (gangs && gangs[0] && gangs[0].k === '방우 콘센트' && gangs[0].dir === '가로' ? [118, 72] : [72, 118]);
   const swatch = col => { const m = material(col); return m.metal ? `linear-gradient(135deg,${m.metal.join(',')})` : `linear-gradient(${m.f[0]},${m.f[1]})`; };
 
   const api = {BRANDS, KINDS, MODES, KEEP, DEFAULT, catalog, colorOf, normalize, fromLegacy, toLegacy, isWet, summary, partName, findPart, order, merge, material, draw, size, swatch};
