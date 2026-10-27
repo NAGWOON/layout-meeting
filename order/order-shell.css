@@ -225,3 +225,8 @@ body.v6-nocalc #calcPill{display:none!important}
 @media(max-width:1100px){#unifiedOrder.v6,#unifiedOrder.v6 .to-shell{height:auto;overflow:visible}body.unified-mode:has(#unifiedOrder.v6:not([hidden])){overflow:auto}#unifiedOrder.v6 .to-workbench main,#unifiedOrder.v6 .to-workbench aside{height:auto;overflow:visible}}
 /* 인터넷 주문 장 종이 — 업체 발송용 아님 표시 */
 .sheet .nto .v6-stamp{margin-left:auto;align-self:center;border:1.5px solid #b0442c;color:#b0442c;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:3px 9px;border-radius:4px;transform:rotate(-1.5deg);white-space:nowrap}
+/* 조명·스위치 탭: 참고 카드(현장 정보·지난 현장 참고·지난 발주)와 재단 칸은 필요 없음 */
+#unifiedOrder.v6.v6-light #unifiedReferences{display:none}
+#unifiedOrder.v6.v6-light #unifiedItems .it .cut{visibility:hidden}
+/* 특기사항 칸: 글 길이만큼 · 읽기 좋은 줄 간격 */
+#unifiedOrder.v6 .v6-cond textarea{font-size:13px;line-height:1.6;resize:none;overflow-y:auto}

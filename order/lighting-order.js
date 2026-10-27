@@ -89,7 +89,7 @@ var LightingOrder = (function () {
       else if (p.group !== NONE && !(Number((W[p.product] || {}).w) > 0)) out.push(p.product + ': W/m');
     });
     Object.keys(W).forEach(pr => { if (W[pr].conflict && used.some(r => P[r.id].product === pr)) out.push(pr + ': 노션에 위치마다 다른 W/m·전압 — 위 칸에서 한 값으로 맞춰주세요'); });
-    G.forEach(g => { const s = groupLoad(g); if (!s.rs.length) return; if (!g.place) out.push(g.name + ': 놓을 곳'); if (s.volts.length > 1) out.push(g.name + ': 전압이 섞임'); else if (!s.ok) out.push(g.name + ': 용량 부족 (필요 ' + Math.ceil(s.need) + 'W)'); });
+    G.forEach(g => { if (g.alone) { if (!g.place) out.push(g.name + ': 놓을 곳'); return; } const s = groupLoad(g); if (!s.rs.length) return; if (!g.place) out.push(g.name + ': 놓을 곳'); if (s.volts.length > 1) out.push(g.name + ': 전압이 섞임'); else if (!s.ok) out.push(g.name + ': 용량 부족 (필요 ' + Math.ceil(s.need) + 'W)'); });
     return [...new Set(out)];
   }
 
@@ -126,7 +126,7 @@ var LightingOrder = (function () {
         <label>조명 종류<input list="mo-products" data-act="product" value="${esc(p.product)}" placeholder="예: 24V LED바"></label>
         <label>${drawing ? '도면 길이' : '발주 길이'} mm${r.segments.length > 1 && !drawing ? ' · 구간 사이 /' : ''}<input data-act="lengths" value="${esc(p.lengths)}" placeholder="${drawing ? '도면에서 재서 넣기' : r.segments.map(s => s.mm).join('/')}" class="${l.length ? '' : 'need'}"></label>
         ${cut && !drawing && r.segments.length === 1 ? `<button class="mo-link" data-act="cut" data-mm="${cut}">메모대로 −${cut} → ${fmt(r.segments[0].mm - cut)}</button>` : ''}
-        <label>SMPS<select data-act="group"><option value="">고르기</option>${G.map(g => `<option ${p.group === g.name ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}<option ${p.group === NONE ? 'selected' : ''}>${NONE}</option></select></label>
+        <label>SMPS<select data-act="group"><option value="">고르기</option>${G.filter(g => !g.alone).map(g => `<option ${p.group === g.name ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}<option ${p.group === NONE ? 'selected' : ''}>${NONE}</option></select></label>
       </div>${diffHtml(r)}`}
       <div class="mo-strips">${strips(r, ev)}</div></section>`;
   }
@@ -136,7 +136,16 @@ var LightingOrder = (function () {
     const opts = [...rooms.map(rm => rm + ' 천장 점검구'), '우물천장 안', '가구 안', '현장에서 정함'];
     return `<div class="mo-place">${opts.map(v => `<button type="button" data-act="placepick" data-g="${i}" data-v="${esc(v)}" class="${g.place === v ? 'on' : ''}">${esc(v)}</button>`).join('')}</div>`;
   }
+  // 가구 조명용 SMPS (10/27 대표 「가구 쪽에서 가져오는 조명도 있어서 SMPS 만 따로」) — 실측 위치 없이 정격·수량·놓을 곳만
+  function aloneHtml(g, i) {
+    return `<div class="mo-smps alone" data-g="${i}"><div class="mo-sh">${smpsPic()}<div><b>${esc(g.name)} <small class="mo-tagb">가구 조명용 · 따로</small></b><input data-act="place" data-g="${i}" value="${esc(g.place)}" placeholder="놓을 곳 (예: 주방 상부장 위)" class="${g.place ? '' : 'need'}">${placeChips(g, i, {rs: []})}
+        <input data-act="gnote" data-g="${i}" value="${esc(g.note || '')}" placeholder="어느 조명용인지 (예: 주방 상부장 하부 조명)"></div>
+        <select data-act="cap" data-g="${i}">${[...new Set(CAPS.concat(g.cap))].sort((a, b) => a - b).map(c => `<option ${c === g.cap ? 'selected' : ''}>${c}</option>`).join('')}</select><span class="mo-u">W</span></div>
+      <div class="mo-mrow"><span>전압 <select data-act="gv" data-g="${i}">${[12, 24].map(v => `<option ${Number(g.v || 24) === v ? 'selected' : ''}>${v}</option>`).join('')}</select> V · 수량 <input type="number" min="1" max="20" data-act="gqty" data-g="${i}" value="${g.qty || 1}" style="width:56px;text-align:right"> 개</span>
+        <button class="mo-link" data-act="gdel" data-g="${i}">이 SMPS 지우기</button></div></div>`;
+  }
   function cardHtml(g, i) {
+    if (g.alone) return aloneHtml(g, i);
     const s = groupLoad(g), pct = Math.min(100, s.load / g.cap * 100);
     return `<div class="mo-smps ${sel ? 'target' : ''}" data-g="${i}"><div class="mo-sh">${smpsPic()}<div><b>${esc(g.name)}</b><input data-act="place" data-g="${i}" value="${esc(g.place)}" placeholder="놓을 곳 (예: 안방 천장 점검구)" class="${g.place ? '' : 'need'}">${placeChips(g, i, s)}</div>
         <select data-act="cap" data-g="${i}">${[...new Set(CAPS.concat(g.cap))].sort((a, b) => a - b).map(c => `<option ${c === g.cap ? 'selected' : ''}>${c}</option>`).join('')}</select><span class="mo-u">W</span></div>
@@ -160,14 +169,14 @@ var LightingOrder = (function () {
     const over = used.filter(r => ev.long && lens(r).some(mm => mm > ev.long));
     const metres = used.reduce((a, r) => a + total(r), 0) / 1000;
     dialog.innerHTML = `<header class="mo-head"><div><small>발주 실측 · 사무실 · ${esc(siteName)}</small><h2>간접조명 · SMPS 배치</h2></div>
-      <div class="mo-tot"><span><b>${used.length}</b>곳</span><span><b>${metres.toFixed(1)}</b>m</span><span><b>${G.filter(g => groupLoad(g).rs.length).length}</b>SMPS</span><span class="${prob.length ? 'bad' : ''}"><b>${prob.length}</b>남은 것</span></div>
+      <div class="mo-tot"><span><b>${used.length}</b>곳</span><span><b>${metres.toFixed(1)}</b>m</span><span><b>${G.filter(g => g.alone || groupLoad(g).rs.length).length}</b>SMPS</span><span class="${prob.length ? 'bad' : ''}"><b>${prob.length}</b>남은 것</span></div>
       <div class="mo-headbtn"><button data-act="reload">노션 최신 다시 읽기</button><button data-act="close">닫기</button></div></header>
       ${serverVer && serverVer !== 'lighting-notion4' ? '<p class="mo-banner">서버가 아직 옛 판입니다 — 「노션에 저장」은 Lighting.gs·Code.gs 배포 뒤에 됩니다. 지금 정한 것은 이 컴퓨터에 보관됩니다.</p>' : ''}
       <div class="mo-tools"><span class="mo-elev">🛗 ${ev.text ? '엘리베이터 ' + esc(ev.text) + ' → 통째로 들어가는 길이 약 <b>' + fmt(ev.long) + 'mm</b>' : '엘리베이터 크기가 없습니다 — 발주앱 「엘리베이터」 칸에 넣으면 여기 반영'}</span>
         ${products.map(pr => `<label class="mo-w">${esc(pr)} <input type="number" step="any" min="0" data-act="w" data-p="${esc(pr)}" value="${esc((W[pr] || {}).w ?? '')}" placeholder="W/m" class="${Number((W[pr] || {}).w) > 0 ? '' : 'need'}">W/m <select data-act="v" data-p="${esc(pr)}">${[24, 12].map(v => `<option ${Number((W[pr] || {}).v || 24) === v ? 'selected' : ''}>${v}</option>`).join('')}</select>V${listTag(pr)}</label>`).join('')}${plErr ? `<span class="bad">${esc(plErr)}</span>` : ''}</div>
       <datalist id="mo-products">${[...new Set(PL.map(z => z.name).concat(rows.map(r => P[r.id].product).filter(Boolean)))].map(x => `<option value="${esc(x)}">`).join('')}</datalist>
       <div class="mo-body"><main><h4>위치 — 눌러서 고른 뒤 오른쪽 SMPS 카드를 누르면 묶입니다 <small>막대 = 길이 비율${ev.long ? ' · 점선 = 엘리베이터 한계' : ''}</small></h4>${rs.map(r => rowHtml(r, ev.long)).join('')}</main>
-      <aside><h4>SMPS</h4><div class="mo-cards">${G.map(cardHtml).join('')}<button class="mo-addsmps" data-act="gadd">＋ SMPS 추가</button></div>
+      <aside><h4>SMPS</h4><div class="mo-cards">${G.map(cardHtml).join('')}<button class="mo-addsmps" data-act="gadd">＋ SMPS 추가</button><button class="mo-addsmps" data-act="galone">＋ 가구 조명용 SMPS (위치 없이 따로)</button></div>
         <h4>업체에 나가는 내용</h4>${previewHtml(ev, over)}
         <div data-msg role="status"></div>
         ${prob.length ? `<details class="mo-prob" open><summary>담기 전에 정할 것 ${prob.length}</summary>${prob.map(t => `<button type="button" class="mo-jump" data-act="jump" data-t="${esc(t)}">· ${esc(t)} <span>→ 고치러 가기</span></button>`).join('')}</details>` : ''}
@@ -178,7 +187,7 @@ var LightingOrder = (function () {
     const used = live();
     if (!used.length) return '<p class="mo-empty">담을 위치가 없습니다</p>';
     return `<table>${used.map(r => `<tr><td><b>${esc(r.room)} ${esc(r.location)}</b><small>${esc(P[r.id].product || '조명 종류?')} · ${lens(r).map(fmt).join(' / ') || '길이?'}mm${!needsDrawing(r) && lens(r).length && lens(r).join('/') !== measured(r).join('/') ? ' (실측 ' + measured(r).map(fmt).join(' / ') + ')' : ''} · 배선 ${r.actualWires ?? '—'}</small></td><td>${esc(P[r.id].group || '—')}</td></tr>`).join('')}
-      ${G.filter(g => groupLoad(g).rs.length).map(g => `<tr class="mo-smpsrow"><td><b>${esc(g.name)}</b><small>${esc(g.place || '놓을 곳?')}</small></td><td>${g.cap}W</td></tr>`).join('')}</table>
+      ${G.filter(g => g.alone || groupLoad(g).rs.length).map(g => `<tr class="mo-smpsrow"><td><b>${esc(g.name)}${g.alone ? ' · 가구 조명용' : ''}</b><small>${esc(g.place || '놓을 곳?')}${g.alone && g.note ? ' · ' + esc(g.note) : ''}</small></td><td>${g.cap}W${g.alone && (g.qty || 1) > 1 ? ' ×' + g.qty : ''}</td></tr>`).join('')}</table>
       ${over.length ? `<p class="mo-note">엘리베이터(약 ${fmt(ev.long)}mm)보다 긴 ${over.length}곳 — 「나눠서 보내주세요 (반반 또는 2400 + 재단)」가 발주서 특기사항에 들어갑니다</p>` : ev.long ? '<p class="mo-note">모든 길이가 엘리베이터에 들어갑니다</p>' : ''}`;
   }
 
@@ -194,12 +203,15 @@ var LightingOrder = (function () {
     else if (t.dataset.act === 'v') W[t.dataset.p] = Object.assign(W[t.dataset.p] || {}, {v: Number(t.value), conflict: false, touched: true});
     else if (t.dataset.act === 'cap') G[+t.dataset.g].cap = Number(t.value);
     else if (t.dataset.act === 'place') G[+t.dataset.g].place = t.value.trim();
+    else if (t.dataset.act === 'gnote') G[+t.dataset.g].note = t.value.trim();
+    else if (t.dataset.act === 'gv') G[+t.dataset.g].v = Number(t.value);
+    else if (t.dataset.act === 'gqty') G[+t.dataset.g].qty = Math.max(1, Math.min(20, Math.round(Number(t.value) || 1)));
     else return;
     keep(); render();
   }
   async function onClick(e) {
     const b = e.target.closest('button'), card = e.target.closest('.mo-smps');
-    if (!b && card && sel && !e.target.closest('input,select')) { P[sel].group = G[+card.dataset.g].name; sel = ''; keep(); render(); return; }
+    if (!b && card && sel && !G[+card.dataset.g].alone && !e.target.closest('input,select')) { P[sel].group = G[+card.dataset.g].name; sel = ''; keep(); render(); return; }
     if (!b || busy) return;
     const act = b.dataset.act, row = b.closest('[data-row]');
     if (act === 'close') return dialog.close();
@@ -209,6 +221,7 @@ var LightingOrder = (function () {
     if (act === 'cut' && row) { const r = rows.find(x => x.id === row.dataset.row); P[r.id].lengths = String(r.segments[0].mm - Number(b.dataset.mm)); }
     else if (act === 'unassign') P[b.dataset.id].group = '';
     else if (act === 'gadd') { const used = G.map(g => g.name); let i = 0; while (used.includes('SMPS ' + (NO[i] || i + 1))) i++; G.push({name: 'SMPS ' + (NO[i] || i + 1), place: '', cap: 150, util: 80}); }   // 빈 번호부터 — 지운 뒤 더해도 이름이 겹치지 않게 (GPT R1-9)
+    else if (act === 'galone') { const used = G.map(g => g.name); let i = 0; while (used.includes('SMPS ' + (NO[i] || i + 1))) i++; G.push({name: 'SMPS ' + (NO[i] || i + 1), place: '', cap: 100, util: 80, alone: true, qty: 1, v: 24, note: ''}); }
     else if (act === 'gdel') G.splice(+b.dataset.g, 1);
     else if (act === 'placepick') G[+b.dataset.g].place = b.dataset.v;
     else if (act === 'save') return save();
@@ -257,7 +270,10 @@ var LightingOrder = (function () {
     if (!S.site || S.site.id !== siteId) return say('현장이 바뀌었습니다. 다시 열어주세요', true);
     const prob = problems(); if (prob.length) return say('담기 전에 정할 것이 남았습니다: ' + prob[0], true);
     const used = live(); if (!used.length) return say('담을 위치가 없습니다', true);
-    if (S.extra.some(z => z.qty > 0 && z.lightingSource && z.lightingSource.site === siteId && used.some(r => r.id === z.lightingSource.id))) return say('이미 발주 초안에 담긴 위치가 있습니다 — 기존 초안을 확인해주세요', true);
+    // 이미 담은 이 현장 간접조명 초안이 있으면 그 장을 통째로 바꿉니다 — 고친 뒤 다시 담으면 되게 (10/27 대표 「수정이 거의 불가능」)
+    const mine = z => (z.lightingSource && z.lightingSource.site === siteId) || String(z.id || '').startsWith('lighting-smps-' + siteId.slice(0, 8));
+    const old = S.extra.filter(mine), oldSheet = old.length ? S.sheetNo[keyOf(old[0])] : 0;
+    if (oldSheet && S.done[oldSheet]) return say('이 현장 간접조명은 ' + oldSheet + '장으로 이미 발주 기록됐습니다 — 바꿀 것은 「지난 발주」에서 수정해주세요', true);
     busy = true; say('노션 원본과 한 번 더 맞춰 보는 중…');
     try {
       const live2 = await api('lightingGet', {sitePageId: siteId});
@@ -266,14 +282,19 @@ var LightingOrder = (function () {
       const moved = used.filter(r => { const x = live2.document.rows.find(z => z.id === r.id); return !x || x.sourceToken !== P[r.id].token || ordered(x); });
       if (moved.length) throw Error('그사이 현장에서 바뀐(또는 발주된) 위치가 있습니다: ' + moved.map(r => r.room + ' ' + r.location).join(', ') + ' — 「노션 최신 다시 읽기」 후 담아주세요');
       const ev = elev(), over = used.filter(r => ev.long && lens(r).some(mm => mm > ev.long));
-      const sheet = Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0) + 1; S.typeBy[sheet] = '조명·스위치';
+      for (let k = S.extra.length - 1; k >= 0; k--) if (mine(S.extra[k])) { delete S.sheetNo[keyOf(S.extra[k])]; S.extra.splice(k, 1); }
+      const sheet = oldSheet || Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0) + 1; S.typeBy[sheet] = '조명·스위치';
       used.forEach(r => { const p = P[r.id], l = lens(r), w = W[p.product] || {};
         const item = {id: 'lighting-' + r.id + '-' + r.revision, name: r.room + ' ' + r.location, spec: p.product + ' · ' + l.map(fmt).join(' / ') + 'mm' + (l.length > 1 ? ' (' + l.length + '구간)' : '') + (r.actualWires == null ? ' · 배선 수 현장 확인' : ' · 배선 ' + r.actualWires + '가닥') + (p.group === NONE ? ' · 전원 내장' : ' · ' + p.group),
           cut: '', unit: '세트', qty: 1, type: '조명·스위치', group: '간접조명', lightingSource: {kind: 'lighting', id: r.id, revision: r.revision, sourceToken: r.sourceToken, site: siteId},
           sources: [{kind: 'lighting', id: r.id, site: siteId, revision: r.revision, token: P[r.id].token}],
           measure: {k: 'light', room: r.room, loc: r.location, product: p.product, lens: l, wires: r.actualWires ?? null, smps: p.group, ev: ev.long || 0}};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
-      G.forEach(g => { const s = groupLoad(g); if (!s.rs.length) return; const v = Number((W[P[s.rs[0].id].product] || {}).v) || 24;
+      G.forEach(g => { if (g.alone) {
+          const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: (g.v || 24) + 'V ' + g.cap + 'W · 가구 조명용' + (g.note ? ' · ' + g.note : ''), cut: '', unit: '개', qty: g.qty || 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)',
+            measure: {k: 'smps', name: g.name, place: g.place, v: g.v || 24, cap: g.cap, load: 0, count: 0, alone: true, note: g.note || ''}};
+          S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; return; }
+        const s = groupLoad(g); if (!s.rs.length) return; const v = Number((W[P[s.rs[0].id].product] || {}).v) || 24;
         const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: v + 'V ' + g.cap + 'W · 부하 ' + Math.round(s.load) + 'W · ' + [...new Set(s.rs.map(r => r.room))].join('·') + ' ' + s.rs.length + '곳', cut: '', unit: '개', qty: 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)',
           measure: {k: 'smps', name: g.name, place: g.place, v, cap: g.cap, load: Math.round(s.load), count: s.rs.length}};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
@@ -282,7 +303,7 @@ var LightingOrder = (function () {
         'SMPS 놓을 곳은 품목에 적었습니다'].filter(Boolean).join('\n');
       S.cur = sheet; setType('조명·스위치'); renderItems(); draw(); bar(); side();
       busy = false; if (dirty) save().catch(() => {}); dialog.close();
-      toast(used.length + '곳 + SMPS를 새 장에 담았습니다 — 거래처를 고르고 발주 기록을 눌러주세요');
+      toast(used.length + '곳 + SMPS를 ' + (oldSheet ? sheet + '장에 다시 담았습니다 (이전 초안을 바꿈)' : '새 장에 담았습니다') + ' — 거래처를 고르고 발주 기록을 눌러주세요');
     } catch (e) { busy = false; say(e.message, true); }
   }
   return {open};

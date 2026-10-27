@@ -29,7 +29,9 @@
   note.innerHTML = '특기사항 — 이 장에만 <textarea id="v6Note" rows="2"></textarea>';
   cond.append(note, el('dueWarn'), el('shipInfo'));
   const v6Note = note.querySelector('textarea');
-  v6Note.addEventListener('input', () => { setSheetNote(v6Note.value); });
+  // 특기사항 칸은 글 길이만큼 늘어남 — 조명 담기가 넣은 긴 안내도 내리며 읽지 않게 (10/27 대표 「너무 어거지」)
+  const grow = () => { v6Note.style.height = 'auto'; v6Note.style.height = Math.min(320, Math.max(64, v6Note.scrollHeight + 2)) + 'px'; };
+  v6Note.addEventListener('input', () => { setSheetNote(v6Note.value); grow(); });
 
   // ── 오른쪽: 발주서 무대 + 버튼 ──
   const count = el('unifiedCount');
@@ -124,7 +126,8 @@
     const structured = ['도기', '도어'].includes(S.type);
     cond.hidden = structured; sub.hidden = structured; acts.hidden = structured; count.hidden = structured; grip.hidden = false;
     root.classList.toggle('v6-structured', structured);
-    if (document.activeElement !== v6Note) v6Note.value = noteOf(S.cur);
+    if (document.activeElement !== v6Note) { v6Note.value = noteOf(S.cur); grow(); }
+    root.classList.toggle('v6-light', S.type === '조명·스위치');   // 조명 탭: 아래 참고 카드·재단 칸 숨김 (대표 「굳이?」)
     const common = (el('noteIn').value || '').trim();
     v6Note.placeholder = common ? '비우면 공통 특기사항: ' + common.split('\n')[0] : '예) 오전 도착 부탁드립니다';
     const d = S.detail, out = [];

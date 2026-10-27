@@ -39,7 +39,7 @@ var MeasureSheet = (function () {
     if (sm.length) {
       h += catRow(6, '전원 (SMPS)', '정격의 80%까지 사용 기준');
       sm.forEach(x => { const m = x.measure; n++;
-        h += `<tr><td class="no">${two(n)}</td><td class="nm">${esc(m.name)} <span class="dim">· ${esc(m.v)}V ${esc(m.cap)}W</span></td><td class="ms-sm" colspan="2">놓을 곳 <b>${esc(m.place || '미정')}</b></td><td class="c" colspan="2"><small>부하 ${esc(m.load)}W · ${esc(m.count)}곳</small></td></tr>`; });
+        h += `<tr><td class="no">${two(n)}</td><td class="nm">${esc(m.name)} <span class="dim">· ${esc(m.v)}V ${esc(m.cap)}W</span></td><td class="ms-sm" colspan="2">놓을 곳 <b>${esc(m.place || '미정')}</b></td><td class="c" colspan="2"><small>${m.alone ? '가구 조명용' + (m.note ? ' · ' + esc(m.note) : '') : '부하 ' + esc(m.load) + 'W · ' + esc(m.count) + '곳'}</small>${Number(x.qty) > 1 ? ' <b class="ms-x">×' + x.qty + '</b>' : ''}</td></tr>`; });
     }
     h += '</tbody>';
     return {html: '<table class="stbl ms ms-light">' + h + '</table>', count: n};
