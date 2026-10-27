@@ -137,3 +137,31 @@
 .mo-place{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 .mo-place button{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #cdd8f3;background:#eef2fc;color:#2f5fd0;cursor:pointer;line-height:1.4}
 .mo-place button.on{background:#2f5fd0;color:#fff;border-color:#2f5fd0}
+
+/* ── 읽기 쉽게 (10/27 대표 「너무 안 보인다」) — 글자 한 단계 키우고, 흐린 회색을 진하게 ── */
+.mo-dialog{--sub:#45443f;--mute:#6f6d66;--line:#dcdad4;font-size:14.5px}
+.mo-dialog button{font-size:14px}
+.mo-dialog input,.mo-dialog select{font-size:14.5px;padding:8px 10px}
+.mo-head small{font-size:12.5px}.mo-head h2{font-size:23px}
+.mo-tot span{font-size:12.5px}.mo-tot b{font-size:23px}
+.mo-tools{font-size:13.5px}
+.mo-body{grid-template-columns:minmax(0,1fr) 440px}
+.mo-body h3{font-size:15.5px}.mo-body h4{font-size:13px}
+.mo-body table{font-size:13.5px}.mo-body td small{font-size:12.5px}
+.mo-body aside>small{font-size:12.5px}
+.mo-note{font-size:13px}[data-msg]{font-size:13.5px}
+.mo-pick b{font-size:15.5px}.mo-pick small{font-size:13px}
+.mo-lctl{font-size:12.5px;color:var(--sub)}.mo-lctl input{width:210px}
+.mo-lrow{padding:12px 14px}.mo-lrow.off{opacity:.6}
+.mo-badge{font-size:13px}
+.mo-diff{font-size:13.5px}
+.mo-strip{height:19px;font-size:12.5px}.mo-strip i{top:4px;height:11px}.mo-strip b.mo-ghost{top:3px;height:13px}
+.mo-chip{font-size:12.5px}
+.mo-prob{font-size:13.5px}
+.mo-place button{font-size:12px;padding:4px 9px}
+.mo-info b{font-size:15.5px}.mo-info small{font-size:13px}.mo-ctl{font-size:13.5px}
+/* 「담기 전에 정할 것」 → 누르면 그 칸으로 */
+.mo-jump{display:block;width:100%;text-align:left;border:0!important;background:none!important;padding:3px 0!important;color:var(--bad);font-size:13.5px!important}
+.mo-jump span{opacity:0;color:var(--acc);font-size:12px;margin-left:4px}
+.mo-jump:hover span,.mo-jump:focus span{opacity:1}.mo-jump:hover{text-decoration:underline}
+.mo-flash{box-shadow:0 0 0 3px #2f5fd0!important;transition:box-shadow .3s}

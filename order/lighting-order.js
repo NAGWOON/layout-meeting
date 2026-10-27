@@ -138,7 +138,7 @@ var LightingOrder = (function () {
   }
   function cardHtml(g, i) {
     const s = groupLoad(g), pct = Math.min(100, s.load / g.cap * 100);
-    return `<div class="mo-smps ${sel ? 'target' : ''}" data-g="${i}"><div class="mo-sh">${smpsPic()}<div><b>${esc(g.name)}</b><input data-act="place" data-g="${i}" value="${esc(g.place)}" placeholder="놓을 곳 (예: 안방 천장 점검구)">${placeChips(g, i, s)}</div>
+    return `<div class="mo-smps ${sel ? 'target' : ''}" data-g="${i}"><div class="mo-sh">${smpsPic()}<div><b>${esc(g.name)}</b><input data-act="place" data-g="${i}" value="${esc(g.place)}" placeholder="놓을 곳 (예: 안방 천장 점검구)" class="${g.place ? '' : 'need'}">${placeChips(g, i, s)}</div>
         <select data-act="cap" data-g="${i}">${[...new Set(CAPS.concat(g.cap))].sort((a, b) => a - b).map(c => `<option ${c === g.cap ? 'selected' : ''}>${c}</option>`).join('')}</select><span class="mo-u">W</span></div>
       <div class="mo-meter"><i style="width:${pct}%" class="${s.rs.length && !s.ok ? 'bad' : ''}"></i><u style="left:${g.util}%"></u></div>
       <div class="mo-mrow"><span>부하 <b>${Math.round(s.load)}W</b> / 정격 ${g.cap}W · ${g.util}%까지</span><span class="${!s.rs.length ? '' : s.ok ? 'ok' : 'bad'}">${!s.rs.length ? '비어 있음' : s.volts.length > 1 ? '전압 섞임' : s.ok ? '여유 ' + Math.round(s.lim - s.load) + 'W' : '모자람 ' + Math.ceil(s.load - s.lim) + 'W'}</span></div>
@@ -170,7 +170,7 @@ var LightingOrder = (function () {
       <aside><h4>SMPS</h4><div class="mo-cards">${G.map(cardHtml).join('')}<button class="mo-addsmps" data-act="gadd">＋ SMPS 추가</button></div>
         <h4>업체에 나가는 내용</h4>${previewHtml(ev, over)}
         <div data-msg role="status"></div>
-        ${prob.length ? `<details class="mo-prob" open><summary>담기 전에 정할 것 ${prob.length}</summary>${prob.map(t => `<div>· ${esc(t)}</div>`).join('')}</details>` : ''}
+        ${prob.length ? `<details class="mo-prob" open><summary>담기 전에 정할 것 ${prob.length}</summary>${prob.map(t => `<button type="button" class="mo-jump" data-act="jump" data-t="${esc(t)}">· ${esc(t)} <span>→ 고치러 가기</span></button>`).join('')}</details>` : ''}
         <div class="mo-actions"><button data-act="save">노션에 저장</button><button class="pri" data-act="import" ${prob.length ? 'disabled' : ''}>발주 초안에 담기</button></div>
         <small>W/m·SMPS 용량은 제품 사양으로 확인하세요. 사용률 80%는 여유를 두는 기준입니다. 이 화면은 업체에 보내지 않습니다.</small></aside></div>`;
   }
@@ -203,6 +203,7 @@ var LightingOrder = (function () {
     if (!b || busy) return;
     const act = b.dataset.act, row = b.closest('[data-row]');
     if (act === 'close') return dialog.close();
+    if (act === 'jump') return jump(b.dataset.t);   // 「담기 전에 정할 것」 한 줄 → 그 칸으로 (10/27 대표)
     if (act === 'reload') return load(true);
     if (act === 'pick' && row) { sel = sel === row.dataset.row ? '' : row.dataset.row; return render(); }
     if (act === 'cut' && row) { const r = rows.find(x => x.id === row.dataset.row); P[r.id].lengths = String(r.segments[0].mm - Number(b.dataset.mm)); }
@@ -216,6 +217,22 @@ var LightingOrder = (function () {
     keep(); render();
   }
 
+  // 문제 글의 앞머리(「SMPS ①: …」 또는 「안방 커튼박스: …」)로 고칠 칸을 찾아 보여 주고 커서를 둡니다
+  function jump(t) {
+    const gi = G.findIndex(g => t.startsWith(g.name + ':'));
+    let node = null;
+    if (gi >= 0) node = dialog.querySelector(/놓을 곳/.test(t) ? `[data-act="place"][data-g="${gi}"]` : `[data-act="cap"][data-g="${gi}"]`) || dialog.querySelector(`.mo-smps[data-g="${gi}"]`);
+    else {
+      const r = rows.find(x => t.startsWith(x.room + ' ' + x.location));
+      const card = r && dialog.querySelector(`[data-row="${CSS.escape(r.id)}"]`);
+      if (card) node = card.querySelector(/SMPS/.test(t) ? '[data-act="group"]' : /조명 종류/.test(t) ? '[data-act="product"]' : '[data-act="lengths"]') || card;
+    }
+    if (!node) { const pr = t.split(':')[0]; node = dialog.querySelector(`[data-act="w"][data-p="${CSS.escape(pr)}"]`); }
+    if (!node) return say('어느 칸인지 찾지 못했습니다: ' + t, true);
+    node.scrollIntoView({behavior: 'smooth', block: 'center'});
+    const box = node.closest('.mo-smps, .mo-lrow') || node; box.classList.add('mo-flash'); setTimeout(() => box.classList.remove('mo-flash'), 1600);
+    if (node.focus) setTimeout(() => node.focus({preventScroll: true}), 350);
+  }
   async function save() {
     const clash = Object.keys(W).filter(pr => W[pr].conflict && rows.some(r => P[r.id].product === pr));
     if (clash.length) return say(clash.join(', ') + ': 노션에 위치마다 다른 W/m·전압이 있습니다 — 위 칸에서 한 값으로 맞춘 뒤 저장해주세요', true);   // GPT R2-2
