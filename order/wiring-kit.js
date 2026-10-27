@@ -220,6 +220,19 @@
     }
     return s;
   }
+  // 아펠라 스위치: 가운데 네모 안에 가로로 긴 버튼을 위아래로 쌓음 + 버튼 오른쪽 작은 표시 (10/27 대표 「융처럼 그려지면 역질문 온다」 · 실제 제품 사진 기준)
+  function rockApella(id, m, n, modes) {
+    const x = 16.5, y = 25, w = 39, h = 68, gap = .7, rh = (h - gap * (n - 1)) / n;
+    let s = `<rect x="${x - .7}" y="${y - .7}" width="${w + 1.4}" height="${h + 1.4}" rx="1.2" fill="${m.g}" opacity=".85"/>`;
+    for (let i = 0; i < n; i++) {
+      const Y = y + i * (rh + gap);
+      s += surf(id, m, x, Y, w, rh, .8, 'r') + `<rect x="${x + .8}" y="${Y + rh - 1}" width="${w - 1.6}" height=".5" fill="#000" opacity="${m.dark ? .4 : .14}"/>`
+        + `<path d="M${x + w - 4.2} ${Y + rh / 2 - 1.8} q1.6 1.8 0 3.6" fill="none" stroke="${m.dark ? '#cfd1d3' : '#9a9da2'}" stroke-width=".7" stroke-linecap="round"/>`;
+      const md = modes && modes[i];
+      if (md && md !== '단로') s += `<text x="${x + 4}" y="${Y + rh / 2 + 1.7}" font-size="4.6" font-family="Pretendard,sans-serif" font-weight="700" fill="${m.dark ? '#d9dadc' : '#7a7d82'}">${md}</text>`;
+    }
+    return s;
+  }
   function socket(id, m, cx, cy, r) {
     return `<circle cx="${cx}" cy="${cy}" r="${r + 1}" fill="none" stroke="${m.g}" stroke-opacity=".45" stroke-width=".6"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${id}h)"/><circle cx="${cx}" cy="${cy - .4}" r="${r - .4}" fill="none" stroke="#000" stroke-opacity=".14" stroke-width=".8"/>`
       + `<circle cx="${cx - r * .5}" cy="${cy}" r="${r * .13}" fill="#0d0d0d" opacity=".88"/><circle cx="${cx + r * .5}" cy="${cy}" r="${r * .13}" fill="#0d0d0d" opacity=".88"/>`
@@ -263,7 +276,7 @@
     const W = 72, H = 118, g = gangs[0]; let s = `<g filter="url(#${id}s)">${surf(id, m, 0, 0, W, H, brand === 'apella' ? 3.2 : 2.4)}</g>`;
     if (brand === 'apella') s += `<rect x="5" y="5" width="62" height="108" rx="2" fill="none" stroke="${m.dark ? '#000' : '#fff'}" stroke-opacity="${m.dark ? .25 : .6}" stroke-width=".5"/>`;
     const n = g.n;
-    if (g.k === '스위치') s += rock(id, m, 11, 19, 50, 80, n, g.modes);
+    if (g.k === '스위치') s += brand === 'apella' ? rockApella(id, m, n, g.modes) : rock(id, m, 11, 19, 50, 80, n, g.modes);
     else if (g.k === '토글') { for (let i = 0; i < n; i++) s += toggle(id, 72 / (n + 1) * (i + 1), 66); s += `<circle cx="36" cy="10" r="1.3" fill="url(#${id}p)"/><circle cx="36" cy="108" r="1.3" fill="url(#${id}p)"/>`; }
     else if (g.k === '콘센트' || g.k === '방우 콘센트') {
       if (n === 1) s += socket(id, m, 36, 59, 17); else if (n === 2) s += socket(id, m, 36, 33.5, 16.5) + socket(id, m, 36, 84.5, 16.5);
