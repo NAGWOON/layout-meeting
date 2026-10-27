@@ -174,10 +174,22 @@ var WiringOrder = (function () {
     else if (t.dataset.act === 'name' && p) p.name = t.value.trim();
     else if (t.dataset.act === 'vnote' && p) p.vnote = t.value.trim();   // 업체에 나가는 메모 — 사무실 안 메모(note)와 따로
     else if (t.dataset.act === 'frame') {   // 융 프레임 크기를 사람이 정함 (10/27 대표) — 늘리면 「막음」 자리, 줄이면 뒤에서부터 뺌
-      const a = at(t.dataset.at), l = a.p.lines[a.li], want = Math.max(1, Math.min(5, +t.value));
-      while (l.gangs.length < want) l.gangs.push({k: '막음', n: 1});
-      if (l.gangs.length > want) l.gangs.splice(want);
-      l.gangs = K.normalize(a.p.brand, l.gangs);
+      // 늘릴 때: 여러 회로 스위치를 1회로 스위치로 하나씩 떼어 냄 (2회로 단로·3로 → 프레임 2구 = 1회로 단로 + 1회로 3로) · 더 뗄 게 없으면 막음
+      // 줄일 때: 뒤의 1회로 스위치를 앞 스위치에 도로 합침 (회로 4까지) · 아니면 뒤에서부터 뺌
+      const a = at(t.dataset.at), l = a.p.lines[a.li], want = Math.max(1, Math.min(5, +t.value)), G = l.gangs;
+      while (G.length < want) {
+        const i = G.findIndex(g => g.k === '스위치' && g.n > 1);
+        if (i < 0) { G.push({k: '막음', n: 1}); continue; }
+        const g = G[i], modes = (g.modes || []).slice(), last = modes.pop() || '단로';
+        G.splice(i, 1, Object.assign({}, g, {n: g.n - 1, modes}), {k: '스위치', n: 1, modes: [last]});
+      }
+      while (G.length > want) {
+        const x = G[G.length - 1], y = G[G.length - 2];
+        if (x.k === '막음') { G.pop(); continue; }
+        if (y && x.k === '스위치' && y.k === '스위치' && y.n + x.n <= 4) { y.modes = (y.modes || []).concat(x.modes || []); y.n += x.n; G.pop(); continue; }
+        G.pop();
+      }
+      l.gangs = K.normalize(a.p.brand, G);
     }
     else if (t.dataset.act === 'qty') { const a = at(t.dataset.at); a.p.lines[a.li].qty = Math.max(1, Math.min(99, Math.round(Number(t.value) || 1))); }
     else if (t.dataset.g) {
