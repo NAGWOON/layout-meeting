@@ -125,3 +125,11 @@
 .sheet .stbl.ms-jung .ms-meta{margin-top:4px;font-size:10px;color:#8a8a92}
 .sheet .stbl.ms-jung td.ms-tot{font-size:10.5px;line-height:1.55;color:#1b1b1f}
 .sheet .stbl.ms-jung td.ms-tot b{font-size:10px;letter-spacing:.06em}
+/* 간접조명: 실측 ↔ 발주 길이 (10/27 대표 「얼마나 고쳤는지 모르겠다」) */
+.mo-diff{margin:6px 0 0 28px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--sub)}
+.mo-diff b{color:var(--ink)}
+.mo-diff em{font-style:normal;font-weight:700;border-radius:5px;padding:0 5px}
+.mo-diff em.minus{color:#8a5a12;background:#fbf1de}
+.mo-diff em.plus{color:#2f5fd0;background:#eef2fc}
+.mo-diff.same{color:var(--mute)}
+.mo-strip b.mo-ghost{position:absolute;left:0;top:2px;height:12px;border-radius:6px;border:1.5px dashed #9a958a;box-sizing:border-box;background:transparent}

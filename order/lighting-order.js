@@ -94,11 +94,25 @@ var LightingOrder = (function () {
   }
 
   // ── 그리기 ──
-  const MAXMM = () => Math.max(3000, ...rows.map(r => Math.max(...(lens(r).length ? lens(r) : [0]))));
+  const MAXMM = () => Math.max(3000, ...rows.map(r => Math.max(...(lens(r).length ? lens(r) : [0]), ...measured(r))));
+  // 현장 실측(고치지 않음) — 도면 위치는 실측이 없음. 발주 길이와 나란히 보여 줘서 「얼마나 고쳤는지」가 보이게 (10/27 대표)
+  const measured = r => needsDrawing(r) ? [] : r.segments.map(s => Number(s.mm) || 0);
+  const sameShape = r => { const m = measured(r), l = lens(r); return m.length && m.length === l.length; };
   function strips(r, ev) {
-    const max = MAXMM(), l = lens(r);
+    const max = MAXMM(), l = lens(r), m = sameShape(r) ? measured(r) : [];
     if (!l.length) return `<div class="mo-strip none">${needsDrawing(r) ? '도면 길이를 넣어주세요' : '길이 없음'}</div>`;
-    return l.map((mm, i) => `<div class="mo-strip"><i style="width:${Math.min(100, mm / max * 100)}%" class="${ev && mm > ev ? 'over' : ''}"></i>${ev ? `<u style="left:${Math.min(100, ev / max * 100)}%"></u>` : ''}<span class="${ev && mm > ev ? 'over' : ''}">${ev && mm > ev ? '엘리베이터보다 김 · 업체가 나눔 · ' : ''}${l.length > 1 ? (i + 1) + '구간 ' : ''}${fmt(mm)}</span></div>`).join('');
+    return l.map((mm, i) => `<div class="mo-strip">${m.length && m[i] !== mm ? `<b class="mo-ghost" style="width:${Math.min(100, m[i] / max * 100)}%" title="실측 ${fmt(m[i])}"></b>` : ''}<i style="width:${Math.min(100, mm / max * 100)}%" class="${ev && mm > ev ? 'over' : ''}"></i>${ev ? `<u style="left:${Math.min(100, ev / max * 100)}%"></u>` : ''}<span class="${ev && mm > ev ? 'over' : ''}">${ev && mm > ev ? '엘리베이터보다 김 · 업체가 나눔 · ' : ''}${l.length > 1 ? (i + 1) + '구간 ' : ''}${fmt(mm)}</span></div>`).join('');
+  }
+  // 「실측 3,008 → 발주 2,700 −308」 — 같으면 「실측 그대로」
+  function diffHtml(r) {
+    if (needsDrawing(r)) return '';
+    const m = measured(r), l = lens(r);
+    if (!l.length) return '';
+    if (m.length !== l.length) return `<div class="mo-diff chg">실측 ${m.map(fmt).join(' / ')} → 발주 <b>${l.map(fmt).join(' / ')}</b> <em class="minus">구간 ${m.length} → ${l.length}</em></div>`;
+    const d = l.map((v, i) => v - m[i]);
+    if (d.every(x => x === 0)) return '<div class="mo-diff same">실측 그대로 발주</div>';
+    const sum = d.reduce((a, b) => a + b, 0);
+    return `<div class="mo-diff chg">${l.map((v, i) => `<span>${l.length > 1 ? (i + 1) + '구간 ' : ''}실측 ${fmt(m[i])} → 발주 <b>${fmt(v)}</b>${d[i] ? ` <em class="${d[i] < 0 ? 'minus' : 'plus'}">${d[i] > 0 ? '+' : '−'}${fmt(Math.abs(d[i]))}</em>` : ''}</span>`).join('')}${l.length > 1 ? `<span>합계 <em class="${sum < 0 ? 'minus' : 'plus'}">${sum > 0 ? '+' : sum < 0 ? '−' : ''}${fmt(Math.abs(sum))}</em></span>` : ''}</div>`;
   }
   const smpsPic = () => `<svg width="58" height="40" viewBox="0 0 62 44" aria-hidden="true"><defs><linearGradient id="moal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0f1"/><stop offset=".5" stop-color="#c9cdd0"/><stop offset="1" stop-color="#a8adb1"/></linearGradient></defs><rect x="2" y="6" width="58" height="34" rx="2.5" fill="url(#moal)" stroke="#8d9297" stroke-width=".8"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<rect x="${8 + i * 5.4}" y="11" width="2.4" height="15" rx="1" fill="#7d8287" opacity=".55"/>`).join('')}<rect x="6" y="30" width="50" height="7" rx="1" fill="#2a2d30"/>${[0, 1, 2, 3, 4, 5].map(i => `<circle cx="${11 + i * 8}" cy="33.5" r="1.6" fill="#b9bdc1"/>`).join('')}<circle cx="52" cy="15" r="1.4" fill="#3fbf7f"/></svg>`;
   function rowHtml(r, ev) {
@@ -113,7 +127,7 @@ var LightingOrder = (function () {
         <label>${drawing ? '도면 길이' : '발주 길이'} mm${r.segments.length > 1 && !drawing ? ' · 구간 사이 /' : ''}<input data-act="lengths" value="${esc(p.lengths)}" placeholder="${drawing ? '도면에서 재서 넣기' : r.segments.map(s => s.mm).join('/')}" class="${l.length ? '' : 'need'}"></label>
         ${cut && !drawing && r.segments.length === 1 ? `<button class="mo-link" data-act="cut" data-mm="${cut}">메모대로 −${cut} → ${fmt(r.segments[0].mm - cut)}</button>` : ''}
         <label>SMPS<select data-act="group"><option value="">고르기</option>${G.map(g => `<option ${p.group === g.name ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}<option ${p.group === NONE ? 'selected' : ''}>${NONE}</option></select></label>
-      </div>`}
+      </div>${diffHtml(r)}`}
       <div class="mo-strips">${strips(r, ev)}</div></section>`;
   }
   function cardHtml(g, i) {
@@ -157,7 +171,7 @@ var LightingOrder = (function () {
   function previewHtml(ev, over) {
     const used = live();
     if (!used.length) return '<p class="mo-empty">담을 위치가 없습니다</p>';
-    return `<table>${used.map(r => `<tr><td><b>${esc(r.room)} ${esc(r.location)}</b><small>${esc(P[r.id].product || '조명 종류?')} · ${lens(r).map(fmt).join(' / ') || '길이?'}mm · 배선 ${r.actualWires ?? '—'}</small></td><td>${esc(P[r.id].group || '—')}</td></tr>`).join('')}
+    return `<table>${used.map(r => `<tr><td><b>${esc(r.room)} ${esc(r.location)}</b><small>${esc(P[r.id].product || '조명 종류?')} · ${lens(r).map(fmt).join(' / ') || '길이?'}mm${!needsDrawing(r) && lens(r).length && lens(r).join('/') !== measured(r).join('/') ? ' (실측 ' + measured(r).map(fmt).join(' / ') + ')' : ''} · 배선 ${r.actualWires ?? '—'}</small></td><td>${esc(P[r.id].group || '—')}</td></tr>`).join('')}
       ${G.filter(g => groupLoad(g).rs.length).map(g => `<tr class="mo-smpsrow"><td><b>${esc(g.name)}</b><small>${esc(g.place || '놓을 곳?')}</small></td><td>${g.cap}W</td></tr>`).join('')}</table>
       ${over.length ? `<p class="mo-note">엘리베이터(약 ${fmt(ev.long)}mm)보다 긴 ${over.length}곳 — 「나눠서 보내주세요 (반반 또는 2400 + 재단)」가 발주서 특기사항에 들어갑니다</p>` : ev.long ? '<p class="mo-note">모든 길이가 엘리베이터에 들어갑니다</p>' : ''}`;
   }
