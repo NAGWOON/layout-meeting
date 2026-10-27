@@ -39,7 +39,7 @@
 
   // ── 상태 ──
   let img = null, masks = [], drag = null, busy = false, reqId = '', last = null;
-  const blank = () => ({kind: '주문완료', vendor: '', seller: '', extOrderNo: '', orderDate: new Date().toISOString().slice(0, 10), payMethod: '', total: '', type: '', note: '', items: [{name: '', option: '', qty: 1, unit: '개'}]});
+  const blank = () => ({kind: '주문완료', vendor: '', seller: '', extOrderNo: '', orderDate: new Date().toISOString().slice(0, 10), payMethod: '', total: '', due: '', dueNote: '', type: '', note: '', items: [{name: '', option: '', qty: 1, unit: '개'}]});
   let F = blank();
 
   panel.innerHTML = `<div class="v6b-grid">
@@ -59,6 +59,8 @@
         <label>주문번호<input data-f="extOrderNo" placeholder="같은 주문 두 번 기록 막음"></label>
         <label>결제<input data-f="payMethod" placeholder="신용카드 · 네이버페이 · 계좌이체"></label>
         <label>결제 금액 (원)<input type="number" data-f="total" placeholder="참고값"></label>
+        <label>입고 예정일<input type="date" data-f="due"></label>
+        <label>언제쯤<input data-f="dueNote" placeholder="오전 · 오후 · 택배"></label>
         <label>발주 유형<select data-f="type"><option value="">— 골라주세요 —</option>${TYPES.map(t => `<option>${esc(t)}</option>`).join('')}</select></label>
         <label class="v6b-w">메모 (노션 비고 · 검수 안내)<input data-f="note" placeholder="예: 거실 매립장 가구 조명용"></label>
       </div>
@@ -204,7 +206,7 @@
     busy = true; paint(); say('노션에 기록하는 중…');
     try {
       const r = await api('recordPurchase', {sitePageId: S.site.id, type: F.type, vendor: F.vendor.trim(), seller: F.seller, extOrderNo: F.extOrderNo, orderDate: F.orderDate,
-        payMethod: F.payMethod, total: Number(F.total) || 0, kind: F.kind, note: F.note, items, image: img ? shot() : '', requestId: reqId, force: !!force});
+        payMethod: F.payMethod, total: Number(F.total) || 0, due: F.due, dueNote: F.dueNote, kind: F.kind, note: F.note, items, image: img ? shot() : '', requestId: reqId, force: !!force});
       if (r && r.duplicate) { busy = false; paint(); return say(`⚠️ ${esc(r.error)} · <a href="${esc(r.pageUrl)}" target="_blank" rel="noopener">노션에서 보기</a> · 다른 주문이면 <button class="v6b-fn" data-act="force">그래도 기록</button>`, true); }
       if (!r || !r.ok) throw Error((r && r.error) || '기록하지 못했습니다');
       last = r; reqId = '';
