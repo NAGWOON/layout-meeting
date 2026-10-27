@@ -40,7 +40,14 @@
   const noteBtn = btn('[onclick="openNote()"]'); if (noteBtn) noteBtn.hidden = true;   // 특기사항은 위 칸에서 바로
   acts.append(btn('[onclick="copyText()"]'), btn('[onclick="saveImage()"]'), el('submitBtn'));
   const asideTitle = aside.querySelector(':scope > h2'); if (asideTitle) asideTitle.remove();
-  aside.prepend(count);
+  // 오른쪽 맨 위 한 줄: 「n품목 · n장」 + 장 탭(수량·나누기) — 따로 떠 있던 것을 한 줄로 (10/27 대표 「어수선」)
+  const ahead = document.createElement('div'); ahead.className = 'v6-ahead';
+  aside.prepend(ahead); ahead.append(count, el('sheetTabs'));
+  // 아래 참고 카드는 셋만: 현장 정보 · 지난 발주 · 지난 현장 참고 (+ 반입 점검이 뜰 때)
+  //  · 「담은 것」은 오른쪽 발주서와 같은 내용 · 「알아두기」는 팁 · 공통 특기사항은 오른쪽 「이 장에만」 칸과 겹쳐 헷갈림 → 숨김
+  //    (공통 특기사항 값은 그대로 살아 있어, 장 칸이 비면 발주서에 들어갑니다)
+  [el('sumBox'), el('noteIn')].forEach(x => { const c = x && x.closest('.card'); if (c) c.classList.add('v6-gone'); });
+  const tip = document.querySelector('#unifiedReferences .tipcard'); if (tip) tip.classList.add('v6-gone');
   aside.insertBefore(cond, el('unifiedPreview'));
   el('unifiedPreview').after(sub, acts);
   aside.append(el('resultNote'));
@@ -96,10 +103,23 @@
 
   // ── 그릴 때마다: 칩 · 이 장 특기사항 · 구조화 화면이면 숨김 ──
   function paint() {
+    document.body.classList.toggle('v6-nocalc', !['목자재', '설비·방수'].includes(S.type));   // 「계산기 열기」 알약은 산출기가 있는 탭에서만
     const net = isNet(S.cur);
     netPick.hidden = S.type !== '조명·스위치' && !net;
     netNote.hidden = !net; cartBtn.hidden = !net;
     root.classList.toggle('v6-netsheet', net);
+    // 인터넷 주문 장의 종이는 「발주서」가 아니라 「주문 기록」 — 나중에 이 그림을 업체에 또 보내 이중 발주가 나지 않게 (10/27 대표)
+    if (net) {
+      el('sheet').querySelectorAll('.nhead .ttl h2').forEach(h => { h.textContent = '주문 기록'; });
+      el('sheet').querySelectorAll('.nto').forEach(n => {
+        const w = n.querySelector('.who'), s = n.querySelector('.sub');
+        if (w) w.textContent = venOf(S.cur).replace(' (인터넷)', '') + ' · 인터넷 주문';
+        if (s) s.textContent = '사이트에서 카드로 결제한 주문입니다.';
+        if (!n.querySelector('.v6-stamp')) n.insertAdjacentHTML('beforeend', '<div class="v6-stamp">검수용 기록 · 업체에 보내는 발주서가 아닙니다</div>');
+      });
+      // 택배로 오는 주문이라 엘리베이터·재단 안내는 필요 없음 — 이 장에 적은 말만 (없으면 검수 안내)
+      el('sheet').querySelectorAll('.sfoot p').forEach(p => { p.textContent = noteOf(S.cur).trim() || '택배로 받으면 현장에서 품목·수량을 하나씩 확인해 주세요.'; });
+    }
     if (net && !S.shipBy[S.cur]) { S.shipBy[S.cur] = '택배 배송'; if (typeof renderShip === 'function') renderShip(); setTimeout(draw, 0); }   // 한 번만 (다음엔 이미 정해져 있음)
     const structured = ['도기', '도어'].includes(S.type);
     cond.hidden = structured; sub.hidden = structured; acts.hidden = structured; count.hidden = structured; grip.hidden = false;
