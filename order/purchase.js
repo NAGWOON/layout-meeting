@@ -114,7 +114,7 @@
       say((r.kind === '모름' ? '주문 완료인지 확실하지 않습니다 — 아래에서 골라주세요 · ' : '') + F.items.length + '줄 읽었습니다' + (r.items.some(x => x.unsure) ? ' · 흐린 줄(노란색)은 꼭 확인' : ''), r.kind === '모름', 'readmsg');
       paint();
     } catch (e) { say(/unknown|readPurchaseImage/i.test(e.message) ? '서버(Order.gs·Code.gs)를 새로 올린 뒤에 됩니다' : e.message, true, 'readmsg'); }
-    finally { busy = false; }
+    finally { busy = false; paint(); }   // 읽는 동안 잠근 버튼을 다시 풂 — 안 그리면 칸을 건드리기 전까지 「구매 기록」이 잠긴 채로 남음 (10/27 대표)
   }
 
   // ── 초안에 같은 물건이 있는지 ──
