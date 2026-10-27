@@ -131,7 +131,7 @@ var WiringOrder = (function () {
         <div class="mo-line1"><select data-act="brand">${Object.keys(K.BRANDS).map(b => opt(b, p.brand, K.BRANDS[b])).join('')}</select>
         <select data-act="color" class="${p.color ? '' : 'need'}"><option value="">색 고르기</option>${cols.map(c => opt(c.name, p.color)).join('')}${p.color && !cols.some(c => c.name === p.color) ? opt(p.color, p.color, p.color + ' (목록에 없음)') : ''}</select>
         ${p.brand === 'other' ? `<input data-act="name" value="${esc(p.name)}" placeholder="제품 이름">` : ''}</div>
-        ${p.lines.map((l, li) => `<div class="mo-line">${l.gangs.map((g, gi) => gangEditor(r, li, gi, g, p.brand)).join(p.brand === 'jung' ? '<i>+</i>' : '')}
+        ${p.lines.map((l, li) => `<div class="mo-line">${p.brand === 'jung' ? `<select data-act="frame" data-at="${r.id}|${li}" class="mo-frame" title="프레임 크기 — 키우면 빈 자리(막음)가 생기고, 그 자리를 바꿔 쓰면 됩니다">${[1, 2, 3, 4, 5].map(n => opt(String(n), String(l.gangs.length), '프레임 ' + n + '구')).join('')}</select>` : ''}${l.gangs.map((g, gi) => gangEditor(r, li, gi, g, p.brand)).join(p.brand === 'jung' ? '<i>+</i>' : '')}
           ${p.brand === 'jung' && l.gangs.length < 5 ? `<button class="mo-add" data-act="gadd" data-at="${r.id}|${li}">＋ 구</button>` : ''}
           <span class="mo-qty"><input type="number" min="1" max="99" value="${l.qty}" data-act="qty" data-at="${r.id}|${li}">개</span>
           ${p.lines.length > 1 ? `<button class="mo-x" data-act="ldel" data-at="${r.id}|${li}" title="이 줄 빼기">×</button>` : ''}</div>`).join('')}
@@ -173,6 +173,12 @@ var WiringOrder = (function () {
     else if (t.dataset.act === 'color' && p) p.color = t.value;
     else if (t.dataset.act === 'name' && p) p.name = t.value.trim();
     else if (t.dataset.act === 'vnote' && p) p.vnote = t.value.trim();   // 업체에 나가는 메모 — 사무실 안 메모(note)와 따로
+    else if (t.dataset.act === 'frame') {   // 융 프레임 크기를 사람이 정함 (10/27 대표) — 늘리면 「막음」 자리, 줄이면 뒤에서부터 뺌
+      const a = at(t.dataset.at), l = a.p.lines[a.li], want = Math.max(1, Math.min(5, +t.value));
+      while (l.gangs.length < want) l.gangs.push({k: '막음', n: 1});
+      if (l.gangs.length > want) l.gangs.splice(want);
+      l.gangs = K.normalize(a.p.brand, l.gangs);
+    }
     else if (t.dataset.act === 'qty') { const a = at(t.dataset.at); a.p.lines[a.li].qty = Math.max(1, Math.min(99, Math.round(Number(t.value) || 1))); }
     else if (t.dataset.g) {
       const a = at(t.dataset.at), g = a.p.lines[a.li].gangs[a.gi];
