@@ -32,14 +32,14 @@
     mode = m; modes.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
     root.classList.toggle('v6-buymode', m !== 'order');
     panel.hidden = m !== 'buy'; recv.hidden = m !== 'recv';
-    if (m === 'buy') { if (!F.items.some(x => x.name) && TYPES.includes(S.type)) F.type = S.type; paint(); }   // 지금 보던 종류로 시작
+    if (m === 'buy') paint();   // 발주 유형은 보던 탭을 따르지 않음 — 읽은 품목으로 짐작하거나 직접 고름 (10/27 목자재 탭에서 산 콘센트가 목자재로 잡힘)
   }
   modes.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) setMode(b.dataset.m); });
   recv.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; if (b.dataset.go === 'stmt' && window.StatementApp) StatementApp.open(); if (b.dataset.go === 'settle' && typeof goSettle === 'function') goSettle(); });
 
   // ── 상태 ──
   let img = null, masks = [], drag = null, busy = false, reqId = '', last = null;
-  const blank = () => ({kind: '주문완료', vendor: '', seller: '', extOrderNo: '', orderDate: new Date().toISOString().slice(0, 10), payMethod: '', total: '', type: S.type && TYPES.includes(S.type) ? S.type : '조명·스위치', note: '', items: [{name: '', option: '', qty: 1, unit: '개'}]});
+  const blank = () => ({kind: '주문완료', vendor: '', seller: '', extOrderNo: '', orderDate: new Date().toISOString().slice(0, 10), payMethod: '', total: '', type: '', note: '', items: [{name: '', option: '', qty: 1, unit: '개'}]});
   let F = blank();
 
   panel.innerHTML = `<div class="v6b-grid">
@@ -59,7 +59,7 @@
         <label>주문번호<input data-f="extOrderNo" placeholder="같은 주문 두 번 기록 막음"></label>
         <label>결제<input data-f="payMethod" placeholder="신용카드 · 네이버페이 · 계좌이체"></label>
         <label>결제 금액 (원)<input type="number" data-f="total" placeholder="참고값"></label>
-        <label>발주 유형<select data-f="type">${TYPES.map(t => `<option>${esc(t)}</option>`).join('')}</select></label>
+        <label>발주 유형<select data-f="type"><option value="">— 골라주세요 —</option>${TYPES.map(t => `<option>${esc(t)}</option>`).join('')}</select></label>
         <label class="v6b-w">메모 (노션 비고 · 검수 안내)<input data-f="note" placeholder="예: 거실 매립장 가구 조명용"></label>
       </div>
       <table class="v6b-items"><thead><tr><th>품명</th><th>옵션 · 규격</th><th class="r">수량</th><th>단위</th><th></th></tr></thead><tbody data-items></tbody></table>
@@ -77,6 +77,7 @@
   function loadFile(file) {
     if (!file || !/^image\//.test(file.type)) return say('그림 파일이 아닙니다', true, 'readmsg');
     const r = new FileReader();
+    say('');   // 앞 건의 「기록했습니다」가 남아 있으면 지금 건도 기록된 줄 압니다 (10/27 대표)
     r.onload = () => { const im = new Image(); im.onload = () => { img = im; masks = []; draw2(); $('.v6b-canvas').hidden = false; say('가릴 칸을 칠한 뒤 「가린 뒤 읽기」를 누르세요', false, 'readmsg'); }; im.src = r.result; };
     r.readAsDataURL(file);
   }
@@ -111,10 +112,18 @@
       F.payMethod = r.payMethod || ''; F.total = r.total || '';
       F.items = r.items.map(x => ({name: x.name, option: x.option || '', qty: x.qty, unit: x.unit || '개', unsure: x.unsure}));
       if (!F.items.length) F.items = [{name: '', option: '', qty: 1, unit: '개'}];
+      if (!F.type) F.type = guessType(F.items);
       say((r.kind === '모름' ? '주문 완료인지 확실하지 않습니다 — 아래에서 골라주세요 · ' : '') + F.items.length + '줄 읽었습니다' + (r.items.some(x => x.unsure) ? ' · 흐린 줄(노란색)은 꼭 확인' : ''), r.kind === '모름', 'readmsg');
       paint();
     } catch (e) { say(/unknown|readPurchaseImage/i.test(e.message) ? '서버(Order.gs·Code.gs)를 새로 올린 뒤에 됩니다' : e.message, true, 'readmsg'); }
     finally { busy = false; paint(); }   // 읽는 동안 잠근 버튼을 다시 풂 — 안 그리면 칸을 건드리기 전까지 「구매 기록」이 잠긴 채로 남음 (10/27 대표)
+  }
+
+  // 품목 이름으로 발주 유형 짐작 — 확실한 것만. 모르면 비워 두고 고르게 함
+  function guessType(items) {
+    const t = items.map(x => (x.name || '') + ' ' + (x.option || '')).join(' ');
+    if (/스위치|콘센트|조명|LED|다운라이트|SMPS|램프|센서|감지기|전구|멀티탭|플러그|매입등|레일등/i.test(t)) return '조명·스위치';
+    return '';
   }
 
   // ── 초안에 같은 물건이 있는지 ──
@@ -155,19 +164,19 @@
       + `<td class="r"><input type="number" min="0" data-i="${i}" data-k="qty" value="${esc(x.qty)}" class="q"></td><td><input data-i="${i}" data-k="unit" value="${esc(x.unit)}" class="u"></td>`
       + `<td>${(x.sources || []).length ? '<span class="v6b-link" title="실측에서 온 줄 — 기록하면 실측 표에 발주 완료">🔗 실측</span>' : ''}<button class="v6b-x" data-act="delrow" data-i="${i}" title="이 줄 빼기">×</button></td></tr>`).join('');
     const n = F.items.filter(x => x.name && Number(x.qty) > 0).length;
-    $('[data-sum]').textContent = n + '품목' + (Number(F.total) ? ' · ' + won(F.total) + '원' : '') + ' · ' + (F.kind === '장바구니' ? '장바구니(초안)' : '주문 완료 → 검수 대기');
+    $('[data-sum]').textContent = (n && !F.type ? '⚠️ 발주 유형을 골라주세요 · ' : '') + n + '품목' + (Number(F.total) ? ' · ' + won(F.total) + '원' : '') + ' · ' + (F.kind === '장바구니' ? '장바구니(초안)' : '주문 완료 → 검수 대기');
     const dd = dupDraft(), dor = dupOrders();
     $('[data-dup]').innerHTML = (dd.length ? `<div class="v6b-alert dup">⚠️ <b>「발주서 만들기」 초안에 같은 물건이 있습니다</b> — 그대로 두면 업체 발주서에도 나갑니다.${dd.map(m => `<div class="v6b-dl"><span>${esc(F.items[m.i].name)} ↔ <b>${esc(m.d.name)}</b>${m.d.spec ? ' · ' + esc(m.d.spec) : ''} × ${esc(m.d.qty)}</span><button data-act="take" data-i="${m.i}" data-d="${esc(m.d.name)}|${esc(m.d.spec || '')}">초안에서 빼고 이 기록으로</button></div>`).join('')}</div>` : '')
       + (dor.length ? `<div class="v6b-alert dup">⚠️ <b>같은 날 같은 구매처 기록이 이미 있습니다</b> — ${dor.map(o => esc(o.no + ' ' + o.name)).join(', ')}. 다른 주문이면 그대로 기록하세요.</div>` : '');
     const os = ((S.detail && S.detail.orders) || []).slice(0, 10);
     $('[data-list]').innerHTML = os.length ? os.map(o => `<div class="v6b-o"><b>${esc(o.name || o.no)}</b><span class="v6b-st s-${esc(o.state || '')}">${esc(o.state || '')}</span><small>${esc(o.no || '')} · ${esc(o.count || 0)}품목 · ${esc(o.date || '')}</small></div>`).join('') : '<p class="v6b-empty">현장을 고르면 나옵니다</p>';
-    $('[data-act="record"]').disabled = busy || !S.site || !n;
+    $('[data-act="record"]').disabled = busy || !S.site || !n || !F.type;
   }
   function say(t, bad, which) { const m = $(which === 'readmsg' ? '[data-readmsg]' : '[data-msg]'); if (!m) return; m.innerHTML = t || ''; m.classList.toggle('bad', !!bad); }
 
   panel.addEventListener('input', e => {
     const t = e.target;
-    if (t.dataset.f) { F[t.dataset.f] = t.value; if (t.dataset.f === 'vendor' || t.dataset.f === 'orderDate') paintSoon(); return; }
+    if (t.dataset.f) { F[t.dataset.f] = t.value; if (t.dataset.f === 'vendor' || t.dataset.f === 'orderDate' || t.dataset.f === 'type') paintSoon(); return; }
     if (t.dataset.k) { const it = F.items[+t.dataset.i]; it[t.dataset.k] = t.dataset.k === 'qty' ? Number(t.value) : t.value; delete it.unsure; paintSoon(); }
   });
   let pt2 = 0; const paintSoon = () => { clearTimeout(pt2); pt2 = setTimeout(() => { const a = document.activeElement, sel = a && a.dataset ? [a.dataset.i, a.dataset.k, a.dataset.f, a.selectionStart] : null; paint(); if (sel) { const q = sel[2] ? `[data-f="${sel[2]}"]` : `[data-i="${sel[0]}"][data-k="${sel[1]}"]`; const n = panel.querySelector(q); if (n) { n.focus(); try { n.setSelectionRange(sel[3], sel[3]); } catch (x) { } } } }, 350); };
@@ -190,6 +199,7 @@
     const items = F.items.filter(x => x.name && Number(x.qty) > 0).map(x => ({name: x.name, option: x.option, qty: Number(x.qty), unit: x.unit || '개', sources: x.sources || []}));
     if (!items.length) return say('품목을 하나 이상 적어주세요', true);
     if (!F.vendor.trim()) return say('구매처를 적어주세요 (예: 네이버)', true);
+    if (!F.type) return say('발주 유형을 골라주세요 — 검수할 공정이 여기서 정해집니다', true);
     if (!reqId) reqId = 'buy-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     busy = true; paint(); say('노션에 기록하는 중…');
     try {
