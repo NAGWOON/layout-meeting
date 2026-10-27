@@ -117,7 +117,7 @@
 .sheet .stbl.ms-jung tbody tr.ms-pair{height:auto}
 .sheet .stbl.ms-jung td.ms-card,.sheet .stbl.ms-jung td.ms-tot{vertical-align:top;padding:10px 8px 10px 0;border-bottom:1px solid #ececef}
 .sheet .stbl.ms-jung td.ms-card+td{padding-left:12px;border-left:1px solid #ececef}
-.sheet .stbl.ms-jung .ms-ph{height:78px;display:flex;align-items:center;justify-content:flex-start;background:#f6f6f3;border-radius:6px;padding:0 8px;margin-bottom:6px}
+.sheet .stbl.ms-jung .ms-ph{height:78px;display:flex;align-items:center;justify-content:flex-start;background:rgba(0,0,0,.035);border-radius:6px;padding:0 8px;margin-bottom:6px}
 .sheet .stbl.ms-jung .ms-ct{display:flex;justify-content:space-between;font-size:11.5px;color:#1b1b1f}
 .sheet .stbl.ms-jung .ms-ct span{font-weight:800;font-variant-numeric:tabular-nums}
 .sheet .stbl.ms-jung ol{margin:4px 0 0;padding-left:16px;font-size:10.5px;line-height:1.5;color:#3a3a40}

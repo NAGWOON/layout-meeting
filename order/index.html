@@ -648,13 +648,16 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .sheet.a4-sheet .stbl tr.cat td{padding:9px 6px 3px;border-bottom:1px solid #1b1b1f}.sheet.a4-sheet .stbl tr.cat span{display:block;background:none;border-radius:0;margin:0;padding:0;font-size:10px;font-weight:800;letter-spacing:.08em;color:#1b1b1f}
 .sheet.a4-sheet .ntot{margin:8px 0 0;padding:0;border:0;font-size:10.5px;color:#1b1b1f}.sheet.a4-sheet .ntot b{font-weight:800}
 .sheet.a4-sheet .stbl .m2{text-align:right;font-size:10px;color:#9a9aa2;white-space:nowrap}.sheet.a4-sheet .stbl th.r.m2{color:#9a9aa2;font-weight:600;font-size:9.5px}.sheet.a4-sheet .sfoot .a4-rule{display:block;margin-top:3px;color:#8a8a92}
+/* 발주서 종이 — 무채색 한지 결 (대표 10/27 「무채색 옅게」) · 화면·이미지·인쇄·새 창 같은 모양. 회색 칸은 반투명으로 → 결이 비침 */
+.sheet.a4-sheet{background:#f5f5f5 url(paper-hanji.png?v=1) repeat;background-size:384px 384px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .sfoot{background:rgba(0,0,0,.04)}.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .ngrid dd{border-bottom-color:rgba(0,0,0,.06)}.sheet.a4-sheet .stbl td{border-bottom-color:rgba(0,0,0,.08)}
 .sheet.a4-sheet .a4-reference{font-size:9px;color:#8a8a92;margin:6px 0 0}.sheet.a4-sheet .nfoot{margin:0;padding:8px 0 0;border-top:1px solid #d9d9dd;font-size:9px;color:#9a9aa2;letter-spacing:.08em;font-weight:400}
 .a4-cont-head,.a4-cont-meta{display:none}.a4-continuation .nhead,.a4-continuation .nto,.a4-continuation .ngrid,.a4-continuation .sfoot{display:none!important}
 .a4-continuation .a4-cont-head{display:flex;justify-content:space-between;gap:15px;padding-bottom:8px;border-bottom:1.5px solid #1b1b1f;font-size:11px}.a4-continuation .a4-cont-head b{font-weight:800}
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=3"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=4"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1067,7 +1070,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-27-measure6';
+var APP_VER = '2026-10-27-paper1';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -8316,5 +8319,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=9"></script><script src="wiring-order.js?v=5"></script><script src="measure-sheet.js?v=1"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=10"></script><script src="wiring-order.js?v=5"></script><script src="measure-sheet.js?v=1"></script></body>
 </html>

@@ -240,7 +240,7 @@ var LightingOrder = (function () {
           measure: {k: 'smps', name: g.name, place: g.place, v, cap: g.cap, load: Math.round(s.load), count: s.rs.length}};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
       S.noteBy[sheet] = ['간접조명 길이는 위치별 실제 설치 길이입니다 · 조각 나누기는 맡기겠습니다',
-        over.length ? '엘리베이터(' + ev.text + ')에 통째로 안 들어가는 곳: ' + over.map(r => r.room + ' ' + r.location).join(', ') + ' — 나눠서 보내주세요 (반반 또는 2400 + 재단 모두 괜찮습니다)' : '',
+        over.length ? '엘리베이터에 통째로 안 들어가는 곳: ' + over.map(r => r.room + ' ' + r.location).join(', ') + ' — 나눠서 보내주세요 (반반 또는 2400 + 재단 모두 괜찮습니다)' : '',
         'SMPS 놓을 곳은 품목에 적었습니다'].filter(Boolean).join('\n');
       S.cur = sheet; setType('조명·스위치'); renderItems(); draw(); bar(); side();
       busy = false; if (dirty) save().catch(() => {}); dialog.close();
