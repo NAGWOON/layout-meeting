@@ -1,0 +1,122 @@
+/* 발주앱 · 화면 틀 v6 (order-shell.js) — 시안 「다」 · 새 실측 화면(measure-office.css)과 같은 토큰 */
+#unifiedOrder.v6{--ink:#1d1d1b;--sub:#5d5d58;--mute:#8c8b85;--line:#e6e5e1;--hair:#efeeea;--bg:#f3f2ef;--stage:#ebeae6;--acc:#2f5fd0;--acc-s:#eef2fc;--acc-b:#cdd8f3;--warn:#8a5a12;--warn-s:#fbf1de;--bad:#b0442c;--bad-s:#fcefeb;--ok:#2f6b4c;--ok-s:#eaf3ed;
+  background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;font-feature-settings:"tnum"}
+body.unified-mode:has(#unifiedOrder.v6:not([hidden])){background:#f3f2ef}
+#unifiedOrder.v6 .to-shell{flex:1;min-width:0;display:flex;flex-direction:column}
+#unifiedOrder.v6 .to-rail{background:#fff;color:var(--ink);border-right:1px solid var(--line);gap:18px}
+#unifiedOrder.v6 .to-rail b{width:36px;height:36px;border-radius:10px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
+#unifiedOrder.v6 .to-rail button,#unifiedOrder.v6 .to-rail a{color:var(--sub)!important;background:transparent!important;border:0!important;font-size:11.5px!important;border-radius:9px!important;padding:7px 8px!important}
+#unifiedOrder.v6 .to-rail button:first-of-type{background:var(--stage)!important;color:var(--ink)!important;font-weight:600}
+#unifiedOrder.v6 .to-rail small{color:var(--mute);font-size:10px}
+
+/* 버튼 공통 */
+#unifiedOrder.v6 button,#unifiedOrder.v6 .btn2{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--sub);padding:7px 11px;font-size:12.5px}
+#unifiedOrder.v6 input,#unifiedOrder.v6 select,#unifiedOrder.v6 textarea{border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:12.5px}
+
+/* 위: 현장 한 줄 */
+#unifiedOrder.v6 .to-context{margin:14px 22px 0;padding:10px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;align-items:center;gap:14px;flex-wrap:nowrap}
+#unifiedOrder.v6 .to-context>label{flex:0 1 360px;min-width:220px;width:auto;font-size:11px;color:var(--mute)}
+#unifiedOrder.v6 .to-context>label>select{border:0;padding:2px 0 0;margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em;background:transparent;cursor:pointer}
+#unifiedOrder.v6 .v6-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
+#unifiedOrder.v6 .v6-chips span{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--stage);color:var(--sub);white-space:nowrap}
+#unifiedOrder.v6 .v6-chips span:first-child{background:var(--ok-s);color:var(--ok)}
+
+/* 종류 탭 — 밑줄 */
+#unifiedOrder.v6 #unifiedTabs{background:transparent;border:0;border-bottom:1px solid var(--line);margin:10px 22px 0;padding:0}
+#unifiedOrder.v6 #unifiedTabs .tabs{gap:2px}
+#unifiedOrder.v6 #unifiedTabs .tab{background:transparent!important;color:var(--sub);border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 16px;margin-bottom:-1px;font-size:13.5px}
+#unifiedOrder.v6 #unifiedTabs .tab.on{color:var(--ink)!important;font-weight:600;border-bottom-color:var(--ink)}
+
+/* 작업대: 주문표 | 손잡이 | 발주서 */
+#unifiedOrder.v6 .to-workbench{grid-template-columns:minmax(0,1fr) 10px var(--v6-right,480px);gap:8px;padding:14px 22px 18px;max-width:none;margin:0;width:100%;box-sizing:border-box}
+@media(min-width:1700px){#unifiedOrder.v6 .to-workbench{grid-template-columns:minmax(0,1fr) 10px var(--v6-right,560px)}}
+#unifiedOrder.v6 .to-workbench main{background:transparent;border:0;padding:0;max-height:calc(100vh - 150px)}
+#unifiedOrder.v6 .v6-grip{cursor:col-resize;display:flex;align-items:center;justify-content:center;user-select:none}
+#unifiedOrder.v6 .v6-grip i{width:4px;height:44px;border-radius:4px;background:var(--line)}
+#unifiedOrder.v6 .v6-grip:hover i{background:var(--acc)}
+#unifiedOrder.v6 .to-workbench aside{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 150px)}
+#unifiedOrder.v6 .v6-gone{display:none!important}
+
+/* 왼쪽: 주문표 카드 */
+#unifiedOrder.v6 #unifiedTitle{font-size:16px!important;font-weight:600;margin:0!important;padding:13px 16px;background:#fff;border:1px solid var(--line);border-bottom:1px solid var(--hair);border-radius:12px 12px 0 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#unifiedOrder.v6 #unifiedTitle button,#unifiedOrder.v6 .mo-open{margin:0 0 0 4px!important;border:1px solid var(--acc-b)!important;background:var(--acc-s)!important;color:var(--acc)!important;border-radius:8px!important;padding:6px 11px!important;font-size:12.5px!important;font-weight:600!important;vertical-align:0!important}
+#unifiedOrder.v6 #unifiedItems>.card{margin:0;background:#fff;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;padding:0 0 4px}
+#unifiedOrder.v6.v6-structured #unifiedTitle{border-radius:12px;border-bottom:1px solid var(--line)}
+#unifiedOrder.v6 #unifiedItems .ch{display:none}
+#unifiedOrder.v6 #unifiedItems .srch{padding:10px 16px 0}
+#unifiedOrder.v6 #unifiedItems .srch input{width:100%;box-sizing:border-box;padding:8px 11px;border:1px dashed var(--line);background:#fcfcfa}
+#unifiedOrder.v6 #unifiedItems .tools{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line);margin:0}
+#unifiedOrder.v6 #unifiedItems .tools .btn2{border:1px solid var(--acc-b);background:var(--acc-s);color:var(--acc);font-weight:600;padding:6px 11px;border-radius:8px;font-size:12.5px;box-shadow:none}
+#unifiedOrder.v6 #unifiedItems .tools .btn2 select{border:0;background:transparent;color:var(--acc);font-weight:600;font-size:12.5px}
+#unifiedOrder.v6 #unifiedItems .tools #onlyBtn,#unifiedOrder.v6 #unifiedItems .tools [onclick="clearQty()"]{border-color:var(--line);background:#fff;color:var(--sub);font-weight:400}
+#unifiedOrder.v6 #unifiedItems .tools #onlyBtn.on{border-color:var(--ink);color:var(--ink);font-weight:600}
+#unifiedOrder.v6 #unifiedItems .items{padding:0}
+#unifiedOrder.v6 #unifiedItems .gh{background:#f7f7f5;color:var(--sub);font-size:12px;font-weight:600;padding:7px 16px;border-bottom:1px solid var(--hair);margin:0}
+#unifiedOrder.v6 #unifiedItems .it{display:grid;grid-template-columns:minmax(0,1fr) 130px 66px 30px;align-items:center;gap:10px;padding:6px 16px;border-bottom:1px solid var(--hair);min-height:38px;box-sizing:border-box}
+#unifiedOrder.v6 #unifiedItems .it .nm{min-width:0}
+#unifiedOrder.v6 #unifiedItems .it .nm b{font-weight:600;font-size:13px;color:var(--ink)}
+#unifiedOrder.v6 #unifiedItems .it .nm i{display:block;font-style:normal;font-size:11.5px;color:var(--sub);margin-top:1px}
+#unifiedOrder.v6 #unifiedItems .it.dim .nm b{font-weight:400;color:var(--sub)}
+#unifiedOrder.v6 #unifiedItems .it.dim .nm i{color:var(--mute)}
+#unifiedOrder.v6 #unifiedItems .it .cut,#unifiedOrder.v6 #unifiedItems .it .film{width:100%;box-sizing:border-box;padding:5px 8px;font-size:12px;grid-column:2}
+#unifiedOrder.v6 #unifiedItems .it .cut:not(:placeholder-shown){border-color:#ecd9b0;background:var(--warn-s);color:var(--warn);font-weight:600}
+#unifiedOrder.v6 #unifiedItems .it .q{grid-column:3;width:100%;box-sizing:border-box;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;font-weight:400;font-size:13px}
+#unifiedOrder.v6 #unifiedItems .it .q.has{background:#fffdf6;border-color:#e3d9bd;color:var(--ink);font-weight:700}
+#unifiedOrder.v6 #unifiedItems .it .u{grid-column:4;font-size:12px;color:var(--mute)}
+#unifiedOrder.v6 #unifiedItems .it .tb{font-style:normal;font-size:10.5px;margin-left:6px;padding:1px 6px;border-radius:5px;background:var(--stage);color:var(--sub)}
+
+/* 왼쪽 아래: 참고 카드 */
+#unifiedOrder.v6 #unifiedReferences{border:0;margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;align-items:start}
+#unifiedOrder.v6 #unifiedReferences>.card,#unifiedOrder.v6 #unifiedReferences>details{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px;max-height:300px;overflow:auto}
+#unifiedOrder.v6 #unifiedReferences .ch{font-size:12.5px;font-weight:600;color:var(--ink);margin:0 0 6px;padding:0}
+#unifiedOrder.v6 #dueWarn .warn{background:var(--bad-s);color:var(--bad);border:1px solid #efcfc6;border-radius:10px;padding:8px 12px;font-size:12px}
+
+/* 오른쪽 */
+#unifiedOrder.v6 #unifiedCount{font-size:11.5px;color:var(--mute);margin:0 2px}
+#unifiedOrder.v6 #sheetTabs{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+#unifiedOrder.v6 #sheetTabs .stab{border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px 12px;font-size:12.5px;color:var(--sub);box-shadow:none}
+#unifiedOrder.v6 #sheetTabs .stab.on{border:1.5px solid var(--ink);color:var(--ink);font-weight:600}
+#unifiedOrder.v6 #sheetTabs .stab.done{background:var(--ok-s);border-color:#cfe3d6;color:var(--ok)}
+#unifiedOrder.v6 #sheetTabs #venIn,#unifiedOrder.v6 #sheetTabs .stab[onclick="openNote()"]{display:none}
+#unifiedOrder.v6 #sheetTabs select.svin{border-radius:10px;padding:7px 8px;font-size:12px;background:#fff}
+#unifiedOrder.v6 .v6-cond{display:grid;grid-template-columns:1.3fr 1fr;gap:8px 10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+#unifiedOrder.v6 .v6-cond[hidden]{display:none}
+#unifiedOrder.v6 .v6-cond>label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--mute);width:auto;min-width:0}
+#unifiedOrder.v6 .v6-cond>label>select,#unifiedOrder.v6 .v6-cond>label>input{width:100%;box-sizing:border-box;padding:7px 9px;margin:0}
+#unifiedOrder.v6 .v6-cond #vendorFreeRow{grid-column:1/-1;width:auto;margin:0}
+#unifiedOrder.v6 .v6-cond #vendorFreeRow input{width:100%;box-sizing:border-box;padding:7px 9px}
+#unifiedOrder.v6 .v6-cond>label:has(#shipChips){grid-column:1/-1}
+#unifiedOrder.v6 .v6-cond #shipChips{display:flex;gap:8px;margin:0}
+#unifiedOrder.v6 .v6-cond #shipChips select{flex:1;width:auto;padding:7px 9px}
+#unifiedOrder.v6 .v6-cond .v6-w{grid-column:1/-1}
+#unifiedOrder.v6 .v6-cond textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:44px;padding:7px 9px;line-height:1.45;font-family:inherit}
+#unifiedOrder.v6 .v6-cond #dueWarn,#unifiedOrder.v6 .v6-cond #shipInfo{grid-column:1/-1;margin:0;font-size:11.5px}
+#unifiedOrder.v6 .v6-cond #dueWarn:empty,#unifiedOrder.v6 .v6-cond #shipInfo:empty{display:none}
+#unifiedOrder.v6 .v6-cond .okline{font-size:11.5px;color:var(--ok)}
+#unifiedOrder.v6 #unifiedPreview{background:var(--stage);border:0;border-radius:12px;flex:none}
+#unifiedOrder.v6 #unifiedPreview .sheet{box-shadow:0 1px 2px rgba(0,0,0,.08),0 14px 34px -14px rgba(0,0,0,.28)}
+#unifiedOrder.v6 .v6-sub{display:flex;gap:6px;flex-wrap:wrap}
+#unifiedOrder.v6 .v6-sub button{font-size:12px;padding:6px 10px}
+#unifiedOrder.v6 .v6-acts{display:grid;grid-template-columns:auto auto 1fr;gap:8px}
+#unifiedOrder.v6 .v6-acts button{padding:11px 14px;font-size:13px;border-radius:10px;color:var(--ink)}
+#unifiedOrder.v6 .v6-acts #submitBtn{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;white-space:normal}
+#unifiedOrder.v6 .v6-sub[hidden],#unifiedOrder.v6 .v6-acts[hidden],#unifiedOrder.v6 #unifiedCount[hidden]{display:none}
+#unifiedOrder.v6 #resultNote{font-size:11.5px;color:var(--mute)}
+
+@media(max-width:1100px){
+  #unifiedOrder.v6 .to-workbench{grid-template-columns:minmax(0,1fr)}
+  #unifiedOrder.v6 .v6-grip{display:none}
+  #unifiedOrder.v6 .to-workbench main,#unifiedOrder.v6 .to-workbench aside{max-height:none}
+  #unifiedOrder.v6 .to-context{flex-wrap:wrap;margin:10px 10px 0}
+  #unifiedOrder.v6 #unifiedTabs{margin:8px 10px 0}
+  #unifiedOrder.v6 .to-workbench{padding:10px}
+}
+@media(max-width:600px){
+  #unifiedOrder.v6 #unifiedItems .it{grid-template-columns:minmax(0,1fr) 62px 26px}
+  #unifiedOrder.v6 #unifiedItems .it .cut,#unifiedOrder.v6 #unifiedItems .it .film{grid-column:1/-1;grid-row:2}
+  #unifiedOrder.v6 #unifiedItems .it .q{grid-column:2}#unifiedOrder.v6 #unifiedItems .it .u{grid-column:3}
+  #unifiedOrder.v6 .v6-cond{grid-template-columns:1fr}
+  #unifiedOrder.v6 .v6-acts{grid-template-columns:1fr 1fr}#unifiedOrder.v6 .v6-acts #submitBtn{grid-column:1/-1}
+}
+#unifiedOrder.v6 #v5LiftWarnings{margin:10px 0 0;border-radius:12px;background:var(--bad-s);border:1px solid #efcfc6;color:var(--bad);font-size:12.5px;line-height:1.55;padding:10px 14px}
+#unifiedOrder.v6 .v6-acts{position:sticky;bottom:0;z-index:2;background:var(--bg);padding:8px 0 2px;box-shadow:0 -10px 12px -8px var(--bg)}
