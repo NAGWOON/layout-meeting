@@ -67,8 +67,40 @@
   });
   grip.addEventListener('dblclick', () => { root.style.removeProperty('--v6-right'); try { localStorage.removeItem(KEY); } catch (e) { } window.dispatchEvent(new Event('resize')); });
 
+  // ── 인터넷 주문 (대표 10/27: 다운라이트는 네오·칸트 사이트에서 주문 — 그래도 검수가 돼야 하니 같은 「발주 기록」으로 남김) ──
+  // 발주처 이름에 「인터넷」이 들어가면: 장바구니에 옮길 목록 복사 · 버튼 이름 「주문 기록」 · 배송은 택배로
+  const NET = ['네오라이팅 (인터넷)', '칸트라이팅 (인터넷)'];
+  const isNet = n => /인터넷|온라인/.test(venOf(n) || '');
+  const netPick = document.createElement('div'); netPick.className = 'v6-net';
+  netPick.innerHTML = '<span>인터넷 주문</span>' + NET.map(v => '<button type="button" data-net="' + esc(v) + '">' + esc(v.replace(' (인터넷)', '')) + '</button>').join('');
+  netPick.addEventListener('click', e => {
+    const b = e.target.closest('[data-net]'); if (!b) return;
+    el('vendorSel').value = '__free'; el('vendorFree').value = b.dataset.net;
+    el('vendorFreeRow').classList.remove('hide'); el('vendorFree').oninput();
+  });
+  cond.insertBefore(netPick, el('vendorFreeRow').nextSibling);
+  const netNote = document.createElement('p'); netNote.className = 'v6-netnote';
+  netNote.innerHTML = '🛒 <b>인터넷 주문 장</b> — 업체에 발주서를 보낼 필요는 없습니다. 「장바구니 목록 복사」로 사이트에서 주문하고, 주문한 뒤 「주문 기록」을 눌러 남겨 두세요. 현장 검수와 카드 결제 대조가 이 기록으로 됩니다.';
+  cond.append(netNote);
+  const cartBtn = document.createElement('button'); cartBtn.type = 'button'; cartBtn.className = 'v6-cart'; cartBtn.textContent = '🛒 장바구니 목록 복사';
+  acts.prepend(cartBtn);   // 인터넷 장에서는 늘 보이는 아래 줄에
+  cartBtn.addEventListener('click', () => {
+    const lines = 합치기(pickedOf(S.cur)); if (!lines.length) return toast('이 장에 담은 품목이 없습니다');
+    const d = S.detail || {};
+    const t = '[인터넷 주문] ' + venOf(S.cur).replace(' (인터넷)', '') + ' · ' + (d.name || '').replace(/\s*PROJECT\s*$/, '') + '\n'
+      + lines.map((x, i) => (i + 1) + '. ' + x.name + (x.spec ? ' · ' + x.spec : '') + ' × ' + x.qty + (x.unit || '')).join('\n')
+      + '\n\n받는 곳: ' + (d.address || '(현장 주소)') + (el('dueIn').value ? '\n도착 희망: ' + el('dueIn').value : '');
+    const done = () => toast('장바구니 목록을 복사했습니다 — 주문한 뒤 「주문 기록」을 눌러주세요');
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => toast('복사하지 못했습니다')); else toast('이 브라우저는 복사를 못 합니다');
+  });
+
   // ── 그릴 때마다: 칩 · 이 장 특기사항 · 구조화 화면이면 숨김 ──
   function paint() {
+    const net = isNet(S.cur);
+    netPick.hidden = S.type !== '조명·스위치' && !net;
+    netNote.hidden = !net; cartBtn.hidden = !net;
+    root.classList.toggle('v6-netsheet', net);
+    if (net && !S.shipBy[S.cur]) { S.shipBy[S.cur] = '택배 배송'; if (typeof renderShip === 'function') renderShip(); setTimeout(draw, 0); }   // 한 번만 (다음엔 이미 정해져 있음)
     const structured = ['도기', '도어'].includes(S.type);
     cond.hidden = structured; sub.hidden = structured; acts.hidden = structured; count.hidden = structured; grip.hidden = false;
     root.classList.toggle('v6-structured', structured);
