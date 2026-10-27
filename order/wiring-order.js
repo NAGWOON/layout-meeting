@@ -262,26 +262,38 @@ var WiringOrder = (function () {
     const by = preview(), vendors = Object.keys(by).filter(v => by[v].length);
     if (!vendors.length) return say('담을 판이 없습니다', true);
     if (serverVer !== 'wiring2' || guard !== 'recheck2') return say('서버(Wiring.gs·Order.gs)를 새로 올린 뒤에 담을 수 있습니다 — 발주 기록 직전 실측 재확인이 아직 없습니다', true);
-    if (S.extra.some(z => z.qty > 0 && (z.sources || []).some(s => s.kind === 'wiring' && s.site === siteId))) return say('이 현장의 콘센트·스위치가 이미 발주 초안에 있습니다 — 기존 초안을 확인해주세요', true);
+    // 이미 담은 이 현장 콘센트·스위치 초안은 막지 않고 같은 장에서 바꿉니다 — 고친 뒤 다시 담으면 되게 (10/27 대표 · GPT 「다시 담기 통일」)
+    //  · 업체(아펠라·융·기타)마다 그 장을 다시 씀 → 그 장에 고른 거래처·날짜·배송·직접 쓴 특기사항은 그대로
+    //  · 이미 발주 기록한 장이 있으면 막음 (그건 「지난 발주」에서 수정)
+    const mine = z => (z.sources || []).some(s => s.kind === 'wiring' && s.site === siteId);
+    const old = S.extra.filter(mine), oldSheet = {};
+    old.forEach(z => { const n = S.sheetNo[keyOf(z)]; if (n && !oldSheet[z.group]) oldSheet[z.group] = n; });
+    const doneSheet = Object.values(oldSheet).find(n => S.done[n]);
+    if (doneSheet) return say('이 현장 콘센트·스위치는 ' + doneSheet + '장으로 이미 발주 기록됐습니다 — 바꿀 것은 「지난 발주」에서 수정해주세요', true);
     busy = true; say('노션 원본과 한 번 더 맞춰 보는 중…');
     try {
       const live = await api('wiringGet', {sitePageId: siteId});
       if (!live || !live.ok) throw Error((live && live.error) || '원본을 다시 읽지 못했습니다');
       const changed = rows.filter(r => !ordered(r) && plans[r.id].use).filter(r => { const x = live.rows.find(z => z.id === r.id), p = plans[r.id]; return !x || x.fieldVersion !== p.base || x.fieldToken !== p.token || ordered(x); });
       if (changed.length) throw Error('그사이 현장에서 바뀐(또는 발주된) 판이 있습니다: ' + changed.map(r => r.room + ' ' + r.location).join(', ') + ' — 「노션 최신 다시 읽기」 후 담아주세요');
-      let sheet = Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0);
+      const before = {}; old.forEach(z => { if (z.qty > 0) before[z.name + '|' + z.spec] = z.qty; });
+      for (let k = S.extra.length - 1; k >= 0; k--) if (mine(S.extra[k])) { delete S.sheetNo[keyOf(S.extra[k])]; S.extra.splice(k, 1); }
+      let sheet = Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), ...Object.values(oldSheet), 0);
       const jt = jungTotals(), group = {apella: '콘센트·스위치 · 르그랑 아펠라', jung: '콘센트·스위치 · 융 LS990', other: '콘센트·스위치 · 기타'};
+      const after = {}, usedSheets = [];
       vendors.forEach(v => {
-        sheet++; S.typeBy[sheet] = '조명·스위치';
+        const at = oldSheet[group[v]] || ++sheet; usedSheets.push(at);
+        const sheetHere = at; S.typeBy[sheetHere] = '조명·스위치';
         by[v].forEach((x, i) => { const item = {id: 'wiring-' + v + '-' + siteId.slice(0, 8) + '-' + i + '-' + Date.now().toString(36), name: v === 'jung' ? '조합 · ' + x.name : x.name, spec: x.spec, cut: '', unit: x.unit, qty: x.qty, type: '조명·스위치', group: group[v], sources: x.sources,
           measure: Object.assign({}, x.measure, v === 'other' ? {where: [].concat(x.where || []).join(', ')} : {})};
-          S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
-        S.noteBy[sheet] = v === 'jung' ? '네오라이팅 조합 기준 · 프레임 ' + Object.entries(jt.frames).map(([k, n]) => k + ' ' + n).join(' · ') + ' · 「확인 필요」 표시는 통화로 확인 부탁드립니다'
-          : v === 'apella' ? '색은 품목마다 적었습니다 · 방우는 방우형으로 부탁드립니다' : '제품 이름·색은 현장 사진 기준 — 비슷한 제품이면 사진 보내드립니다';
+          S.extra.push(item); S.sheetNo[keyOf(item)] = sheetHere; after[item.name + '|' + item.spec] = item.qty; });
+        초안특기사항(sheetHere, v === 'jung' ? '네오라이팅 조합 기준 · 프레임 ' + Object.entries(jt.frames).map(([k, n]) => k + ' ' + n).join(' · ') + ' · 「확인 필요」 표시는 통화로 확인 부탁드립니다'
+          : v === 'apella' ? '색은 품목마다 적었습니다 · 방우는 방우형으로 부탁드립니다' : '제품 이름·색은 현장 사진 기준 — 비슷한 제품이면 사진 보내드립니다');
       });
-      S.cur = sheet - vendors.length + 1; setType('조명·스위치'); renderItems(); draw(); bar(); side();
+      S.cur = Math.min(...usedSheets); setType('조명·스위치'); renderItems(); draw(); bar(); side();
       busy = false; dialog.close();
-      toast(vendors.length + '개 업체 장으로 담았습니다 (' + vendors.map(v => VENDOR[v].split(' (')[0]).join(' · ') + ') — 장마다 거래처를 고르고 발주 기록을 눌러주세요');
+      const diff = 바뀐것(before, after);
+      toast(old.length ? '콘센트·스위치 초안을 바꿨습니다' + (diff ? ' — ' + diff : ' — 바뀐 것 없음') : vendors.length + '개 업체 장으로 담았습니다 (' + vendors.map(v => VENDOR[v].split(' (')[0]).join(' · ') + ') — 장마다 거래처를 고르고 발주 기록을 눌러주세요');
     } catch (e) { busy = false; say(e.message, true); }
   }
   return {open};

@@ -240,3 +240,55 @@ body.v6-nocalc #calcPill{display:none!important}
 .v6-bigbar b{font-size:15px}.v6-bigbar span{opacity:.7}.v6-bigbar button{margin-left:auto;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer}
 .v6-bigpaper{display:flex;flex-direction:column;gap:16px;align-items:center}
 .v6-bigpaper .sheet{box-shadow:0 10px 40px rgba(0,0,0,.4)}
+
+/* ── 맨 위 입구 셋 · 산 것 기록 (purchase.js · 10/27 시안 라) ── */
+#unifiedOrder.v6 .v6-modes{display:flex;gap:8px;margin:10px 22px 0}
+#unifiedOrder.v6 .v6-modes button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:9px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--sub);font-size:14px;font-weight:600;text-align:left}
+#unifiedOrder.v6 .v6-modes button small{font-size:11.5px;font-weight:400;color:var(--mute)}
+#unifiedOrder.v6 .v6-modes button.on{border:2px solid var(--ink);color:var(--ink);padding:8px 15px}
+#unifiedOrder.v6.v6-buymode #unifiedTabs,#unifiedOrder.v6.v6-buymode .to-workbench,#unifiedOrder.v6.v6-buymode #structuredContext{display:none!important}
+#v6Buy[hidden],#v6Recv[hidden]{display:none!important}
+#v6Buy{padding:14px 22px 18px;flex:1;min-height:0;overflow:auto}
+.v6b-grid{display:grid;grid-template-columns:400px minmax(0,1fr) 300px;gap:14px;align-items:start}
+.v6b-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.v6b-card h3{font-size:15px;font-weight:700;margin:0 0 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.v6b-card h3 small{font-size:12px;font-weight:400;color:var(--mute)}
+.v6b-drop{display:block;border:2px dashed var(--acc-b);background:var(--acc-s);border-radius:12px;padding:16px;text-align:center;color:var(--acc);font-weight:600;font-size:13.5px;cursor:pointer}
+.v6b-drop.over{background:#dfe7fb}
+.v6b-canvas{margin-top:10px}.v6b-canvas canvas{width:100%;border:1px solid var(--line);border-radius:8px;cursor:crosshair;display:block}
+.v6b-maskhelp{font-size:12.5px;color:var(--sub);background:#f7f7f5;border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.55}
+.v6b-row{display:flex;gap:6px;flex-wrap:wrap}
+#unifiedOrder #v6Buy button{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--sub);padding:7px 11px;font:inherit;font-size:13px;cursor:pointer}
+#unifiedOrder #v6Buy button:disabled{opacity:.45;cursor:default}
+#unifiedOrder #v6Buy .v6b-fn{border-color:var(--acc-b);background:var(--acc-s);color:var(--acc);font-weight:700}
+.v6b-kind{display:flex;gap:8px;margin-top:10px}.v6b-kind label{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
+.v6b-kind label:has(input:checked){border:2px solid var(--ok);background:var(--ok-s);padding:7px 9px}.v6b-kind small{display:block;font-size:11.5px;font-weight:400;color:var(--mute)}
+.v6b-f{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;margin-bottom:12px}
+.v6b-f label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--mute);min-width:0}
+.v6b-f input,.v6b-f select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;color:var(--ink);background:#fff;min-width:0}
+.v6b-f .v6b-w{grid-column:1/-1}
+.v6b-items{width:100%;border-collapse:collapse}
+.v6b-items th{font-size:11.5px;color:var(--mute);font-weight:500;text-align:left;padding:6px;border-bottom:1px solid var(--line);background:#fafaf8}.v6b-items th.r{text-align:right}
+.v6b-items td{padding:4px 6px;border-bottom:1px solid var(--hair)}
+.v6b-items input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;font-size:13.5px}
+.v6b-items input.q{width:64px;text-align:right;font-weight:700;background:#fffdf6;border-color:#e3d9bd}.v6b-items input.u{width:52px}
+.v6b-items tr.unsure td{background:#fffbea}
+.v6b-items td:last-child{white-space:nowrap;text-align:right}
+#unifiedOrder #v6Buy .v6b-x{border:0;background:none;color:var(--mute);font-size:16px;padding:2px 6px}
+.v6b-link{font-size:11.5px;font-weight:600;color:var(--acc);background:var(--acc-s);border-radius:6px;padding:2px 7px;margin-right:4px}
+#unifiedOrder #v6Buy .v6b-add{margin-top:8px;border-style:dashed}
+.v6b-alert{margin-top:12px;border-radius:12px;padding:10px 13px;font-size:13px;line-height:1.6}
+.v6b-alert.dup{background:var(--warn-s);border:1px solid #ecd9b0;color:#5c3d0a}.v6b-alert.dup b{color:var(--warn)}
+.v6b-dl{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:6px}
+.v6b-acts{display:flex;align-items:center;gap:12px;margin-top:14px}.v6b-acts span{flex:1;font-size:13px;color:var(--sub)}
+#unifiedOrder #v6Buy .v6b-pri{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700;padding:12px 18px;font-size:14px;border-radius:10px}
+.v6b-msg{font-size:13px;color:var(--ok);margin:8px 0 0;line-height:1.6;min-height:1em}.v6b-msg.bad{color:var(--bad)}.v6b-msg a{color:var(--acc)}
+.v6b-o{border-bottom:1px solid var(--hair);padding:8px 0;font-size:13px}.v6b-o:last-child{border:0}.v6b-o b{display:block;font-size:13px;font-weight:600}
+.v6b-o small{display:block;color:var(--mute);font-size:11.5px}
+.v6b-st{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-top:2px;background:var(--stage);color:var(--sub)}
+.v6b-st.s-발주완료{background:var(--acc-s);color:var(--acc)}.v6b-st.s-입고완료{background:var(--ok-s);color:var(--ok)}
+.v6b-empty{color:var(--mute);font-size:13px}
+.v6b-recv{display:grid;grid-template-columns:repeat(3,minmax(0,280px));gap:14px;padding:18px 22px}
+.v6b-big{display:flex!important;flex-direction:column;gap:4px;text-align:left;background:#fff;border:1px solid var(--line)!important;border-radius:14px!important;padding:18px!important;text-decoration:none;color:var(--ink)!important;cursor:pointer}
+.v6b-big b{font-size:16px}.v6b-big span{font-size:13px;color:var(--sub)}
+@media(max-width:1300px){.v6b-grid{grid-template-columns:380px minmax(0,1fr)}.v6b-grid>.v6b-card:last-child{grid-column:1/-1}}
+#unifiedOrder.v6 .v6-fit{margin:0;font-size:12px;color:var(--acc);background:var(--acc-s);border-radius:8px;padding:6px 10px}#unifiedOrder.v6 .v6-fit[hidden]{display:none}

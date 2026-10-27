@@ -288,6 +288,7 @@ var LightingOrder = (function () {
       const moved = used.filter(r => { const x = live2.document.rows.find(z => z.id === r.id); return !x || x.sourceToken !== P[r.id].token || ordered(x); });
       if (moved.length) throw Error('그사이 현장에서 바뀐(또는 발주된) 위치가 있습니다: ' + moved.map(r => r.room + ' ' + r.location).join(', ') + ' — 「노션 최신 다시 읽기」 후 담아주세요');
       const ev = elev(), over = used.filter(r => ev.long && lens(r).some(mm => mm > ev.long));
+      const before = {}; old.forEach(z => { if (z.qty > 0) before[z.name + '|' + z.spec] = z.qty; });
       for (let k = S.extra.length - 1; k >= 0; k--) if (mine(S.extra[k])) { delete S.sheetNo[keyOf(S.extra[k])]; S.extra.splice(k, 1); }
       const sheet = oldSheet || Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0) + 1; S.typeBy[sheet] = '조명·스위치';
       used.forEach(r => { const p = P[r.id], l = lens(r), w = W[p.product] || {};
@@ -304,12 +305,14 @@ var LightingOrder = (function () {
         const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: v + 'V ' + g.cap + 'W · 부하 ' + Math.round(s.load) + 'W · ' + [...new Set(s.rs.map(r => r.room))].join('·') + ' ' + s.rs.length + '곳', cut: '', unit: '개', qty: 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)',
           measure: {k: 'smps', name: g.name, place: g.place, v, cap: g.cap, load: Math.round(s.load), count: s.rs.length}};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
-      S.noteBy[sheet] = ['간접조명 길이는 위치별 실제 설치 길이입니다 · 조각 나누기는 맡기겠습니다',
+      초안특기사항(sheet, ['간접조명 길이는 위치별 실제 설치 길이입니다 · 조각 나누기는 맡기겠습니다',
         over.length ? '엘리베이터에 통째로 안 들어가는 곳: ' + over.map(r => r.room + ' ' + r.location).join(', ') + ' — 나눠서 보내주세요 (반반 또는 2400 + 재단 모두 괜찮습니다)' : '',
-        'SMPS 놓을 곳은 품목에 적었습니다'].filter(Boolean).join('\n');
+        'SMPS 놓을 곳은 품목에 적었습니다'].filter(Boolean).join('\n'));
       S.cur = sheet; setType('조명·스위치'); renderItems(); draw(); bar(); side();
       busy = false; if (dirty) save().catch(() => {}); dialog.close();
-      toast(used.length + '곳 + SMPS를 ' + (oldSheet ? sheet + '장에 다시 담았습니다 (이전 초안을 바꿈)' : '새 장에 담았습니다') + ' — 거래처를 고르고 발주 기록을 눌러주세요');
+      const after = {}; S.extra.filter(mine).forEach(z => { after[z.name + '|' + z.spec] = z.qty; });
+      const diff = 바뀐것(before, after);
+      toast(used.length + '곳 + SMPS를 ' + (oldSheet ? sheet + '장에 다시 담았습니다' + (diff ? ' — ' + diff : ' — 바뀐 것 없음') : '새 장에 담았습니다 — 거래처를 고르고 발주 기록을 눌러주세요'));
     } catch (e) { busy = false; say(e.message, true); }
   }
   return {open};

@@ -650,14 +650,19 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .sheet.a4-sheet .stbl .m2{text-align:right;font-size:10px;color:#9a9aa2;white-space:nowrap}.sheet.a4-sheet .stbl th.r.m2{color:#9a9aa2;font-weight:600;font-size:9.5px}.sheet.a4-sheet .sfoot .a4-rule{display:block;margin-top:3px;color:#8a8a92}
 /* 발주서 종이 — 무채색 한지 결 (대표 10/27 「무채색 옅게」) · 화면·이미지·인쇄·새 창 같은 모양. 회색 칸은 반투명으로 → 결이 비침 */
 .sheet.a4-sheet{background:#f5f5f5 url(paper-hanji.png?v=1) repeat;background-size:384px 384px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .sfoot{background:rgba(0,0,0,.04)}.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .ngrid dd{border-bottom-color:rgba(0,0,0,.06)}.sheet.a4-sheet .stbl td{border-bottom-color:rgba(0,0,0,.08)}
+.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .sfoot{background:rgba(0,0,0,.04)}
+/* 자동 맞춤(a4-fit) — 장이 늘 때만 붙음. 그림 높이·줄 간격·여백만 줄이고 글자 크기는 그대로 */
+.sheet.a4-sheet.a4-fit{padding:30px 40px 22px}.sheet.a4-sheet.a4-fit .nto{margin:8px 0 6px}.sheet.a4-sheet.a4-fit .ngrid dt,.sheet.a4-sheet.a4-fit .ngrid dd{padding:4px 8px}.sheet.a4-sheet.a4-fit .sfoot{margin:5px 0 0;padding:4px 10px}
+.sheet.a4-sheet.a4-fit .stbl{margin-top:6px}.sheet.a4-sheet.a4-fit .stbl tbody tr:not(.cat){height:23px}.sheet.a4-sheet.a4-fit .stbl td{padding:2px 6px}.sheet.a4-sheet.a4-fit .stbl tr.cat td{padding:6px 6px 2px}
+.sheet.a4-sheet.a4-fit .stbl.ms-jung .ms-ph{height:52px;margin-bottom:3px}.sheet.a4-sheet.a4-fit .stbl.ms-jung .ms-ph svg{max-height:46px;width:auto}.sheet.a4-sheet.a4-fit .stbl.ms-jung td.ms-card,.sheet.a4-sheet.a4-fit .stbl.ms-jung td.ms-tot{padding:5px 8px 5px 0}.sheet.a4-sheet.a4-fit .stbl.ms-jung ol{margin-top:2px;line-height:1.32}.sheet.a4-sheet.a4-fit .stbl.ms-jung .ms-frame{margin:3px 0 1px}
+.sheet.a4-sheet.a4-fit .stbl.ms .ms-pic svg{max-height:36px;width:auto}.sheet.a4-sheet.a4-fit .stbl.ms .ms-pic{padding:1px 4px}.sheet.a4-sheet .ngrid dt,.sheet.a4-sheet .ngrid dd{border-bottom-color:rgba(0,0,0,.06)}.sheet.a4-sheet .stbl td{border-bottom-color:rgba(0,0,0,.08)}
 .sheet.a4-sheet .a4-reference{font-size:9px;color:#8a8a92;margin:6px 0 0}.sheet.a4-sheet .nfoot{margin:0;padding:8px 0 0;border-top:1px solid #d9d9dd;font-size:9px;color:#9a9aa2;letter-spacing:.08em;font-weight:400}
 .a4-cont-head,.a4-cont-meta{display:none}.a4-continuation .nhead,.a4-continuation .nto,.a4-continuation .ngrid,.a4-continuation .sfoot{display:none!important}
 .a4-continuation .a4-cont-head{display:flex;justify-content:space-between;gap:15px;padding-bottom:8px;border-bottom:1.5px solid #1b1b1f;font-size:11px}.a4-continuation .a4-cont-head b{font-weight:800}
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=6"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=7"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1070,7 +1075,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-27-shell14';
+var APP_VER = '2026-10-28-buy1';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -2616,7 +2621,7 @@ var A4Preview = (() => {
     scheduled = false,
     last = '';
   const status = { phase: 'idle', pages: 0, width: 0, height: 0, error: '' };
-  function pages(markup) {
+  function pages0(markup) {
     const host = document.createElement('div');
     host.style.cssText =
       'position:absolute;left:-16000px;top:0;width:720px;zoom:1;visibility:hidden';
@@ -2697,6 +2702,23 @@ var A4Preview = (() => {
     } finally {
       host.remove();
     }
+  }
+  // 발주서 자동 맞춤 (10/27 대표 「애매하게 2장 잘리는 것 별로」) — 한 번 나눠 보고 장이 늘면, 그림·줄 간격·여백을 줄인 판(a4-fit)으로
+  // 다시 나눠 장 수가 줄 때만 그것을 씁니다. 글자는 줄이지 않습니다. 어떻게 맞췄는지는 status.fit 에 남겨 화면이 한 줄로 보여 줌
+  const 장수 = (h) => (String(h).match(/class="sheet a4-sheet/g) || []).length;
+  function pages(markup) {
+    let first = null, err = null;
+    try { first = pages0(markup); } catch (e) { err = e; }
+    const 원래 = 장수(markup);
+    status.fit = '';
+    if (first !== null && 장수(first) <= 원래) return first;
+    if (String(markup).indexOf('a4-fit') >= 0) { if (err) throw err; return first; }
+    try {
+      const tight = pages0(String(markup).replace(/class="sheet a4-sheet/g, 'class="sheet a4-sheet a4-fit'));
+      if (first === null || 장수(tight) < 장수(first)) { status.fit = '발주서를 촘촘하게 해서 ' + 장수(tight) + '장으로 맞췄습니다' + (first !== null ? ' (원래 ' + 장수(first) + '장)' : ''); return tight; }
+    } catch (e) { }
+    if (err) throw err;
+    return first;
   }
   function prepare(node) {
     if (!node) return;
@@ -8331,5 +8353,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=15"></script><script src="wiring-order.js?v=9"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=7"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=16"></script><script src="wiring-order.js?v=10"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=8"></script><script src="purchase.js?v=1"></script></body>
 </html>

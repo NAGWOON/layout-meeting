@@ -62,6 +62,10 @@
   // 반입 치수 경고는 주문표 아래로 (시안: 표 → 막히는 것 → 참고) — 제목과 표가 한 카드로 붙게
   const lift = el('v5LiftWarnings'); if (lift) el('unifiedItems').after(lift);
 
+  // 발주서 자동 맞춤 안내 (A4Preview.check().fit) — 촘촘하게 맞췄을 때만 한 줄
+  const fitLine = document.createElement('p'); fitLine.className = 'v6-fit'; fitLine.hidden = true;
+  el('unifiedPreview').before(fitLine);
+
   // ── 가운데 손잡이 ──
   const grip = document.createElement('div'); grip.className = 'v6-grip'; grip.title = '끌어서 발주서 폭 조절'; grip.innerHTML = '<i></i>';
   bench.insertBefore(grip, aside);
@@ -145,6 +149,7 @@
 
   // ── 그릴 때마다: 칩 · 이 장 특기사항 · 구조화 화면이면 숨김 ──
   function paint() {
+    try { const f = (window.A4Preview && A4Preview.check().fit) || ''; fitLine.textContent = f ? '📐 ' + f : ''; fitLine.hidden = !f; } catch (e) { }
     document.body.classList.toggle('v6-nocalc', !['목자재', '설비·방수'].includes(S.type));   // 「계산기 열기」 알약은 산출기가 있는 탭에서만
     const net = isNet(S.cur);
     netPick.hidden = S.type !== '조명·스위치' && !net;
@@ -188,3 +193,19 @@
   paint();
   window.dispatchEvent(new Event('resize'));
 })();
+
+// ── 실측 담기 공용 (간접조명·콘센트 창이 부름 · 10/27 「다시 담기 통일」) ──
+// 자동 특기사항은 그 장의 특기사항이 비어 있거나 지난번 자동 문구 그대로일 때만 넣습니다 — 대표가 고쳐 쓴 말은 덮지 않음
+window.초안특기사항 = function (sheet, text) {
+  S.autoNote = S.autoNote || {};
+  const now = (S.noteBy[sheet] || '').trim();
+  if (!now || now === (S.autoNote[sheet] || '').trim()) S.noteBy[sheet] = text;
+  S.autoNote[sheet] = text;
+};
+// 다시 담았을 때 무엇이 바뀌었나 — 「추가 2 · 빠짐 1 · 수량 바뀜 3」
+window.바뀐것 = function (before, after) {
+  let add = 0, del = 0, qty = 0;
+  Object.keys(after).forEach(k => { if (!(k in before)) add++; else if (Number(before[k]) !== Number(after[k])) qty++; });
+  Object.keys(before).forEach(k => { if (!(k in after)) del++; });
+  return [add ? '추가 ' + add : '', del ? '빠짐 ' + del : '', qty ? '수량 바뀜 ' + qty : ''].filter(Boolean).join(' · ');
+};
