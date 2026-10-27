@@ -657,7 +657,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=4"><link rel="stylesheet" href="order-shell.css?v=1"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=4"><link rel="stylesheet" href="order-shell.css?v=2"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1070,7 +1070,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-27-shell1';
+var APP_VER = '2026-10-27-shell2';
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -4483,7 +4483,7 @@ function text(s = state()) {
           `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) === null ? '실측·로스율을 확인해 주세요' : r.unit === '박스' ? (proposalBox(r, s) !== null ? `제안 ${proposalBox(r, s)}박스 = ${number(proposalBox(r, s) * boxM2(r))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}% → ${number(proposal(r, s))}㎡ ÷ 박스당 ${boxM2(r)}㎡ 올림) · <button data-action="fill" data-index="${i}">채우기</button>` : `제안 ${number(proposal(r, s))}㎡ · <b class="to-warning">이 규격은 박스당 ㎡ 를 몰라 박스로 바꿀 수 없습니다</b> — 박스 수를 직접 넣거나 단위를 ㎡ 로 · <button data-action="fill" data-index="${i}">㎡ 로 채우기</button>`) : `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>`}${r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? ' · <b class="to-warning">박스는 정수로 넣어 주세요</b>' : ''}</td></tr>` : ''}`
       )
       .join('');
-    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><button onclick="StatementApp.open()">명세서</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
+    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><button onclick="StatementApp.open()">명세서</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
       S.detail?.orders || []
     )
       .filter((o) => (o.type || o.name || '').includes('타일'))
@@ -4502,7 +4502,7 @@ function text(s = state()) {
         })
         .join('') ||
       '<p>공간 줄에서 제품·색을 고르면 면적 합계가 나타납니다. 소요량 제안은 하지 않습니다.</p>'
-    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside><h2>발주서 미리보기</h2>${renderSheetChoices()}<button type="button" onclick="A4Preview.open()">발주서 새 창으로</button><div id="tilePaper" class="a4-preview">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose">점검 기록</button><button data-action="copy">텍스트 복사</button><button data-action="download">이미지 내려받기</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
+    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside>${renderSheetChoices()}<div class="v6-cond"><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></div><button type="button" class="v6-newwin" onclick="A4Preview.open()">발주서 새 창으로</button><div id="tilePaper" class="a4-preview">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose">점검 기록</button><button data-action="copy">텍스트 복사</button><button data-action="download">이미지 내려받기</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
     A4Preview.prepare(el('tilePaper'));
     renderStatus();
   }
@@ -4512,7 +4512,7 @@ function text(s = state()) {
     if (!fieldSet) return;
     fieldSet.disabled = locked(s);
     root
-      .querySelectorAll('.to-context input,.to-context select')
+      .querySelectorAll('.to-context input,.to-context select,.v6-cond input,.v6-cond select')
       .forEach((x) => (x.disabled = busy || !!s.pending || s.phase !== 'draft'));
     el('tileSite').disabled = busy || !!s.pending;
     el('tileSite').classList.toggle('to-invalid', s.invalid.includes('site'));
@@ -6153,6 +6153,12 @@ function v5Bath() {
   const preview = document.createElement('div');
   preview.id = 'structuredPreview';
   el('unifiedAside').append(preview);
+  // 이 장의 발주처·날짜·배송·양중 — 오른쪽 발주서 위 (10/27 시안 다)
+  const structuredCond = document.createElement('div');
+  structuredCond.id = 'structuredCond';
+  structuredCond.className = 'v6-cond';
+  structuredCond.hidden = true;
+  el('unifiedAside').insertBefore(structuredCond, preview);
   function scope() {
     let hash = 2166136261;
     for (const c of localStorage.getItem(LS_KEY) || '') hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
@@ -6501,61 +6507,60 @@ function v5Bath() {
       )
       .join('');
   }
+  // 도어: 공통값 한 번 + 「한 줄 = 한 짝」 표. 그림·이 짝만 다른 것·특이사항은 고른 줄 아래에 펼침 (10/27 시안 다)
+  let openDoor = -1;
   function doorHtml(s) {
-    return (
-      '<section class="v5-card"><h3>도어 공통값</h3><div class="v5-fields">' +
+    const head =
+      '<section class="v5-card v6-door-common"><h3>도어 공통값 <small>한 번만 적고, 짝마다 다른 것은 그 줄의 「상세」에서</small></h3><div class="v5-fields">' +
       input('data.common.brand', s.data.common.brand, '브랜드') +
       input('data.common.spec', s.data.common.spec, '도어 규격') +
       commonFields(s.data.common, 'data.common') +
       '</div><p class="v5-foot">' +
       h(s.data.common.handle.note) +
-      '</p></section>' +
-      s.data.lines
-        .map((r, i) => {
-          const e = effective(s, r),
-            p = 'data.lines.' + i;
-          return (
-            '<section class="v5-card"><h3>' +
-            String(i + 1).padStart(2, '0') +
-            ' 짝 <button data-action="remove-door" data-line="' +
-            i +
-            '">삭제</button></h3><div class="v5-door-line">' +
-            drawing(r) +
-            '<div class="v5-fields">' +
-            input(p + '.loc', r.loc, '위치') +
-            input(p + '.open', r.open, '여는 방식', ['여닫이', '미닫이']) +
-            input(p + '.w', r.w, '폭 mm', null, 'number') +
-            input(p + '.h', r.h, '높이 mm', null, 'number') +
-            input(p + '.striker.from', r.striker.from, '스트라이커 기준', ['상부', '하부']) +
-            input(p + '.striker.mm', r.striker.mm, '스트라이커 mm', null, 'number') +
-            input(p + '.swing', r.swing, '방향', ['밀실좌', '밀실우', '없음']) +
-            '</div></div><div class="v5-buttons"><button data-action="override-door" data-line="' +
-            i +
-            '">' +
-            (r.finish !== null ? '공통값으로 되돌리기' : '이 짝만 공통값 바꾸기') +
-            '</button>' +
-            (e.finish === '필름'
-              ? '<button data-action="different-film" data-line="' +
-                i +
-                '">' +
-                (r.film?.back != null ? '앞·뒤 같음으로' : '앞·뒤 다름') +
-                '</button>'
-              : '') +
-            '</div>' +
-            (r.finish !== null ? '<div class="v5-fields">' + commonFields(r, p) + '</div>' : '') +
-            (r.film?.back != null
-              ? '<div class="v5-fields">' +
-                input(p + '.film.front', r.film.front, '앞 필름') +
-                input(p + '.film.back', r.film.back, '뒤 필름') +
-                '</div>'
-              : '') +
-            input(p + '.note', r.note, '짝 특이사항') +
-            '<p class="v5-foot">' +
-            h(e.handle?.note || '타공 특이사항 미등록') +
-            '</p></section>'
-          );
-        })
-        .join('')
+      '</p></section>';
+    const rows = s.data.lines
+      .map((r, i) => {
+        const e = effective(s, r),
+          p = 'data.lines.' + i;
+        // 접힌 줄 안의 칸이 비어 있으면 검사에서 빨갛게 표시돼도 안 보이므로, 그때는 펼쳐 둡니다
+        const hiddenErr = s.attempted && ((e.finish === '필름' && r.film && !r.film.front?.trim()) || (r.film?.back != null && !r.film.back.trim()));
+        const open = openDoor === i || hiddenErr,
+          differs = r.finish !== null || r.film?.back != null || !!(r.note || '').trim();
+        return (
+          '<tr class="' + (open ? 'sel' : '') + '"><td class="no">' + String(i + 1).padStart(2, '0') + '</td>' +
+          '<td>' + input(p + '.loc', r.loc, '위치') + '</td>' +
+          '<td>' + input(p + '.open', r.open, '여는 방식', ['여닫이', '미닫이']) + '</td>' +
+          '<td>' + input(p + '.w', r.w, '폭 mm', null, 'number') + '</td>' +
+          '<td>' + input(p + '.h', r.h, '높이 mm', null, 'number') + '</td>' +
+          '<td>' + input(p + '.striker.from', r.striker.from, '스트라이커 기준', ['상부', '하부']) + '</td>' +
+          '<td>' + input(p + '.striker.mm', r.striker.mm, '스트라이커 mm', null, 'number') + '</td>' +
+          '<td>' + input(p + '.swing', r.swing, '방향', ['밀실좌', '밀실우', '없음']) + '</td>' +
+          '<td class="act"><button data-action="door-open" data-line="' + i + '">' + (open ? '접기' : '상세') + (differs ? ' <b>●</b>' : '') + '</button>' +
+          '<button data-action="remove-door" data-line="' + i + '" title="이 짝 삭제">×</button></td></tr>' +
+          (open
+            ? '<tr class="open"><td colspan="9"><div class="v5-door-line">' + drawing(r) + '<div>' +
+              '<div class="v5-buttons"><button data-action="override-door" data-line="' + i + '">' +
+              (r.finish !== null ? '공통값으로 되돌리기' : '이 짝만 공통값 바꾸기') + '</button>' +
+              (e.finish === '필름'
+                ? '<button data-action="different-film" data-line="' + i + '">' + (r.film?.back != null ? '앞·뒤 같음으로' : '앞·뒤 다름') + '</button>'
+                : '') +
+              '</div>' +
+              (r.finish !== null ? '<div class="v5-fields">' + commonFields(r, p) + '</div>' : '') +
+              (r.film?.back != null
+                ? '<div class="v5-fields">' + input(p + '.film.front', r.film.front, '앞 필름') + input(p + '.film.back', r.film.back, '뒤 필름') + '</div>'
+                : '') +
+              input(p + '.note', r.note, '짝 특이사항') +
+              '<p class="v5-foot">' + h(e.handle?.note || '타공 특이사항 미등록') + '</p></div></div></td></tr>'
+            : '')
+        );
+      })
+      .join('');
+    return (
+      head +
+      '<section class="v5-card v6-door-list"><h3>짝 목록 <small>한 줄 = 한 짝 · ' + s.data.lines.length + '짝</small></h3>' +
+      '<div class="v6-dtbl-wrap"><table class="v6-dtbl"><thead><tr><th>NO</th><th>위치</th><th>여는 방식</th><th>폭 mm</th><th>높이 mm</th><th>스트라이커 기준</th><th>스트라이커 mm</th><th>방향</th><th></th></tr></thead><tbody>' +
+      rows +
+      '</tbody></table></div></section>'
     );
   }
   function build(s) {
@@ -6738,6 +6743,7 @@ function paintPaper(s) {
       editor.hidden = !enabled;
       preview.hidden = !enabled;
       structuredContext.hidden = !enabled;
+      structuredCond.hidden = !enabled;
       structuredFooter.hidden = !enabled;
       [
         'unifiedItems',
@@ -6847,7 +6853,9 @@ function paintPaper(s) {
         (s.data.calc ? '<button data-action="restore-calc">이 발주의 계산 불러오기</button>' : '') +
         (s.phase === 'saved' ? '<button data-action="edit">이 발주 수정</button>' : '') +
         '</div>';
-      structuredContext.replaceChildren(...el('structuredHeaderFields').children);
+      const 머리칸 = [...el('structuredHeaderFields').children];
+      structuredContext.replaceChildren(머리칸[0]);
+      structuredCond.replaceChildren(...머리칸.slice(1));
       el('structuredHeaderFields').remove();
       structuredFooter.replaceChildren(el('structuredActions'));
       el('unifiedOrder')
@@ -7059,6 +7067,10 @@ function paintPaper(s) {
       ri = Number(button.dataset.room);
     if (action === 'sheet') {
       b.active = Number(button.dataset.sheet);
+      return render();
+    }
+    if (action === 'door-open') {
+      openDoor = openDoor === index ? -1 : index;
       return render();
     }
     if (action === 'new') {
@@ -8319,5 +8331,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=10"></script><script src="wiring-order.js?v=5"></script><script src="measure-sheet.js?v=1"></script><script src="order-shell.js?v=1"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=2"></script><script src="lighting-order.js?v=10"></script><script src="wiring-order.js?v=5"></script><script src="measure-sheet.js?v=1"></script><script src="order-shell.js?v=2"></script></body>
 </html>

@@ -46,6 +46,10 @@
   aside.append(el('resultNote'));
   footer.classList.add('v6-gone');
 
+  // 도기·도어: 기록 버튼 줄을 오른쪽 발주서 아래로 · 타일 화면도 같은 옷
+  const sf = el('structuredFooter'); if (sf) { aside.append(sf); sf.classList.add('v6-sacts'); }
+  const tileRoot = document.getElementById('tileOrderApp'); if (tileRoot) tileRoot.classList.add('v6');
+
   // 반입 치수 경고는 주문표 아래로 (시안: 표 → 막히는 것 → 참고) — 제목과 표가 한 카드로 붙게
   const lift = el('v5LiftWarnings'); if (lift) el('unifiedItems').after(lift);
 
