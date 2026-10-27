@@ -12,6 +12,7 @@ var WiringOrder = (function () {
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const clone = x => JSON.parse(JSON.stringify(x));
   const VENDOR = {apella: '르그랑 아펠라 (대리점)', jung: '융 LS990 (네오라이팅)', other: '기타 (직접 발주)'};
+  const STALE = '그사이 현장이 바뀜 — 「노션 최신 다시 읽기」';
   let dialog, siteId = '', siteName = '', rows = [], cat = K.catalog(null), catNote = '', plans = {}, busy = false, filter = 'all', tab = 'apella', serverVer = '';
 
   const key = () => 'dsf_wiring_office:' + siteId;
@@ -24,7 +25,7 @@ var WiringOrder = (function () {
     const od = r.orderData && Array.isArray(r.orderData.lines) && r.orderData.lines.length && (r.reviewBase == null || r.reviewBase === r.fieldVersion) ? r.orderData : null;
     const brand = (od && od.brand) || (K.BRANDS[r.brand] ? r.brand : 'apella');
     const lines = od ? od.lines.map(l => ({gangs: l.gangs && l.gangs.length ? K.normalize(brand, l.gangs) : fieldGangs(r), qty: Number(l.qty) || 1})) : [{gangs: fieldGangs(r), qty: r.qty}];
-    return {use: true, brand, color: (od && od.color) || r.color || '', name: (od && od.name) || r.name || '', lines, base: r.fieldVersion, note: od && od.note || '',
+    return {use: true, brand, color: (od && od.color) || r.color || '', name: (od && od.name) || r.name || '', lines, base: r.fieldVersion, token: r.fieldToken, note: od && od.note || '',
       reloaded: !!(r.orderData && r.reviewBase != null && r.reviewBase !== r.fieldVersion)};
   }
 
@@ -49,7 +50,7 @@ var WiringOrder = (function () {
       serverVer = r.version || '';
       cat = K.catalog(r.catalog); catNote = r.catalogError || (cat.source === 'default' ? '노션 목록을 아직 못 받아 기본 목록으로 보여 줍니다 (서버 업데이트 전)' : '');
       rows = r.rows.filter(x => x.kind === 'plate' && x.status !== 'removed');
-      rows.forEach(x => { if (fresh || !plans[x.id] || plans[x.id].base !== x.fieldVersion) plans[x.id] = startPlan(x); });
+      rows.forEach(x => { if (fresh || !plans[x.id] || plans[x.id].base !== x.fieldVersion || plans[x.id].token !== x.fieldToken) plans[x.id] = startPlan(x); });
       Object.keys(plans).forEach(id => { if (!rows.some(x => x.id === id)) delete plans[id]; });
       keep(); render();
       if (fresh) say('노션 최신 실측을 다시 읽었습니다');
@@ -62,7 +63,7 @@ var WiringOrder = (function () {
   const ordered = r => r.order && r.order.status === '발주 완료';
   function lineOrders(r) {
     const p = plans[r.id];
-    return p.lines.map(l => K.order(cat, {brand: p.brand, color: p.color, name: p.name, gangs: l.gangs, qty: l.qty, room: r.room, location: r.location, id: r.id, site: siteId, revision: r.fieldVersion}));
+    return p.lines.map(l => K.order(cat, {brand: p.brand, color: p.color, name: p.name, gangs: l.gangs, qty: l.qty, room: r.room, location: r.location, id: r.id, site: siteId, revision: r.fieldVersion, token: r.fieldToken}));
   }
   function rowIssues(r) {
     const p = plans[r.id], out = [];
@@ -70,11 +71,14 @@ var WiringOrder = (function () {
     if (r.status === 'unknown') out.push('현장에서 「모름」 — 사진·메모로 구성 확인');
     if (r.status === 'pending') out.push('현장 확인 전 (사무실이 적어둔 것)');
     if (p.reloaded) out.push('검토 뒤 현장이 바뀌어 현장 것으로 다시 불러옴');
+    if (p.base !== r.fieldVersion || p.token !== r.fieldToken) out.push(STALE);
     return out;
   }
+  // 발주서 줄에 실을 사유 — 「다시 불러옴」은 사무실 안내라 빼고, 나머지는 업체도 봐야 할 것 (GPT R1-8)
+  const orderIssues = r => rowIssues(r).filter(t => !/다시 불러옴|목록에 맞는 제품 없음/.test(t) && t !== STALE);   // 제품 없음은 줄에 이미 「확인 필요:」로 찍힘
   function preview() {
     const by = {apella: [], jung: [], other: []};
-    rows.filter(r => !ordered(r) && plans[r.id].use).forEach(r => lineOrders(r).forEach(o => o.lines.forEach(l => { (by[o.vendor] || by.other).push(Object.assign(l, {where: r.room + ' ' + r.location})); })));
+    rows.filter(r => !ordered(r) && plans[r.id].use).forEach(r => { const iss = orderIssues(r); lineOrders(r).forEach(o => o.lines.forEach(l => { if (iss.length) l.spec += ' · ⚠️ 확인 필요: ' + iss.join(' / '); (by[o.vendor] || by.other).push(Object.assign(l, {where: r.room + ' ' + r.location})); })); });
     by.apella = K.merge(by.apella); by.other = K.merge(by.other);
     return by;
   }
@@ -202,7 +206,7 @@ var WiringOrder = (function () {
       const r = await api('wiringReview', {sitePageId: siteId, items});
       if (!r || !r.ok) throw Error((r && r.error) || '저장하지 못했습니다');
       const extra = [r.changed.length ? '현장이 그사이 바꾼 ' + r.changed.length + '곳은 저장 안 함(다시 읽어 주세요): ' + r.changed.join(', ') : '', r.ordered.length ? '이미 발주된 ' + r.ordered.length + '곳 제외' : '', r.missing.length ? '노션에서 못 찾은 ' + r.missing.length + '곳' : ''].filter(Boolean).join(' · ');
-      rows = r.rows.filter(x => x.kind === 'plate' && x.status !== 'removed'); rows.forEach(x => { if (plans[x.id]) plans[x.id].base = x.fieldVersion; });
+      rows = r.rows.filter(x => x.kind === 'plate' && x.status !== 'removed');   // 기준(base·token)은 그대로 — 현장이 바뀐 판은 「그사이 현장이 바뀜」으로 남아 담기를 막음 (GPT R1-4)
       keep(); busy = false; render(); say('노션에 ' + r.saved + '곳 저장했습니다' + (extra ? ' · ' + extra : ''), !!extra);
     } catch (e) {
       busy = false;
@@ -214,12 +218,13 @@ var WiringOrder = (function () {
     if (!S.site || S.site.id !== siteId) return say('현장이 바뀌었습니다. 다시 열어주세요', true);
     const by = preview(), vendors = Object.keys(by).filter(v => by[v].length);
     if (!vendors.length) return say('담을 판이 없습니다', true);
+    if (serverVer !== 'wiring2') return say('서버(Wiring.gs·Order.gs)를 올린 뒤에 담을 수 있습니다 — 옛 서버는 발주 기록 때 판에 발주 완료를 못 적습니다', true);
     if (S.extra.some(z => z.qty > 0 && (z.sources || []).some(s => s.kind === 'wiring' && s.site === siteId))) return say('이 현장의 콘센트·스위치가 이미 발주 초안에 있습니다 — 기존 초안을 확인해주세요', true);
     busy = true; say('노션 원본과 한 번 더 맞춰 보는 중…');
     try {
       const live = await api('wiringGet', {sitePageId: siteId});
       if (!live || !live.ok) throw Error((live && live.error) || '원본을 다시 읽지 못했습니다');
-      const changed = rows.filter(r => !ordered(r) && plans[r.id].use).filter(r => { const x = live.rows.find(z => z.id === r.id); return !x || x.fieldVersion !== r.fieldVersion || ordered(x); });
+      const changed = rows.filter(r => !ordered(r) && plans[r.id].use).filter(r => { const x = live.rows.find(z => z.id === r.id), p = plans[r.id]; return !x || x.fieldVersion !== p.base || x.fieldToken !== p.token || ordered(x); });
       if (changed.length) throw Error('그사이 현장에서 바뀐(또는 발주된) 판이 있습니다: ' + changed.map(r => r.room + ' ' + r.location).join(', ') + ' — 「노션 최신 다시 읽기」 후 담아주세요');
       let sheet = Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0);
       const jt = jungTotals(), group = {apella: '콘센트·스위치 · 르그랑 아펠라', jung: '콘센트·스위치 · 융 LS990', other: '콘센트·스위치 · 기타'};

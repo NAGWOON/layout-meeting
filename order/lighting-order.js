@@ -44,15 +44,22 @@ var LightingOrder = (function () {
       if (local && local.dirty && !fresh) { P = local.P || {}; W = local.W || {}; G = local.G || []; dirty = true; }
       else { P = {}; W = {}; G = []; dirty = false; }
       // 노션의 사무실 칸 → 화면 (노션이 원본. 이 컴퓨터에 저장 안 한 고침이 있으면 그것을 이어서)
+      // 단, 저장 안 한 초안을 만든 뒤 현장이 실측을 바꿨으면 그 위치는 새 실측으로 다시 시작 (GPT R1-3)
+      const redo = [];
+      rows.forEach(x => { if (P[x.id] && P[x.id].token !== x.sourceToken) { delete P[x.id]; redo.push(x.room + ' ' + x.location); } });
+      const seen = {};
       rows.forEach(x => {
         const o = x.office || {};
-        if (!P[x.id]) P[x.id] = {use: !ordered(x), product: x.product || '', lengths: o.orderLengths || (needsDrawing(x) ? '' : x.segments.map(s => s.mm).join('/')), group: o.smpsGroup || ''};
+        if (!P[x.id]) P[x.id] = {use: !ordered(x), product: x.product || '', lengths: o.orderLengths || (needsDrawing(x) ? '' : x.segments.map(s => s.mm).join('/')), group: o.smpsGroup || '', token: x.sourceToken};
         const pr = P[x.id].product;
         if (pr && !W[pr]) W[pr] = {w: o.wattsPerM ?? '', v: o.voltage || 24};
+        // 같은 제품 이름인데 노션에 위치마다 다른 W/m·전압이 적혀 있으면 첫 값으로 합치지 않고 맞추라고 막음 (GPT R1-2)
+        if (pr && o.wattsPerM != null) { const k = o.wattsPerM + '|' + (o.voltage || 24); if (seen[pr] && seen[pr] !== k && !W[pr].touched) W[pr].conflict = true; seen[pr] = seen[pr] || k; }
         if (o.smpsGroup && o.smpsGroup !== NONE && !G.some(g => g.name === o.smpsGroup)) G.push({name: o.smpsGroup, place: o.smpsPlace || '', cap: o.smpsCap || 150, util: o.utilization || 80});
       });
       if (!G.length) G.push({name: 'SMPS ①', place: '', cap: 150, util: 80});
       render();
+      if (redo.length) { say('현장 실측이 바뀐 ' + redo.length + '곳은 새 실측으로 다시 불러왔습니다: ' + redo.join(', '), true); return; }
       say(dirty ? '저장 안 한 고침을 이어서 엽니다 — 「노션에 저장」을 눌러야 다른 컴퓨터에도 보입니다' : fromNotion ? '노션에 저장된 SMPS 배치를 불러왔습니다' : '위치를 눌러 고른 뒤 SMPS 카드를 누르면 묶입니다');
     } catch (e) { dialog.innerHTML = `<div class="mo-wait"><p>${esc(e.message)}</p><button data-act="reload">다시 불러오기</button> <button data-act="close">닫기</button></div>`; }
     finally { busy = false; }
@@ -67,8 +74,8 @@ var LightingOrder = (function () {
     return {rs, load, lim, need: load / (g.util / 100), ok: load <= lim && volts.length <= 1, volts};
   }
   function problems() {
-    const out = [];
-    live().forEach(r => {
+    const out = [], used = live();
+    used.forEach(r => {
       const p = P[r.id], nm = r.room + ' ' + r.location, l = lens(r);
       if (!p.product) out.push(nm + ': 조명 종류');
       if (!l.length) out.push(nm + ': ' + (needsDrawing(r) ? '도면 길이' : '발주 길이'));
@@ -76,6 +83,7 @@ var LightingOrder = (function () {
       if (!p.group) out.push(nm + ': SMPS 안 정함');
       else if (p.group !== NONE && !(Number((W[p.product] || {}).w) > 0)) out.push(p.product + ': W/m');
     });
+    Object.keys(W).forEach(pr => { if (W[pr].conflict && used.some(r => P[r.id].product === pr)) out.push(pr + ': 노션에 위치마다 다른 W/m·전압 — 위 칸에서 한 값으로 맞춰주세요'); });
     G.forEach(g => { const s = groupLoad(g); if (!s.rs.length) return; if (!g.place) out.push(g.name + ': 놓을 곳'); if (s.volts.length > 1) out.push(g.name + ': 전압이 섞임'); else if (!s.ok) out.push(g.name + ': 용량 부족 (필요 ' + Math.ceil(s.need) + 'W)'); });
     return [...new Set(out)];
   }
@@ -149,8 +157,8 @@ var LightingOrder = (function () {
     else if (t.dataset.act === 'product' && p) { p.product = t.value.trim(); if (p.product && !W[p.product]) W[p.product] = {w: '', v: 24}; }
     else if (t.dataset.act === 'lengths' && p) p.lengths = t.value.split('/').map(x => x.replace(/\D/g, '')).filter(Boolean).join('/');
     else if (t.dataset.act === 'group' && p) p.group = t.value;
-    else if (t.dataset.act === 'w') W[t.dataset.p] = Object.assign(W[t.dataset.p] || {v: 24}, {w: t.value});
-    else if (t.dataset.act === 'v') W[t.dataset.p] = Object.assign(W[t.dataset.p] || {}, {v: Number(t.value)});
+    else if (t.dataset.act === 'w') W[t.dataset.p] = Object.assign(W[t.dataset.p] || {v: 24}, {w: t.value, conflict: false, touched: true});
+    else if (t.dataset.act === 'v') W[t.dataset.p] = Object.assign(W[t.dataset.p] || {}, {v: Number(t.value), conflict: false, touched: true});
     else if (t.dataset.act === 'cap') G[+t.dataset.g].cap = Number(t.value);
     else if (t.dataset.act === 'place') G[+t.dataset.g].place = t.value.trim();
     else return;
@@ -166,7 +174,7 @@ var LightingOrder = (function () {
     if (act === 'pick' && row) { sel = sel === row.dataset.row ? '' : row.dataset.row; return render(); }
     if (act === 'cut' && row) { const r = rows.find(x => x.id === row.dataset.row); P[r.id].lengths = String(r.segments[0].mm - Number(b.dataset.mm)); }
     else if (act === 'unassign') P[b.dataset.id].group = '';
-    else if (act === 'gadd') G.push({name: 'SMPS ' + (NO[G.length] || G.length + 1), place: '', cap: 150, util: 80});
+    else if (act === 'gadd') { const used = G.map(g => g.name); let i = 0; while (used.includes('SMPS ' + (NO[i] || i + 1))) i++; G.push({name: 'SMPS ' + (NO[i] || i + 1), place: '', cap: 150, util: 80}); }   // 빈 번호부터 — 지운 뒤 더해도 이름이 겹치지 않게 (GPT R1-9)
     else if (act === 'gdel') G.splice(+b.dataset.g, 1);
     else if (act === 'save') return save();
     else if (act === 'import') return importDraft();
@@ -207,7 +215,8 @@ var LightingOrder = (function () {
       const sheet = Math.max(...sheetsUsed(), ...Object.keys(S.done).map(Number), 0) + 1; S.typeBy[sheet] = '조명·스위치';
       used.forEach(r => { const p = P[r.id], l = lens(r), w = W[p.product] || {};
         const item = {id: 'lighting-' + r.id + '-' + r.revision, name: r.room + ' ' + r.location, spec: p.product + ' · ' + l.map(fmt).join(' / ') + 'mm' + (l.length > 1 ? ' (' + l.length + '구간)' : '') + (r.actualWires == null ? ' · 배선 수 현장 확인' : ' · 배선 ' + r.actualWires + '가닥') + (p.group === NONE ? ' · 전원 내장' : ' · ' + p.group),
-          cut: '', unit: '세트', qty: 1, type: '조명·스위치', group: '간접조명', lightingSource: {kind: 'lighting', id: r.id, revision: r.revision, sourceToken: r.sourceToken, site: siteId}};
+          cut: '', unit: '세트', qty: 1, type: '조명·스위치', group: '간접조명', lightingSource: {kind: 'lighting', id: r.id, revision: r.revision, sourceToken: r.sourceToken, site: siteId},
+          sources: [{kind: 'lighting', id: r.id, site: siteId, revision: r.revision, token: r.sourceToken}]};
         S.extra.push(item); S.sheetNo[keyOf(item)] = sheet; });
       G.forEach(g => { const s = groupLoad(g); if (!s.rs.length) return; const v = Number((W[P[s.rs[0].id].product] || {}).v) || 24;
         const item = {id: 'lighting-smps-' + siteId.slice(0, 8) + '-' + g.name + '-' + Date.now().toString(36), name: g.name + ' · ' + g.place, spec: v + 'V ' + g.cap + 'W · 부하 ' + Math.round(s.load) + 'W · ' + [...new Set(s.rs.map(r => r.room))].join('·') + ' ' + s.rs.length + '곳', cut: '', unit: '개', qty: 1, type: '조명·스위치', group: '간접조명 전원 (SMPS)'};

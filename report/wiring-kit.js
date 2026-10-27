@@ -145,10 +145,10 @@
     if (!row.color) issues.push('색 미정');
     else if (!col) issues.push('목록에 없는 색: ' + row.color);
     const where = (row.room || '') + ' ' + (row.location || '');
-    const qty = Math.max(1, Number(row.qty) || 1), src = row.id ? [{kind: 'wiring', id: row.id, site: row.site || '', revision: row.revision || 0}] : [];
+    const qty = Math.max(1, Number(row.qty) || 1), src = row.id ? [{kind: 'wiring', id: row.id, site: row.site || '', revision: row.revision || 0, token: row.token || ''}] : [];
     const colorName = col ? (col.order || col.name) : (row.color || '색 미정');
     if (brand === 'jung') {
-      const parts = gangs.map(g => { const p = findPart(cat, brand, g); if (!p) issues.push(partName(brand, g) + modeText(g) + ' — 목록에 맞는 제품 없음'); else if (p.memo) issues.push(p.name + ': ' + p.memo); return p ? p.order + (g.modes && g.modes.some(m => m === '3로') && !/3로/.test(p.order) ? ' · 3로' : '') : '확인 필요: ' + partName(brand, g) + modeText(g); });
+      const parts = gangs.map(g => { const p = findPart(cat, brand, g); if (!p) issues.push(partName(brand, g) + modeText(g) + ' — 목록에 맞는 제품 없음'); else if (p.memo) issues.push(p.name + ': ' + p.memo); return p ? p.order + ((p.modes || []).length > 1 && g.modes ? ' [' + g.modes.join('·') + ']' : '') : '확인 필요: ' + partName(brand, g) + modeText(g); });   // 겸용 제품이면 고른 방식을 [ ] 로 꼭 적음 (GPT R1-7)
       const grouped = []; parts.forEach(p => { const l = grouped[grouped.length - 1]; if (l && l.p === p) l.c++; else grouped.push({p, c: 1}); });
       return {vendor: 'jung', issues, lines: [{name: where.trim(), spec: colorName + ' · ' + gangs.length + '구 프레임 — ' + grouped.map(x => x.p + (x.c > 1 ? ' ×' + x.c : '')).join(' + '), qty, unit: '조합', sources: src, combo: true}]};
     }
