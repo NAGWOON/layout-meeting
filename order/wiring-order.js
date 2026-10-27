@@ -147,7 +147,13 @@ var WiringOrder = (function () {
       + (jt ? `<div class="mo-sum"><b>네오 조합 프로그램에 넣을 합계</b><br>프레임 ${Object.entries(jt.frames).map(([k, v]) => k + ' ' + v).join(' · ')}<br>${Object.entries(jt.parts).map(([k, v]) => esc(k) + ' ' + v).join('<br>')}</div><button data-act="copy">융 조합 목록 복사</button>` : '');
     return `<div class="mo-tabs">${head}</div>${body}`;
   }
+  // 다시 그려도 보던 자리 그대로 (10/27 대표 「누를 때마다 맨 위로 올라가서 불편」) — 왼쪽 목록·오른쪽 칸의 스크롤을 기억했다가 되돌림
   function render() {
+    const pos = ['.mo-body>main', '.mo-body>aside'].map(q => { const n = dialog && dialog.querySelector(q); return n ? n.scrollTop : 0; });
+    render0();
+    ['.mo-body>main', '.mo-body>aside'].forEach((q, i) => { const n = dialog.querySelector(q); if (n) n.scrollTop = pos[i]; });
+  }
+  function render0() {
     const live = rows.filter(r => !ordered(r)), used = live.filter(r => plans[r.id].use), warn = used.filter(r => rowIssues(r).length);
     const noColor = used.filter(r => !plans[r.id].color);
     const rooms = []; rows.forEach(r => { if (!rooms.includes(r.room)) rooms.push(r.room); });

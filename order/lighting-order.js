@@ -163,7 +163,13 @@ var LightingOrder = (function () {
     if (pl.wattsPerM == null) return '<small class="mo-src need">노션 목록에 W/m 비어 있음 — 적어 두면 다음부터 자동</small>';
     return Number(w.w) !== Number(pl.wattsPerM) ? '<small class="mo-src">이 현장만 ' + esc(w.w) + ' (목록 ' + esc(pl.wattsPerM) + ')</small>' : '<small class="mo-src">목록 값</small>';
   }
+  // 다시 그려도 보던 자리 그대로 (10/27 대표 「누를 때마다 맨 위로 올라가서 불편」) — 왼쪽 목록·오른쪽 칸의 스크롤을 기억했다가 되돌림
   function render() {
+    const pos = ['.mo-body>main', '.mo-body>aside'].map(q => { const n = dialog && dialog.querySelector(q); return n ? n.scrollTop : 0; });
+    render0();
+    ['.mo-body>main', '.mo-body>aside'].forEach((q, i) => { const n = dialog.querySelector(q); if (n) n.scrollTop = pos[i]; });
+  }
+  function render0() {
     const ev = elev(), rs = rows, used = live(), prob = problems();
     const products = [...new Set(used.map(r => P[r.id].product).filter(Boolean))];
     const over = used.filter(r => ev.long && lens(r).some(mm => mm > ev.long));
