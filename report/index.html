@@ -330,6 +330,10 @@
   .modecard .t { font-size:15px; font-weight:700; letter-spacing:-.2px; }
   .modecard .d { font-size:11.5px; color:var(--txt3); margin-top:5px; line-height:1.6; }
   .modecard .go { margin-left:auto; color:var(--txt4); font-size:17px; align-self:center; }
+  a.modecard { text-decoration:none; color:inherit; }
+  .pagecard .go { font-size:15px; }
+  .pagecard.off { opacity:.5; cursor:default; }
+  .pagecard.off .go { display:none; }
 
   /* ───────── 실측: 담는 곳 ───────── */
   .target { display:flex; align-items:center; justify-content:space-between; gap:10px; color:#fff;
@@ -577,6 +581,11 @@
     </div>
     <div class="body">
       <div class="lab">무엇을 하시겠어요?</div>
+      <a class="modecard pagecard off" id="pageCard" target="_blank" rel="noopener">
+        <div class="ic">📖</div>
+        <div><div class="t">현장 페이지</div><div class="d" id="pageCardD">불러오는 중…</div></div>
+        <div class="go">↗</div>
+      </a>
       <div class="modecard" onclick="누름(this, startReport)">
         <div class="ic">📝</div>
         <div><div class="t">일일 보고</div><div class="d">오늘 공정 · 현장 사진 · 지시 확인<br>노션 공정 일지에 등록됩니다</div></div>
@@ -752,7 +761,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-28-sent1';
+var APP_VER = '2026-10-28-page1';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -1241,9 +1250,36 @@ function pickSite(id) {
   document.getElementById('mSite').textContent = s.name;
   document.getElementById('mStage').textContent = s.stage || '';
   show('scr-mode');
+  현장페이지칸(s.id);
   안내미리(s.id);   // 작업팀 안내는 서버에서 3초쯤 걸립니다 — 고르는 동안 미리 받아 둡니다
 }
 function backToMode() { show('scr-mode'); }
+
+// 📖 현장 페이지 — 노션에서 「게시」한 현장 페이지를 바로 엽니다 (대표 10/28: 직원이 게시 링크로 자주 봄).
+// 주소는 서버가 노션에서 읽어 옵니다. 게시를 안 켠 현장은 흐리게 두고 누르지 못하게 합니다.
+// 받은 상세는 state.details 에 넣어 둡니다 — 이어서 「일일 보고」를 누르면 다시 묻지 않습니다.
+function 현장페이지칸(id) {
+  var a = document.getElementById('pageCard'), d = document.getElementById('pageCardD');
+  function 그림(r) {
+    if (!state.site || state.site.id !== id) return;   // 그사이 다른 현장을 골랐으면 버립니다
+    if (r && r.publicUrl) {
+      a.href = r.publicUrl; a.classList.remove('off');
+      d.innerHTML = '고객과 같이 보는 노션 페이지<br>공정표 · 공사 기록 · 자재 정보';
+    } else {
+      a.removeAttribute('href'); a.classList.add('off');
+      d.innerHTML = r ? '아직 게시 전입니다<br>사무실에서 게시하면 여기서 열립니다' : '페이지 주소를 불러오지 못했습니다<br>잠시 뒤 다시 들어와 주세요';
+    }
+  }
+  a.removeAttribute('href'); a.classList.add('off'); d.textContent = '불러오는 중…';
+  var 동봉 = state.details && state.details[id];
+  if (동봉 && 'publicUrl' in 동봉) { 그림(동봉); return; }
+  api('getSiteDetail', { sitePageId: id }).then(function (r) {
+    if (!r || !r.ok) throw new Error((r && r.error) || '');
+    state.details = state.details || {};
+    state.details[id] = r;
+    그림(r);
+  }).catch(function () { 그림(null); });
+}
 
 // 눌린 카드를 엷게 칠하고 0.3초 뒤 넘어갑니다 — 무엇을 눌렀는지 보이게 (대표 10/14)
 var 누르는중 = false;
