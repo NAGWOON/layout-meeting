@@ -21,6 +21,24 @@
   const chips = document.createElement('div'); chips.id = 'v6Chips'; chips.className = 'v6-chips';
   ctx.append(chips);
 
+  // ── 아래 참고 카드 빼기 (10/28 개편 1단계 · 대표 10/26 「굳이?」) ──
+  //  · 지난 발주 → 장부(왼쪽 메뉴) · 현장 정보(하차·엘리베이터 저장) → 위 「✎ 현장 조건」 · 지난 현장 참고 → 위 「📊 지난 현장 참고」(목자재·설비만)
+  //  · 양중 점검 카드는 막힐 때만 뜨므로 그대로 · 카드 안 칸·저장 동작은 그대로 옮겨 씀(id 같음)
+  const pop = document.createElement('div'); pop.className = 'v6-pop'; pop.hidden = true;
+  pop.innerHTML = '<div class="v6-popin"><button type="button" class="v6-popx" data-x>닫기</button><div class="v6-popbody"></div></div>';
+  document.body.append(pop);
+  const popBody = pop.querySelector('.v6-popbody');
+  const siteCard = el('siteInfo').closest('.card'), histCard = el('histCard'), pastCard = el('pastBox') && el('pastBox').closest('.card');
+  [siteCard, histCard].forEach(c => { if (c) { c.hidden = true; popBody.append(c); } });
+  if (pastCard) pastCard.classList.add('v6-gone');
+  const showPop = card => { [siteCard, histCard].forEach(c => { if (c) c.hidden = c !== card; }); pop.hidden = false; };
+  pop.addEventListener('click', e => { if (e.target === pop || e.target.closest('[data-x]')) pop.hidden = true; });
+  addEventListener('keydown', e => { if (e.key === 'Escape') pop.hidden = true; });
+  const ctxBtns = document.createElement('div'); ctxBtns.className = 'v6-ctxbtn';
+  ctxBtns.innerHTML = '<button type="button" data-p="site">✎ 현장 조건</button><button type="button" data-p="hist">📊 지난 현장 참고</button>';
+  ctx.append(ctxBtns);
+  ctxBtns.addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) showPop(b.dataset.p === 'site' ? siteCard : histCard); });
+
   // ── 오른쪽: 장 조건 카드 ──
   const cond = document.createElement('div'); cond.id = 'v6Cond'; cond.className = 'v6-cond';
   const lab = id => el(id).closest('label');
@@ -45,7 +63,7 @@
   // 오른쪽 맨 위 한 줄: 「n품목 · n장」 + 장 탭(수량·나누기) — 따로 떠 있던 것을 한 줄로 (10/27 대표 「어수선」)
   const ahead = document.createElement('div'); ahead.className = 'v6-ahead';
   aside.prepend(ahead); ahead.append(count, el('sheetTabs'));
-  // 아래 참고 카드는 셋만: 현장 정보 · 지난 발주 · 지난 현장 참고 (+ 반입 점검이 뜰 때)
+  // 아래 참고 카드는 위(「현장 조건」「지난 현장 참고」 단추)와 장부로 옮겼고, 반입 점검만 뜰 때 남음
   //  · 「담은 것」은 오른쪽 발주서와 같은 내용 · 「알아두기」는 팁 · 공통 특기사항은 오른쪽 「이 장에만」 칸과 겹쳐 헷갈림 → 숨김
   //    (공통 특기사항 값은 그대로 살아 있어, 장 칸이 비면 발주서에 들어갑니다)
   [el('sumBox'), el('noteIn')].forEach(x => { const c = x && x.closest('.card'); if (c) c.classList.add('v6-gone'); });
@@ -151,6 +169,8 @@
   function paint() {
     try { const f = (window.A4Preview && A4Preview.check().fit) || ''; fitLine.textContent = f ? '📐 ' + f : ''; fitLine.hidden = !f; } catch (e) { }
     document.body.classList.toggle('v6-nocalc', !['목자재', '설비·방수'].includes(S.type));   // 「계산기 열기」 알약은 산출기가 있는 탭에서만
+    ctxBtns.querySelector('[data-p="hist"]').hidden = !['목자재', '설비·방수'].includes(S.type) || !(S.history || []).length;   // 지난 현장 자료가 없으면 단추도 없음
+    ctxBtns.querySelector('[data-p="site"]').hidden = !S.site;
     const net = isNet(S.cur);
     netPick.hidden = S.type !== '조명·스위치' && !net;
     netNote.hidden = !net; cartBtn.hidden = !net;
@@ -173,7 +193,7 @@
     root.classList.toggle('v6-structured', structured);
     if (document.activeElement !== v6Note) { v6Note.value = noteOf(S.cur); grow(); }
     if (document.activeElement !== venIn) { venIn.value = venOf(S.cur) || ''; venOptions(); }
-    root.classList.toggle('v6-light', S.type === '조명·스위치');   // 조명 탭: 아래 참고 카드·재단 칸 숨김 (대표 「굳이?」)
+    root.classList.toggle('v6-light', S.type === '조명·스위치');   // 조명 탭: 재단 칸 숨김 (참고 카드는 이제 모든 탭에서 뺌)
     const common = (el('noteIn').value || '').trim();
     v6Note.placeholder = common ? '비우면 공통 특기사항: ' + common.split('\n')[0] : '예) 오전 도착 부탁드립니다';
     const d = S.detail, out = [];

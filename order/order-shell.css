@@ -1,13 +1,19 @@
 /* 발주앱 · 화면 틀 v6 (order-shell.js) — 시안 「다」 · 새 실측 화면(measure-office.css)과 같은 토큰 */
-#unifiedOrder.v6{--ink:#1d1d1b;--sub:#5d5d58;--mute:#8c8b85;--line:#e6e5e1;--hair:#efeeea;--bg:#f3f2ef;--stage:#ebeae6;--acc:#2f5fd0;--acc-s:#eef2fc;--acc-b:#cdd8f3;--warn:#8a5a12;--warn-s:#fbf1de;--bad:#b0442c;--bad-s:#fcefeb;--ok:#2f6b4c;--ok-s:#eaf3ed;
+#unifiedOrder.v6,#ledgerApp,#buyLayer,.v6-pop{--ink:#1d1d1b;--sub:#5d5d58;--mute:#8c8b85;--line:#e6e5e1;--hair:#efeeea;--bg:#f3f2ef;--stage:#ebeae6;--acc:#2f5fd0;--acc-s:#eef2fc;--acc-b:#cdd8f3;--warn:#8a5a12;--warn-s:#fbf1de;--bad:#b0442c;--bad-s:#fcefeb;--ok:#2f6b4c;--ok-s:#eaf3ed;
   background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;font-feature-settings:"tnum"}
 body.unified-mode:has(#unifiedOrder.v6:not([hidden])){background:#f3f2ef}
 #unifiedOrder.v6 .to-shell{flex:1;min-width:0;display:flex;flex-direction:column}
 #unifiedOrder.v6 .to-rail{background:#fff;color:var(--ink);border-right:1px solid var(--line);gap:18px}
 #unifiedOrder.v6 .to-rail b{width:36px;height:36px;border-radius:10px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
 #unifiedOrder.v6 .to-rail button,#unifiedOrder.v6 .to-rail a{color:var(--sub)!important;background:transparent!important;border:0!important;font-size:11.5px!important;border-radius:9px!important;padding:7px 8px!important}
-#unifiedOrder.v6 .to-rail button:first-of-type{background:var(--stage)!important;color:var(--ink)!important;font-weight:600}
+#unifiedOrder.v6 .to-rail button.on{background:var(--stage)!important;color:var(--ink)!important;font-weight:600}
 #unifiedOrder.v6 .to-rail small{color:var(--mute);font-size:10px}
+/* 메뉴 셋 (10/28 개편 1단계) — 발주·타일·명세서·장부가 같은 모양 */
+.to-rail button[data-menu],.srail button[data-menu],.lg-rail button[data-menu]{display:flex!important;flex-direction:column;align-items:center;gap:3px;width:56px;font-size:15px!important;line-height:1;cursor:pointer}
+.to-rail button[data-menu] span,.srail button[data-menu] span,.lg-rail button[data-menu] span{font-size:11px;line-height:1.2;white-space:nowrap}
+.srail button[data-menu].on{opacity:1}
+.to-rail .menu-old,.srail .menu-old,.lg-rail .menu-old{margin-top:auto;font-size:10px!important;opacity:.55;width:56px;white-space:normal;word-break:keep-all;line-height:1.3;cursor:pointer}
+.to-rail .menu-old+small,.srail .menu-old+small{margin-top:4px}
 
 /* 버튼 공통 */
 #unifiedOrder.v6 button,#unifiedOrder.v6 .btn2{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--sub);padding:7px 11px;font-size:12.5px}
@@ -226,7 +232,6 @@ body.v6-nocalc #calcPill{display:none!important}
 /* 인터넷 주문 장 종이 — 업체 발송용 아님 표시 */
 .sheet .nto .v6-stamp{margin-left:auto;align-self:center;border:1.5px solid #b0442c;color:#b0442c;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:3px 9px;border-radius:4px;transform:rotate(-1.5deg);white-space:nowrap}
 /* 조명·스위치 탭: 참고 카드(현장 정보·지난 현장 참고·지난 발주)와 재단 칸은 필요 없음 */
-#unifiedOrder.v6.v6-light #unifiedReferences{display:none}
 #unifiedOrder.v6.v6-light #unifiedItems .it .cut{visibility:hidden}
 /* 특기사항 칸: 글 길이만큼 · 읽기 좋은 줄 간격 */
 #unifiedOrder.v6 .v6-cond textarea{font-size:13px;line-height:1.6;resize:none;overflow-y:auto}
@@ -242,14 +247,8 @@ body.v6-nocalc #calcPill{display:none!important}
 .v6-bigpaper .sheet{box-shadow:0 10px 40px rgba(0,0,0,.4)}
 
 /* ── 맨 위 입구 셋 · 산 것 기록 (purchase.js · 10/27 시안 라) ── */
-#unifiedOrder.v6 .v6-modes{display:flex;gap:8px;margin:10px 22px 0}
-#unifiedOrder.v6 .v6-modes button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:9px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--sub);font-size:14px;font-weight:600;text-align:left}
-#unifiedOrder.v6 .v6-modes button small{font-size:11.5px;font-weight:400;color:var(--mute)}
-#unifiedOrder.v6 .v6-modes button.on{border:2px solid var(--ink);color:var(--ink);padding:8px 15px}
-#unifiedOrder.v6.v6-buymode #unifiedTabs,#unifiedOrder.v6.v6-buymode .to-workbench,#unifiedOrder.v6.v6-buymode #structuredContext{display:none!important}
-#v6Buy[hidden],#v6Recv[hidden]{display:none!important}
 #v6Buy{padding:14px 22px 18px;flex:1;min-height:0;overflow:auto}
-.v6b-grid{display:grid;grid-template-columns:400px minmax(0,1fr) 300px;gap:14px;align-items:start}
+.v6b-grid{display:grid;grid-template-columns:400px minmax(0,1fr);gap:14px;align-items:start}
 .v6b-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
 .v6b-card h3{font-size:15px;font-weight:700;margin:0 0 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.v6b-card h3 small{font-size:12px;font-weight:400;color:var(--mute)}
 .v6b-drop{display:block;border:2px dashed var(--acc-b);background:var(--acc-s);border-radius:12px;padding:16px;text-align:center;color:var(--acc);font-weight:600;font-size:13.5px;cursor:pointer}
@@ -257,9 +256,9 @@ body.v6-nocalc #calcPill{display:none!important}
 .v6b-canvas{margin-top:10px}.v6b-canvas canvas{width:100%;border:1px solid var(--line);border-radius:8px;cursor:crosshair;display:block}
 .v6b-maskhelp{font-size:12.5px;color:var(--sub);background:#f7f7f5;border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.55}
 .v6b-row{display:flex;gap:6px;flex-wrap:wrap}
-#unifiedOrder #v6Buy button{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--sub);padding:7px 11px;font:inherit;font-size:13px;cursor:pointer}
-#unifiedOrder #v6Buy button:disabled{opacity:.45;cursor:default}
-#unifiedOrder #v6Buy .v6b-fn{border-color:var(--acc-b);background:var(--acc-s);color:var(--acc);font-weight:700}
+#v6Buy button{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--sub);padding:7px 11px;font:inherit;font-size:13px;cursor:pointer}
+#v6Buy button:disabled{opacity:.45;cursor:default}
+#v6Buy .v6b-fn{border-color:var(--acc-b);background:var(--acc-s);color:var(--acc);font-weight:700}
 .v6b-kind{display:flex;gap:8px;margin-top:10px}.v6b-kind label{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
 .v6b-kind label:has(input:checked){border:2px solid var(--ok);background:var(--ok-s);padding:7px 9px}.v6b-kind small{display:block;font-size:11.5px;font-weight:400;color:var(--mute)}
 .v6b-f{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;margin-bottom:12px}
@@ -273,22 +272,31 @@ body.v6-nocalc #calcPill{display:none!important}
 .v6b-items input.q{width:64px;text-align:right;font-weight:700;background:#fffdf6;border-color:#e3d9bd}.v6b-items input.u{width:52px}
 .v6b-items tr.unsure td{background:#fffbea}
 .v6b-items td:last-child{white-space:nowrap;text-align:right}
-#unifiedOrder #v6Buy .v6b-x{border:0;background:none;color:var(--mute);font-size:16px;padding:2px 6px}
+#v6Buy .v6b-x{border:0;background:none;color:var(--mute);font-size:16px;padding:2px 6px}
 .v6b-link{font-size:11.5px;font-weight:600;color:var(--acc);background:var(--acc-s);border-radius:6px;padding:2px 7px;margin-right:4px}
-#unifiedOrder #v6Buy .v6b-add{margin-top:8px;border-style:dashed}
+#v6Buy .v6b-add{margin-top:8px;border-style:dashed}
 .v6b-alert{margin-top:12px;border-radius:12px;padding:10px 13px;font-size:13px;line-height:1.6}
 .v6b-alert.dup{background:var(--warn-s);border:1px solid #ecd9b0;color:#5c3d0a}.v6b-alert.dup b{color:var(--warn)}
 .v6b-dl{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:6px}
 .v6b-acts{display:flex;align-items:center;gap:12px;margin-top:14px}.v6b-acts span{flex:1;font-size:13px;color:var(--sub)}
-#unifiedOrder #v6Buy .v6b-pri{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700;padding:12px 18px;font-size:14px;border-radius:10px}
+#v6Buy .v6b-pri{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700;padding:12px 18px;font-size:14px;border-radius:10px}
 .v6b-msg{font-size:13px;color:var(--ok);margin:8px 0 0;line-height:1.6;min-height:1em}.v6b-msg.bad{color:var(--bad)}.v6b-msg a{color:var(--acc)}
 .v6b-o{border-bottom:1px solid var(--hair);padding:8px 0;font-size:13px}.v6b-o:last-child{border:0}.v6b-o b{display:block;font-size:13px;font-weight:600}
 .v6b-o small{display:block;color:var(--mute);font-size:11.5px}
 .v6b-st{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-top:2px;background:var(--stage);color:var(--sub)}
 .v6b-st.s-발주완료{background:var(--acc-s);color:var(--acc)}.v6b-st.s-입고완료{background:var(--ok-s);color:var(--ok)}
 .v6b-empty{color:var(--mute);font-size:13px}
-.v6b-recv{display:grid;grid-template-columns:repeat(3,minmax(0,280px));gap:14px;padding:18px 22px}
-.v6b-big{display:flex!important;flex-direction:column;gap:4px;text-align:left;background:#fff;border:1px solid var(--line)!important;border-radius:14px!important;padding:18px!important;text-decoration:none;color:var(--ink)!important;cursor:pointer}
-.v6b-big b{font-size:16px}.v6b-big span{font-size:13px;color:var(--sub)}
-@media(max-width:1300px){.v6b-grid{grid-template-columns:380px minmax(0,1fr)}.v6b-grid>.v6b-card:last-child{grid-column:1/-1}}
+@media(max-width:900px){.v6b-grid{grid-template-columns:minmax(0,1fr)}.v6b-f{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 #unifiedOrder.v6 .v6-fit{margin:0;font-size:12px;color:var(--acc);background:var(--acc-s);border-radius:8px;padding:6px 10px}#unifiedOrder.v6 .v6-fit[hidden]{display:none}
+
+/* ── 개편 1단계 (10/28): 위 단추 둘 · 현장 조건/지난 현장 참고 겹 창 ── */
+#unifiedOrder.v6 .v6-ctxbtn{display:flex;gap:6px;flex-shrink:0}
+#unifiedOrder.v6 .v6-ctxbtn button{font-size:12px;padding:5px 10px;border-radius:999px;white-space:nowrap}
+#unifiedOrder.v6 .v6-ctxbtn button[hidden]{display:none}
+#unifiedOrder.v6 #unifiedReferences>.card:not(#liftCard){display:none}
+.v6-pop{position:fixed;inset:0;z-index:240;background:rgba(20,20,18,.32);display:flex;align-items:flex-start;justify-content:center;padding:70px 16px;overflow:auto}
+.v6-pop[hidden]{display:none}
+.v6-popin{background:#fff;border-radius:16px;width:min(560px,100%);padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif}
+.v6-popx{position:absolute;right:12px;top:12px;border:1px solid #e6e5e1;border-radius:8px;background:#fff;padding:5px 10px;cursor:pointer;z-index:1}
+.v6-popbody .card{margin:0!important;border:0!important;box-shadow:none!important;padding:0!important}
+.v6-popbody .card[hidden]{display:none}

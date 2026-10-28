@@ -662,7 +662,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=8"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=9"><link rel="stylesheet" href="ledger.css?v=1"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1075,7 +1075,14 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-28-buy5';
+var APP_VER = '2026-10-28-ledger1';
+// 왼쪽 메뉴 — 업무 순서대로 셋 (10/28 개편 1단계 · 협업/2026-10-27_발주앱디자인/13). 발주·타일·명세서 화면이 같은 줄을 씁니다.
+// 「단가 기록」은 옛 화면(명세서 기록 → 단가 덮어쓰기)입니다 — 명세서 저장(3단계)이 생기면 뺍니다.
+function 메뉴html(on) {
+  var b = function (k, ico, t, go) { return '<button type="button" data-menu="' + k + '"' + (on === k ? ' class="on"' : '') + ' onclick="' + go + '">' + ico + '<span>' + t + '</span></button>'; };
+  return '<b>D</b>' + b('ledger', '📒', '장부', 'Ledger.open()') + b('work', '📐', '산출·발주', 'Ledger.work()') + b('stmt', '🔍', '명세서', 'StatementApp.open()')
+    + '<button type="button" class="menu-old" onclick="goSettle()" title="옛 화면 — 명세서 숫자로 단가를 덮어씁니다">단가 기록</button><small>' + APP_VER + '</small>';
+}
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
 
 var S = {
@@ -1223,6 +1230,7 @@ function boot() {
     else if(S.site){S.site=null;S.detail=null;draw();bar();side();}
     OrderLoad.trace.push({stage:'ready',ms:Date.now()-OrderLoad.started});
     toast('준비됐습니다');
+    if (window.Ledger) Ledger.start();   // 첫 화면은 발주 장부 (10/28 개편 1단계)
   }).catch(function (error) {
     if(sequence!==OrderLoad.seq)return;
     clearInterval(OrderLoad.ticker);clearTimeout(OrderLoad.timer);
@@ -4505,7 +4513,7 @@ function text(s = state()) {
           `<tr data-row-id="${html(r.id)}"><td>${i + 1}</td>${['space', 'name', 'spec', 'measured', 'qty'].map((k, n) => `<td${k === 'qty' ? ' class="to-quantity"' : ''}>${field('tiles.' + i + '.' + k, r[k], ['공간', '제품', '규격', '실측㎡', '주문량'][n], null, k === 'qty')}</td>`).join('')}<td>${field('tiles.' + i + '.unit', r.unit, '주문 단위', ['㎡', '박스'])}</td><td>${field('tiles.' + i + '.grout.materialId', r.grout?.materialId || '', '줄눈', optionsFor(grout, r.grout?.materialId, r.grout?.name))}${field('tiles.' + i + '.grout.color', r.grout?.color || '', '줄눈 색')}</td><td>${field('tiles.' + i + '.memo', r.memo || '', '재단·비고')}</td><td><button data-action="cloneTile" data-index="${i}" title="이 줄 복제">복제</button><button data-action="delTile" data-index="${i}" title="이 줄 삭제">×</button></td></tr>${r.measured !== '' && r.measured !== null ? `<tr class="to-suggest"><td colspan="5"></td><td colspan="5">${proposal(r, s) === null ? '실측·로스율을 확인해 주세요' : r.unit === '박스' ? (proposalBox(r, s) !== null ? `제안 ${proposalBox(r, s)}박스 = ${number(proposalBox(r, s) * boxM2(r))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}% → ${number(proposal(r, s))}㎡ ÷ 박스당 ${boxM2(r)}㎡ 올림) · <button data-action="fill" data-index="${i}">채우기</button>` : `제안 ${number(proposal(r, s))}㎡ · <b class="to-warning">이 규격은 박스당 ㎡ 를 몰라 박스로 바꿀 수 없습니다</b> — 박스 수를 직접 넣거나 단위를 ㎡ 로 · <button data-action="fill" data-index="${i}">㎡ 로 채우기</button>`) : `제안 ${number(proposal(r, s))}㎡ (실측 ${number(r.measured)} + 로스 ${html(s.lossRate)}%) · <button data-action="fill" data-index="${i}">채우기</button>`}${r.unit === '박스' && positive(r.qty) && !Number.isInteger(Number(r.qty)) ? ' · <b class="to-warning">박스는 정수로 넣어 주세요</b>' : ''}</td></tr>` : ''}`
       )
       .join('');
-    root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><button onclick="StatementApp.open()">명세서</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${html(APP_VER)}</small></nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
+    root.innerHTML = `<nav class="to-rail">${메뉴html('work')}</nav><div class="to-shell"><header class="to-context"><label>현장<select id="tileSite"><option value="">현장 선택</option>${S.sites.map((x) => `<option value="${html(x.id)}"${S.site?.id === x.id ? ' selected' : ''}>${html(x.name.replace(/\s*PROJECT\s*$/, ''))}</option>`).join('')}</select></label></header><nav class="to-tabs">${tabs}</nav><div class="to-workbench"><main><div class="to-heading"><div><h2>공간별 타일</h2><p>실측은 참고 · 하늘색 칸이 실제 주문량입니다</p></div><select id="tilePast"><option value="">지난 타일 발주 열기</option>${(
       S.detail?.orders || []
     )
       .filter((o) => (o.type || o.name || '').includes('타일'))
@@ -5265,7 +5273,7 @@ function text(s = state()) {
 (function () {
   const root = document.createElement('section');
   root.id = 'unifiedOrder';
-  root.innerHTML = `<nav class="to-rail"><b>D</b><button onclick="goInput()">발주</button><button onclick="StatementApp.open()">명세서</button><a href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener">검수</a><button onclick="goSettle()">기록</button><small>${APP_VER}</small></nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
+  root.innerHTML = `<nav class="to-rail">${메뉴html('work')}</nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
   el('scr-input').append(root);
   function move(id, parent) {
     parent.append(el(id));
@@ -8077,7 +8085,7 @@ var StatementApp = (function () {
       + (D.pages.length ? '<button class="bt fn sp" data-a="pick">📥 이 명세서에 사진 더 넣기</button><button class="bt" data-a="fresh">새 명세서 시작</button>' : '')
       + '<input type="file" accept="image/*" multiple hidden id="stmtFile"></header>';
     var body = D.pages.length ? work() : empty();
-    app.innerHTML = '<nav class="srail"><b>D</b><button data-a="close">발주</button><button class="on">명세서</button><button data-a="report">검수</button><button data-a="settle">기록</button></nav>'
+    app.innerHTML = '<nav class="srail">' + 메뉴html('stmt') + '</nav>'
       + '<div class="sh">' + top + body + '</div>';
     // 선택한 줄이 사진에서 안 보이면 가운데로
     var band = app.querySelector('.band'), ph = app.querySelector('.ph');
@@ -8283,7 +8291,7 @@ var StatementApp = (function () {
       return;
     }
     if (e.type !== 'click') return;
-    if (a === 'close') close();
+    if (a === 'close') goInput();
     if (a === 'report') window.open('https://nagwoon.github.io/layout-meeting/report/', '_blank');
     if (a === 'settle') { close(); goSettle(); }
     if (a === 'pick') el('stmtFile').click();
@@ -8336,22 +8344,36 @@ var StatementApp = (function () {
 </script>
 <script>A4Preview.watch();</script>
 <script>
-// 「기록」·「명세서」에서 브라우저 뒤로가기를 누르면 발주 화면으로 (2026-10-20 대표)
-// 화면만 바꾸는 방식이라 브라우저는 페이지를 옮긴 줄 몰라, 뒤로가기가 앱 밖으로 나가 버렸습니다.
-// 들어갈 때 기록을 하나 남기고(pushState), 뒤로가기(popstate)가 오면 발주 화면으로 돌아옵니다.
+// 기록·명세서와 브라우저 뒤로/앞으로 이동을 같은 화면 상태로 맞춥니다.
 (function () {
-  function 남기기(v) { try { if (!history.state || history.state.v !== v) history.pushState({ v: v }, ''); } catch (e) { } }
-  var 기록열기 = goSettle;
-  goSettle = function () { 남기기('settle'); return 기록열기.apply(this, arguments); };
-  var 명세서열기 = StatementApp.open;
-  StatementApp.open = function () { 남기기('stmt'); return 명세서열기.apply(this, arguments); };
+  var 발주열기 = goInput, 기록열기 = goSettle;
+  var 명세서열기 = StatementApp.open, 명세서닫기 = StatementApp.close;
+  function 남기기(v) {
+    try {
+      if (!history.state || history.state.orderView !== v) {
+        history.pushState(Object.assign({}, history.state, { orderView: v }), '');
+      }
+    } catch (e) { }
+  }
+  function 보이기(v) {
+    명세서닫기();
+    if (window.Ledger) Ledger.hide();
+    if (v === 'settle') return 기록열기();
+    발주열기();
+    if (v === 'stmt') return 명세서열기();
+    if (v === 'ledger' && window.Ledger) return Ledger.show();
+  }
+  window.화면 = { 남기기: 남기기, 보이기: 보이기 };
+  // 새로고침하면 앱도 발주 화면에서 시작하므로 현재 방문 기록만 맞춥니다.
+  try { history.replaceState(Object.assign({}, history.state, { orderView: 'input' }), ''); } catch (e) { }
+  goInput = function () { 남기기('input'); return 보이기('input'); };
+  goSettle = function () { 남기기('settle'); return 보이기('settle'); };
+  StatementApp.open = function () { 남기기('stmt'); return 보이기('stmt'); };
+  StatementApp.close = function () { return goInput(); };
   addEventListener('popstate', function (e) {
-    var v = e.state && e.state.v;
-    if (v === 'settle' || v === 'stmt') return;   // 앞으로가기로 다시 들어온 경우는 그대로
-    if (!el('stmtApp').hidden) StatementApp.close();
-    if (!el('scr-settle').classList.contains('hide')) goInput();
+    보이기(e.state && e.state.orderView || 'input');
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=17"></script><script src="wiring-order.js?v=11"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=8"></script><script src="purchase.js?v=5"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=17"></script><script src="wiring-order.js?v=11"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=9"></script><script src="purchase.js?v=6"></script><script src="ledger.js?v=1"></script></body>
 </html>

@@ -752,7 +752,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-27-measure3';
+var APP_VER = '2026-10-28-ledger1';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -1085,6 +1085,14 @@ function 체크보내기(orderId, blockId, 다시) {
   c.보내는중 = true;
   api('checkOrderItem', { orderPageId: orderId, blockId: blockId, checked: v })
     .then(function (r) {
+      // 보류된 발주는 서버가 체크를 받지 않습니다(10/28) — 신호 탓이 아니므로 그 까닭을 그대로 보여 줌
+      if (r && !r.ok && r.상태 === '보류') {
+        c.보내는중 = false; c.원함 = c.저장됨;
+        var ob = OD.orders.filter(function (x) { return x.id === orderId; })[0];
+        if (ob) ob.state = '보류';
+        화면값(ob, blockId, c.저장됨); renderOrders();
+        return alert(r.error || '보류된 발주입니다 — 사무실에 확인해 주세요');
+      }
       if (!r || !r.ok) throw new Error((r && r.error) || '서버가 저장하지 않았습니다');
       c.보내는중 = false; c.저장됨 = v; c.최근 = Date.now();
       if (c.원함 !== v) return 체크보내기(orderId, blockId, 0);   // 그사이 다시 눌렀습니다 — 마지막 값으로
@@ -1092,9 +1100,12 @@ function 체크보내기(orderId, blockId, 다시) {
       if (!o) return;
       // 체크는 저장됐지만 목록을 다시 못 읽은 경우(r.items 없음) — 화면의 체크를 그대로 둡니다
       if (r.items) o.items = 서버목록합치기(r.items);
-      if (r.완료) o.state = '입고완료';
-      // 체크를 풀면 서버가 입고완료를 되돌립니다(2026-10-20) — 화면도 같이 되돌립니다
-      if (!v && o.state === '입고완료' && !r.상태실패) o.state = '발주완료';
+      // 상태는 서버가 정한 값을 그대로 씁니다(10/28) — 화면이 스스로 판정하면 서버와 어긋납니다
+      if (r.상태) o.state = r.상태;
+      else {   // 옛 서버(상태를 안 돌려줌)일 때만 예전 판정
+        if (r.완료) o.state = '입고완료';
+        if (!v && o.state === '입고완료' && !r.상태실패) o.state = '발주완료';
+      }
       renderOrders();
       if (r.완료) alert('검수가 끝났습니다. 사무실에 알림을 보냈습니다.');
       if (r.상태실패) alert(r.상태실패);

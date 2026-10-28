@@ -1,0 +1,83 @@
+/* 📒 발주 장부 (ledger.js · 10/28 개편 1단계 · 시안 바_1) — 색은 order-shell.css 의 v6 토큰을 같이 씀 */
+#ledgerApp{position:fixed;inset:0;z-index:250;display:flex;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;font-size:13px;font-feature-settings:"tnum"}
+#ledgerApp[hidden]{display:none}
+body.ledger-on{overflow:hidden}
+.lg-rail{width:72px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 8px;background:#fff;border-right:1px solid var(--line)}
+.lg-rail b{width:36px;height:36px;border-radius:10px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
+.lg-rail button{border:0;background:transparent;color:var(--sub);border-radius:9px;padding:7px 4px;font:inherit}
+.lg-rail button.on{background:var(--stage);color:var(--ink);font-weight:600}
+.lg-rail small{color:var(--mute);font-size:10px;writing-mode:vertical-rl}
+.lg-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:auto;padding:14px 22px 22px}
+.lg-hd{display:flex;align-items:center;gap:14px;padding:10px 16px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.lg-hd label{display:flex;flex-direction:column;font-size:11px;color:var(--mute);min-width:0;flex:0 1 360px}
+.lg-hd select{border:0;padding:2px 0 0;font:inherit;font-size:18px;font-weight:600;color:var(--ink);background:transparent;cursor:pointer;max-width:100%}
+.lg-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
+.lg-chips span{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--stage);color:var(--sub);white-space:nowrap}.lg-chips span.ok{background:var(--ok-s);color:var(--ok)}
+.lg-top{display:flex;align-items:center;gap:8px;margin:12px 0;flex-wrap:wrap}
+.lg-top button,.lg-btn,.lg-acts button{border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--sub);padding:8px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.lg-top .lg-pri,.lg-acts .lg-pri{background:var(--ink);border-color:var(--ink);color:#fff}
+.lg-top .lg-fn{border-color:var(--acc-b);background:var(--acc-s);color:var(--acc)}
+.lg-new{position:relative}
+.lg-menu{position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.12);padding:6px;display:flex;flex-direction:column;z-index:5;min-width:160px}
+.lg-menu[hidden]{display:none}.lg-menu button{border:0!important;text-align:left;font-weight:500!important}
+.lg-menu button:hover{background:var(--stage)}
+.lg-seg{display:flex;gap:3px;background:var(--stage);border-radius:11px;padding:3px;margin-left:8px}
+.lg-seg button{border:0!important;background:transparent!important;font-weight:500!important;padding:6px 11px!important}
+.lg-seg button.on{background:#fff!important;color:var(--ink)!important;font-weight:600!important;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.lg-seg b{color:var(--acc);margin-left:2px}
+.lg-find{margin-left:auto;width:240px;max-width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font:inherit;font-size:13px;background:#fff;box-sizing:border-box}
+.lg-warn{margin:0 0 10px;padding:8px 12px;border-radius:9px;background:var(--warn-s);color:var(--warn);font-size:12.5px}.lg-warn[hidden]{display:none}
+.lg-wb{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;align-items:start}
+.lg-card{background:#fff;border:1px solid var(--line);border-radius:14px;min-width:0}
+.lg-list{overflow:auto}.lg-list.lg-busy{opacity:.6}
+.lg-list table{width:100%;border-collapse:collapse}
+.lg-list th{font-size:11.5px;color:var(--mute);font-weight:500;text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.lg-list td{padding:9px 12px;vertical-align:middle}
+.lg-list tbody tr{border-bottom:1px solid var(--hair)}
+.lg-list th.r,.lg-list td.r{text-align:right;white-space:nowrap}
+.lg-list td small{display:block;font-size:11px;color:var(--mute)}
+.lg-list td.no{white-space:nowrap}.lg-list td.no b{display:block;font-size:13px}
+.lg-list td.it{color:var(--sub);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-list tr[data-id]{cursor:pointer}.lg-list tr[data-id]:hover td{background:#fafaf8}.lg-list tr.sel td{background:var(--acc-s)!important}
+.lg-grp td{background:#f7f7f5;font-size:12px;font-weight:600;color:var(--sub);padding:7px 12px}.lg-grp em{font-style:normal;font-weight:400;color:var(--mute);margin-left:6px}
+.lg-fold td{padding:10px 12px}.lg-fold button{border:0;background:none;color:var(--mute);font:inherit;font-size:12.5px;cursor:pointer;padding:0}
+.lg-st{display:inline-block;font-size:12px;font-weight:600;padding:3px 8px;border-radius:8px;white-space:nowrap}
+.lg-st.w{background:var(--warn-s);color:var(--warn)}.lg-st.s{background:var(--acc-s);color:var(--acc)}.lg-st.d{background:var(--ok-s);color:var(--ok)}.lg-st.r{background:var(--bad-s);color:var(--bad)}.lg-st.p{background:var(--stage);color:var(--sub)}
+.lg-mute{color:var(--mute);font-size:12px}
+.lg-empty{padding:28px 20px;color:var(--mute);text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}.lg-empty b{color:var(--ink);font-size:15px}.lg-empty.bad{color:var(--bad)}
+.lg-sitebtn{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 16px;font:inherit;font-size:14px;cursor:pointer;min-width:240px;max-width:100%}
+.lg-det{padding:16px 18px;display:flex;flex-direction:column;gap:12px;position:sticky;top:0}
+.lg-det h2{font-size:17px;margin:0}.lg-meta{font-size:12px;color:var(--mute)}
+.lg-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.lg-steps div{background:#f5f5f3;border-radius:10px;padding:7px 9px;font-size:11px;color:var(--mute)}
+.lg-steps div b{display:block;font-size:12.5px;color:var(--ink);margin-top:2px}
+.lg-steps .ok{background:var(--ok-s);color:var(--ok)}.lg-steps .ok b{color:var(--ok)}
+.lg-steps .now{background:var(--warn-s);color:var(--warn);box-shadow:0 0 0 1.5px #e8c98a inset}.lg-steps .now b{color:var(--warn)}
+.lg-note{margin:0;padding:9px 11px;border-radius:10px;background:#f7f7f5;font-size:12.5px;color:var(--sub);line-height:1.55;white-space:pre-line}.lg-note.w{background:var(--warn-s);color:#5c3d0a}
+.lg-items{display:flex;flex-direction:column;font-size:12.5px;max-height:46vh;overflow:auto}
+.lg-items>div{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--hair)}.lg-items i{font-style:normal;color:var(--mute);width:14px;flex-shrink:0}
+.lg-items .got i{color:var(--ok);font-weight:700}
+.lg-acts{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:1100px){.lg-wb{grid-template-columns:minmax(0,1fr)}.lg-det{position:static}}
+@media(max-width:700px){
+ #ledgerApp{flex-direction:column}
+ .lg-rail{width:auto;flex-direction:row;padding:8px 12px;gap:6px;border-right:0;border-bottom:1px solid var(--line)}
+ .lg-rail b{width:30px;height:30px}.lg-rail small,.lg-rail .menu-old{display:none!important}
+ .lg-rail button[data-menu]{flex-direction:row!important;width:auto}
+ .lg-main{padding:10px 12px 20px}.lg-hd{flex-direction:column;align-items:stretch;gap:6px}.lg-hd label{flex:none}.lg-chips{justify-content:flex-start;margin-left:0}
+ .lg-seg{margin-left:0;overflow:auto;max-width:100%}.lg-find{width:100%;margin-left:0}
+ .lg-list thead{display:none}.lg-list table,.lg-list tbody{display:block}
+ .lg-list tr[data-id]{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:9px 10px;border-bottom:1px solid var(--hair)}
+ .lg-list tr[data-id] td{border:0;padding:0;max-width:none;min-width:0}.lg-list tr[data-id] td.it{grid-column:1/-1;white-space:normal}
+ .lg-list .lg-grp,.lg-list .lg-fold{display:block}.lg-list .lg-grp td,.lg-list .lg-fold td{display:block}
+}
+/* 산 것 기록 — 장부 위 겹 화면 (purchase.js) */
+#buyLayer{position:fixed;inset:0;z-index:260;background:rgba(20,20,18,.32);display:flex;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto}
+#buyLayer[hidden]{display:none}
+.v6b-sheet{background:var(--bg);border-radius:18px;width:min(1240px,100%);box-shadow:0 24px 70px rgba(0,0,0,.28);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;color:var(--ink);font-size:13px}
+.v6b-hd{display:flex;align-items:center;gap:10px;padding:14px 22px;border-bottom:1px solid var(--line);background:#fff;border-radius:18px 18px 0 0}
+.v6b-hd b{font-size:16px}.v6b-hd span{color:var(--mute);font-size:12.5px}
+.v6b-hd button{margin-left:auto;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px 12px;font:inherit;cursor:pointer}
+/* 장부 위에서 여는 창(수량 수정·반품 기록)과 알림 글은 장부보다 위에 — 10/28 시험에서 반품 창이 장부 뒤에 가려졌음 */
+body.ledger-on .mask{z-index:270}
+body.ledger-on #toast{z-index:400}

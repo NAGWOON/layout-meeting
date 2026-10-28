@@ -3,7 +3,7 @@
  *  · 캡처는 이 컴퓨터에서 이름·주소·전화·카드 칸을 끌어서 가린 뒤 서버로 보냅니다 (가린 그림만 저장)
  *  · 서버: readPurchaseImage(읽기) → recordPurchase(기록 · 같은 주문번호 막음 · 버튼 두 번 한 건 · 실측 재확인)
  *  · 기록 전에 「발주서 만들기」 초안에 같은 물건이 있는지 보여 주고, 빼면 그 줄의 실측 출처를 이 기록으로 옮깁니다
- * 맨 위 입구 셋: 📄 발주서 만들기(지금 화면) · 🧾 산 것 기록 · ✔ 받기·대조
+ * 10/28 개편 1단계: 맨 위 입구 셋을 없애고, 장부의 「🧾 산 것·전화 주문 기록」 단추로 장부 위에 겹쳐 엽니다(#buyLayer)
  */
 (function () {
   'use strict';
@@ -14,28 +14,18 @@
   const TYPES = ['조명·스위치', '목자재', '설비·방수', '타일', '도기', '도어'];
   const SHOPS = ['네이버', '쿠팡', '네오라이팅', '칸트라이팅', '오늘의집', '현장 구매', '전화 주문'];
 
-  // ── 맨 위 입구 셋 ──
-  const modes = document.createElement('nav'); modes.className = 'v6-modes';
-  modes.innerHTML = '<button data-m="order" class="on">📄 발주서 만들기<small>업체에 보내는 것</small></button>'
-    + '<button data-m="buy">🧾 산 것 기록<small>네이버·사이트·전화·현장</small></button>'
-    + '<button data-m="recv">✔ 받기·대조<small>검수 · 명세서 · 기록</small></button>';
-  el('unifiedContext').after(modes);
-  const panel = document.createElement('div'); panel.id = 'v6Buy'; panel.hidden = true;
-  modes.after(panel);
-  const recv = document.createElement('div'); recv.id = 'v6Recv'; recv.hidden = true;
-  recv.innerHTML = '<div class="v6b-recv"><a class="v6b-big" href="https://nagwoon.github.io/layout-meeting/report/" target="_blank" rel="noopener"><b>✔ 현장 검수</b><span>보고앱 📦 발주 탭 — 받은 품목을 하나씩 체크</span></a>'
-    + '<button class="v6b-big" data-go="stmt"><b>🧾 명세서 대조</b><span>거래처 명세서 사진 → 발주와 줄마다 맞춤</span></button>'
-    + '<button class="v6b-big" data-go="settle"><b>🗂 기록</b><span>명세서 기록 · 단가 · 실적</span></button></div>';
-  modes.after(recv);
+  // ── 장부 위 겹 화면 (10/28 · 위 입구 셋 「발주서 만들기·산 것 기록·받기·대조」는 없앰 — 메뉴는 왼쪽 셋뿐) ──
+  const layer = document.createElement('div'); layer.id = 'buyLayer'; layer.hidden = true;
+  layer.innerHTML = '<div class="v6b-sheet"><div class="v6b-hd"><b>🧾 산 것·전화 주문 기록</b><span data-sitename></span><button type="button" data-close>닫기</button></div></div>';
+  document.body.append(layer);
+  const panel = document.createElement('div'); panel.id = 'v6Buy';
+  layer.firstChild.append(panel);
   let mode = 'order';
   function setMode(m) {
-    mode = m; modes.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
-    root.classList.toggle('v6-buymode', m !== 'order');
-    panel.hidden = m !== 'buy'; recv.hidden = m !== 'recv';
-    if (m === 'buy') paint();   // 발주 유형은 보던 탭을 따르지 않음 — 읽은 품목으로 짐작하거나 직접 고름 (10/27 목자재 탭에서 산 콘센트가 목자재로 잡힘)
+    mode = m; layer.hidden = m !== 'buy';
+    if (m === 'buy') { layer.querySelector('[data-sitename]').textContent = S.site ? S.site.name.replace(/\s*PROJECT\s*$/, '') : ''; paint(); }   // 발주 유형은 보던 탭을 따르지 않음 — 읽은 품목으로 짐작하거나 직접 고름 (10/27)
   }
-  modes.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) setMode(b.dataset.m); });
-  recv.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; if (b.dataset.go === 'stmt' && window.StatementApp) StatementApp.open(); if (b.dataset.go === 'settle' && typeof goSettle === 'function') goSettle(); });
+  layer.addEventListener('click', e => { if (e.target === layer || e.target.closest('[data-close]')) setMode('order'); });
 
   // ── 상태 ──
   let img = null, masks = [], drag = null, busy = false, reqId = '', last = null;
@@ -70,7 +60,6 @@
       <div class="v6b-acts"><span data-sum></span><button class="v6b-pri" data-act="record">🧾 구매 기록하고 검수로 →</button></div>
       <p class="v6b-msg" data-msg role="status"></p>
     </div>
-    <div class="v6b-card"><h3>이 현장 최근 발주·구매 <small>노션 발주 보드</small></h3><div data-list></div></div>
   </div>`;
   const $ = q => panel.querySelector(q);
   const cv = $('canvas'), ctx = cv.getContext('2d');
@@ -170,8 +159,6 @@
     const dd = dupDraft(), dor = dupOrders();
     $('[data-dup]').innerHTML = (dd.length ? `<div class="v6b-alert dup">⚠️ <b>「발주서 만들기」 초안에 같은 물건이 있습니다</b> — 그대로 두면 업체 발주서에도 나갑니다.${dd.map(m => `<div class="v6b-dl"><span>${esc(F.items[m.i].name)} ↔ <b>${esc(m.d.name)}</b>${m.d.spec ? ' · ' + esc(m.d.spec) : ''} × ${esc(m.d.qty)}</span><button data-act="take" data-i="${m.i}" data-d="${esc(m.d.name)}|${esc(m.d.spec || '')}">초안에서 빼고 이 기록으로</button></div>`).join('')}</div>` : '')
       + (dor.length ? `<div class="v6b-alert dup">⚠️ <b>같은 날 같은 구매처 기록이 이미 있습니다</b> — ${dor.map(o => esc(o.no + ' ' + o.name)).join(', ')}. 다른 주문이면 그대로 기록하세요.</div>` : '');
-    const os = ((S.detail && S.detail.orders) || []).slice(0, 10);
-    $('[data-list]').innerHTML = os.length ? os.map(o => `<div class="v6b-o"><b>${esc(o.name || o.no)}</b><span class="v6b-st s-${esc(o.state || '')}">${esc(o.state || '')}</span><small>${esc(o.no || '')} · ${esc(o.count || 0)}품목 · ${esc(o.date || '')}</small></div>`).join('') : '<p class="v6b-empty">현장을 고르면 나옵니다</p>';
     $('[data-act="record"]').disabled = busy || !S.site || !n || !F.type;
   }
   function say(t, bad, which) { const m = $(which === 'readmsg' ? '[data-readmsg]' : '[data-msg]'); if (!m) return; m.innerHTML = t || ''; m.classList.toggle('bad', !!bad); }
@@ -214,12 +201,13 @@
       const warn = [r.fileError, r.linkWarning].filter(Boolean).join(' · ');
       F = blank(); img = null; masks = []; $('.v6b-canvas').hidden = true; say('', false, 'readmsg');
       busy = false; paint();
-      say(`✅ <b>${esc(r.orderNo)}</b> 기록했습니다${r.again ? ' (이미 기록돼 있던 것)' : ''} · <a href="${esc(r.pageUrl)}" target="_blank" rel="noopener">노션에서 보기</a> · 택배가 오면 보고앱에서 체크${warn ? '<br>⚠️ ' + esc(warn) : ''}`, !!warn);
+      if (window.Ledger) Ledger.refresh();   // 장부에 바로 한 줄
+      say(`✅ <b>${esc(r.orderNo)}</b> 기록했습니다${r.again ? ' (이미 기록돼 있던 것)' : ''} · <a href="${esc(r.pageUrl)}" target="_blank" rel="noopener">노션에서 보기</a> · 장부에 올라갔고, 택배가 오면 보고앱에서 체크${warn ? '<br>⚠️ ' + esc(warn) : ''}`, !!warn);
     } catch (e) { busy = false; paint(); say(/unknown|recordPurchase/i.test(e.message) ? '서버(Order.gs·Code.gs)를 새로 올린 뒤에 됩니다' : esc(e.message), true); }
   }
 
   // 현장·종류가 바뀌면 목록·기본 유형 다시
   const oldDraw = draw;
   draw = function () { oldDraw.apply(this, arguments); if (mode === 'buy') { try { paint(); } catch (e) { } } };
-  window.산것기록 = {open: () => setMode('buy'), state: () => JSON.parse(JSON.stringify(F))};   // 점검용
+  window.산것기록 = {open: () => setMode('buy'), close: () => setMode('order'), state: () => JSON.parse(JSON.stringify(F))};   // 점검용
 })();
