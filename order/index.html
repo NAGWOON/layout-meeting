@@ -662,7 +662,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=9"><link rel="stylesheet" href="ledger.css?v=1"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=9"><link rel="stylesheet" href="ledger.css?v=2"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1075,7 +1075,7 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-28-ledger1';
+var APP_VER = '2026-10-28-sent1';
 // 왼쪽 메뉴 — 업무 순서대로 셋 (10/28 개편 1단계 · 협업/2026-10-27_발주앱디자인/13). 발주·타일·명세서 화면이 같은 줄을 씁니다.
 // 「단가 기록」은 옛 화면(명세서 기록 → 단가 덮어쓰기)입니다 — 명세서 저장(3단계)이 생기면 뺍니다.
 function 메뉴html(on) {
@@ -4532,7 +4532,7 @@ function text(s = state()) {
         })
         .join('') ||
       '<p>공간 줄에서 제품·색을 고르면 면적 합계가 나타납니다. 소요량 제안은 하지 않습니다.</p>'
-    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside>${renderSheetChoices()}<div class="v6-cond"><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></div><button type="button" class="v6-newwin" onclick="A4Preview.open()">발주서 새 창으로</button><div id="tilePaper" class="a4-preview">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose">점검 기록</button><button data-action="copy">텍스트 복사</button><button data-action="download">이미지 내려받기</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
+    }${oldGroups.map(([key, g], i) => `<div class="to-error">연결이 끊긴 줄눈 주문: ${html(g.name)} ${html(g.color)} ${html(g.qty)}${html(g.unit)}<button data-action="keepOrphan" data-key="${html(key)}">별도 부자재로 유지</button><button data-action="dropOrphan" data-key="${html(key)}">이번 발주에서 제외</button></div>`).join('')}</section><section class="to-subsection"><h3>부자재</h3>${s.accessories.map((r, i) => `<div class="to-acc">${field('accessories.' + i + '.materialId', r.materialId, '부자재', optionsFor(acc, r.materialId, r.name))}${field('accessories.' + i + '.qty', r.qty, '주문량', null, true)}${field('accessories.' + i + '.unit', r.unit, '단위')}${field('accessories.' + i + '.note', r.note, '요청사항')}<button data-action="delAcc" data-index="${i}">×</button></div>`).join('')}<button data-action="addAcc">＋ 부자재 추가</button></section><section class="to-subsection"><h3>욕조 <small>가로 mm × 세로 mm</small></h3>${s.tubs.map((r, i) => `<div class="to-bath"><b>아크릴욕조</b>${field('tubs.' + i + '.w', r.w, '가로 mm')}<span>×</span>${field('tubs.' + i + '.h', r.h, '세로 mm')}${field('tubs.' + i + '.space', r.space, '설치 공간')}${field('tubs.' + i + '.qty', r.qty, '주문량·개', null, true)}<button data-action="delTub" data-index="${i}">×</button><div class="to-bath-sizes">${['750×1500', '750×1600', '800×1700'].map((size) => `<button data-action="tubSize" data-index="${i}" data-value="${size}">${size}</button>`).join('')}</div></div>`).join('')}<button data-action="addTub">＋ 욕조 추가</button></section><section class="to-subsection"><label>양중·하차·그 밖의 요청<textarea data-field="note" aria-label="요청사항">${html(s.note)}</textarea></label></section></fieldset></main><aside>${renderSheetChoices()}<div class="v6-cond"><label>발주처${field('vendor', s.vendor, '발주처', ['신성타일', '마벨로', '그 외'])}</label>${s.vendor === '그 외' ? '<label>업체명' + field('otherVendor', s.otherVendor, '업체명') + '</label>' : ''}<label>납품 희망일<input type="date" data-field="due" value="${html(s.due)}" aria-label="납품 희망일"></label><label>배송${field('shipKind', s.shipKind, '배송', SHIPS)}</label><label>양중${field('liftKind', s.liftKind, '양중', LIFTS)}</label></div><button type="button" class="v6-newwin" onclick="A4Preview.open()">발주서 새 창으로</button><div id="tilePaper" class="a4-preview">${paper(s)}</div></aside></div><footer class="to-footer"><div><b>${html(s.orderNo || '작성 중')}</b><p id="tileStatus"></p></div><div><button data-action="diagnose" hidden>점검 기록</button><button data-action="copy">📋 카톡용 글</button><button data-action="download">🖼 이미지</button><button data-action="submit" class="to-primary" id="tileSubmit">발주 기록하고 발주서 만들기 →</button>${s.orderPageId ? '<button data-action="edit">발주 수정</button>' : ''}${s.phase === 'updateUncertain' ? '<button data-action="recoverUpdate">수정 초안 보관하고 서버 다시 열기</button>' : ''}<button data-action="new">새 타일 발주</button></div></footer></div>`;
     A4Preview.prepare(el('tilePaper'));
     renderStatus();
   }
@@ -4607,8 +4607,8 @@ function text(s = state()) {
           : s.phase === 'updateUncertain'
             ? '수정 결과 다시 확인'
             : s.phase === 'edit'
-              ? '수정 기록하고 발주서 만들기'
-              : '발주 기록하고 발주서 만들기 →';
+              ? '수정 저장하고 발주서 만들기'
+              : '발주 저장하고 발주서 만들기 →';
   }
   function refreshPreview() {
     const s = state();
@@ -5273,7 +5273,7 @@ function text(s = state()) {
 (function () {
   const root = document.createElement('section');
   root.id = 'unifiedOrder';
-  root.innerHTML = `<nav class="to-rail">${메뉴html('work')}</nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">텍스트 복사</button><button onclick="saveImage()">이미지 내려받기</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
+  root.innerHTML = `<nav class="to-rail">${메뉴html('work')}</nav><div class="to-shell"><header class="to-context" id="unifiedContext"></header><nav id="unifiedTabs"></nav><div class="to-workbench"><main id="unifiedMain"><h2 id="unifiedTitle">목자재 주문표</h2><div id="unifiedCalculators"></div><div id="unifiedItems"></div><div id="unifiedReferences"></div></main><aside id="unifiedAside"><h2>발주서 미리보기</h2><button id="unifiedZoom" onclick="A4Preview.open()">발주서 새 창으로</button><div id="unifiedPreview"></div></aside></div><footer class="to-footer"><div id="unifiedCount"></div><div><button onclick="goSettle()">명세서 기록</button><button onclick="openNote()">특기사항</button><button onclick="openQty()">수량 수정</button><button onclick="copyText()">📋 카톡용 글</button><button onclick="saveImage()">🖼 이미지</button><button id="submitBtn" class="to-primary" onclick="goSheet();submit()">발주 기록</button></div></footer></div>`;
   el('scr-input').append(root);
   function move(id, parent) {
     parent.append(el(id));
@@ -5328,7 +5328,7 @@ function text(s = state()) {
       !pickedOf(S.cur).length ||
       !!S.done[S.cur] ||
       OrderLoad.phase !== 'ready';
-    button.textContent = S.busy ? '기록 중…' : S.done[S.cur] ? '기록 완료' : (venOf(S.cur) ? venOf(S.cur) + (/인터넷|온라인/.test(venOf(S.cur)) ? ' 주문 기록' : ' 발주 기록') : S.cur + '장 발주 기록');   // 누구에게 가는 기록인지 버튼에 (10/27 시안 다)
+    button.textContent = S.busy ? '저장 중…' : S.done[S.cur] ? '✓ 저장됨' : (venOf(S.cur) ? venOf(S.cur) + (/인터넷|온라인/.test(venOf(S.cur)) ? ' 주문 저장' : ' 발주 저장') : S.cur + '장 발주 저장');   // 저장 = 노션 기록 · 보냄은 따로 (10/28 개편 2단계)   // 누구에게 가는 기록인지 버튼에 (10/27 시안 다)
     if (lastSheet !== S.cur || (S.ven[S.cur] && vendorName() !== S.ven[S.cur])) {
       lastSheet = S.cur;
       const vendor = venOf(S.cur);
@@ -6866,7 +6866,7 @@ function paintPaper(s) {
         (s.type === '도기' ? '＋ 욕실' : '＋ 짝') +
         '</button><button data-action="split">줄마다 장 나누기</button><button data-action="clear">비우기</button></div>' +
         input('note', s.note, '이 장 특기사항') +
-        '</fieldset><div id="structuredActions" class="v5-buttons"><button data-action="copy">카톡 글 복사</button><button data-action="image">발주서 이미지 내려받기</button><button data-action="submit" ' +
+        '</fieldset><div id="structuredActions" class="v5-buttons"><button data-action="copy">📋 카톡용 글</button><button data-action="image">🖼 이미지</button><button data-action="submit" ' +
         (['sending', 'readonly', 'saved'].includes(s.phase) ? 'disabled' : '') +
         '>' +
         (s.phase === 'imagePending'
@@ -6876,8 +6876,8 @@ function paintPaper(s) {
             : s.phase === 'updateUncertain'
               ? '서버 기록 확인'
               : s.phase === 'edit'
-                ? '수정 기록'
-                : '발주 기록') +
+                ? '수정 저장'
+                : '발주 저장') +
         '</button>' +
         (s.phase === 'updateUncertain' ? '<button data-action="recover">서버 기록 새로 열기</button>' : '') +
         (s.data.calc ? '<button data-action="restore-calc">이 발주의 계산 불러오기</button>' : '') +
@@ -8375,5 +8375,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=17"></script><script src="wiring-order.js?v=11"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=9"></script><script src="purchase.js?v=6"></script><script src="ledger.js?v=1"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=17"></script><script src="wiring-order.js?v=11"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=9"></script><script src="purchase.js?v=7"></script><script src="ledger.js?v=2"></script></body>
 </html>

@@ -29,7 +29,7 @@
 
   // ── 상태 ──
   let img = null, masks = [], drag = null, busy = false, reqId = '', last = null;
-  const blank = () => ({kind: '주문완료', vendor: '', seller: '', extOrderNo: '', orderDate: new Date().toISOString().slice(0, 10), payMethod: '', total: '', due: '', dueNote: '', type: '', note: '', items: [{name: '', option: '', qty: 1, unit: '개'}]});
+  const blank = () => ({kind: '주문완료', route: '인터넷', paid: true, vendor: '', seller: '', extOrderNo: '', orderDate: new Date().toISOString().slice(0, 10), payMethod: '', total: '', due: '', dueNote: '', type: '', note: '', items: [{name: '', option: '', qty: 1, unit: '개'}]});
   let F = blank();
 
   panel.innerHTML = `<div class="v6b-grid">
@@ -38,7 +38,9 @@
       <div class="v6b-canvas" hidden><canvas></canvas>
         <p class="v6b-maskhelp">🔒 <b>이름 · 주소 · 전화 · 카드 번호</b>를 마우스로 끌어서 까맣게 칠하세요. 칠한 그림만 서버로 가고, 그것만 기록에 붙습니다.</p>
         <div class="v6b-row"><button data-act="undo">한 칸 되돌리기</button><button data-act="clearimg">캡처 지우기</button><button class="v6b-fn" data-act="read">가린 뒤 읽기 →</button></div></div>
-      <div class="v6b-kind"><label><input type="radio" name="v6bk" value="주문완료" checked> 주문 완료<small>결제까지 함 → 검수 대기</small></label><label><input type="radio" name="v6bk" value="장바구니"> 장바구니<small>아직 안 삼 → 초안으로만</small></label></div>
+      <div class="v6b-kind"><label><input type="radio" name="v6br" value="인터넷" checked> 인터넷<small>네이버·사이트</small></label><label><input type="radio" name="v6br" value="전화"> 전화 주문<small>사진 없이 써도 됨</small></label><label><input type="radio" name="v6br" value="현장"> 현장 구매<small>직접 받음</small></label></div>
+      <div class="v6b-kind"><label><input type="radio" name="v6bk" value="주문완료" checked> 주문함<small>→ 검수 대기</small></label><label><input type="radio" name="v6bk" value="장바구니"> 아직 (목록만)<small>→ 초안으로만</small></label></div>
+      <div class="v6b-kind"><label><input type="radio" name="v6bp" value="1" checked> 결제 끝</label><label><input type="radio" name="v6bp" value="0"> 결제 전 · 외상<small>전화 주문 후불</small></label></div>
       <p class="v6b-msg" data-readmsg></p>
     </div>
     <div class="v6b-card v6b-main"><h3>확인하고 기록 <small>틀린 칸만 고치세요 · 캡처 없이 직접 쳐도 됩니다</small></h3>
@@ -57,7 +59,7 @@
       <table class="v6b-items"><thead><tr><th>품명</th><th>옵션 · 규격</th><th class="r">수량</th><th>단위</th><th></th></tr></thead><tbody data-items></tbody></table>
       <button class="v6b-add" data-act="addrow">＋ 줄 추가</button>
       <div data-dup></div>
-      <div class="v6b-acts"><span data-sum></span><button class="v6b-pri" data-act="record">🧾 구매 기록하고 검수로 →</button></div>
+      <div class="v6b-acts"><span data-sum></span><button class="v6b-pri" data-act="record">🧾 주문 기록 저장 → 장부·검수에 올라감</button></div>
       <p class="v6b-msg" data-msg role="status"></p>
     </div>
   </div>`;
@@ -151,11 +153,13 @@
   function paint() {
     panel.querySelectorAll('[data-f]').forEach(i => { if (document.activeElement !== i) i.value = F[i.dataset.f] ?? ''; });
     panel.querySelectorAll('input[name="v6bk"]').forEach(r => { r.checked = r.value === F.kind; });
+    panel.querySelectorAll('input[name="v6br"]').forEach(r => { r.checked = r.value === F.route; });
+    panel.querySelectorAll('input[name="v6bp"]').forEach(r => { r.checked = (r.value === '1') === F.paid; });
     $('[data-items]').innerHTML = F.items.map((x, i) => `<tr class="${x.unsure ? 'unsure' : ''}"><td><input data-i="${i}" data-k="name" value="${esc(x.name)}" placeholder="품명"></td><td><input data-i="${i}" data-k="option" value="${esc(x.option)}" placeholder="색 · 규격 · 선택"></td>`
       + `<td class="r"><input type="number" min="0" data-i="${i}" data-k="qty" value="${esc(x.qty)}" class="q"></td><td><input data-i="${i}" data-k="unit" value="${esc(x.unit)}" class="u"></td>`
       + `<td>${(x.sources || []).length ? '<span class="v6b-link" title="실측에서 온 줄 — 기록하면 실측 표에 발주 완료">🔗 실측</span>' : ''}<button class="v6b-x" data-act="delrow" data-i="${i}" title="이 줄 빼기">×</button></td></tr>`).join('');
     const n = F.items.filter(x => x.name && Number(x.qty) > 0).length;
-    $('[data-sum]').textContent = (n && !F.type ? '⚠️ 발주 유형을 골라주세요 · ' : '') + n + '품목' + (Number(F.total) ? ' · ' + won(F.total) + '원' : '') + ' · ' + (F.kind === '장바구니' ? '장바구니(초안)' : '주문 완료 → 검수 대기');
+    $('[data-sum]').textContent = (n && !F.type ? '⚠️ 발주 유형을 골라주세요 · ' : '') + n + '품목' + (Number(F.total) ? ' · ' + won(F.total) + '원' : '') + ' · ' + (F.route === '인터넷' ? '' : F.route + ' · ') + (F.kind === '장바구니' ? '목록만(초안)' : '주문함 → 검수 대기') + (F.paid ? '' : ' · 결제 전');
     const dd = dupDraft(), dor = dupOrders();
     $('[data-dup]').innerHTML = (dd.length ? `<div class="v6b-alert dup">⚠️ <b>「발주서 만들기」 초안에 같은 물건이 있습니다</b> — 그대로 두면 업체 발주서에도 나갑니다.${dd.map(m => `<div class="v6b-dl"><span>${esc(F.items[m.i].name)} ↔ <b>${esc(m.d.name)}</b>${m.d.spec ? ' · ' + esc(m.d.spec) : ''} × ${esc(m.d.qty)}</span><button data-act="take" data-i="${m.i}" data-d="${esc(m.d.name)}|${esc(m.d.spec || '')}">초안에서 빼고 이 기록으로</button></div>`).join('')}</div>` : '')
       + (dor.length ? `<div class="v6b-alert dup">⚠️ <b>같은 날 같은 구매처 기록이 이미 있습니다</b> — ${dor.map(o => esc(o.no + ' ' + o.name)).join(', ')}. 다른 주문이면 그대로 기록하세요.</div>` : '');
@@ -169,7 +173,11 @@
     if (t.dataset.k) { const it = F.items[+t.dataset.i]; it[t.dataset.k] = t.dataset.k === 'qty' ? Number(t.value) : t.value; delete it.unsure; paintSoon(); }
   });
   let pt2 = 0; const paintSoon = () => { clearTimeout(pt2); pt2 = setTimeout(() => { const a = document.activeElement, sel = a && a.dataset ? [a.dataset.i, a.dataset.k, a.dataset.f, a.selectionStart] : null; paint(); if (sel) { const q = sel[2] ? `[data-f="${sel[2]}"]` : `[data-i="${sel[0]}"][data-k="${sel[1]}"]`; const n = panel.querySelector(q); if (n) { n.focus(); try { n.setSelectionRange(sel[3], sel[3]); } catch (x) { } } } }, 350); };
-  panel.addEventListener('change', e => { if (e.target.name === 'v6bk') { F.kind = e.target.value; paint(); } });
+  panel.addEventListener('change', e => {
+    if (e.target.name === 'v6bk') { F.kind = e.target.value; paint(); }
+    if (e.target.name === 'v6br') { F.route = e.target.value; if (F.route === '현장' && !F.vendor) F.vendor = '현장 구매'; paint(); }
+    if (e.target.name === 'v6bp') { F.paid = e.target.value === '1'; paint(); }
+  });
   panel.addEventListener('click', async e => {
     const b = e.target.closest('[data-act]'); if (!b || busy) return;
     const a = b.dataset.act;
@@ -193,7 +201,7 @@
     busy = true; paint(); say('노션에 기록하는 중…');
     try {
       const r = await api('recordPurchase', {sitePageId: S.site.id, type: F.type, vendor: F.vendor.trim(), seller: F.seller, extOrderNo: F.extOrderNo, orderDate: F.orderDate,
-        payMethod: F.payMethod, total: Number(F.total) || 0, due: F.due, dueNote: F.dueNote, kind: F.kind, note: F.note, items, image: img ? shot() : '', requestId: reqId, force: !!force});
+        payMethod: F.payMethod, total: Number(F.total) || 0, due: F.due, dueNote: F.dueNote, kind: F.kind, route: F.route, paid: F.paid, note: F.note, items, image: img ? shot() : '', requestId: reqId, force: !!force});
       if (r && r.duplicate) { busy = false; paint(); return say(`⚠️ ${esc(r.error)} · <a href="${esc(r.pageUrl)}" target="_blank" rel="noopener">노션에서 보기</a> · 다른 주문이면 <button class="v6b-fn" data-act="force">그래도 기록</button>`, true); }
       if (!r || !r.ok) throw Error((r && r.error) || '기록하지 못했습니다');
       last = r; reqId = '';

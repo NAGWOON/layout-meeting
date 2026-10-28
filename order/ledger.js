@@ -1,7 +1,8 @@
 /* 발주앱 · 📒 발주 장부 — 2026-10-28 Claude (개편 1단계 · 협업/2026-10-27_발주앱디자인/13 · 시안 바_1)
  * 첫 화면. 이 현장 발주를 전부, 한 줄에 주문 → 입고 → 청구.
  *  · 발주서로 낸 것 · 전화 · 산 것이 모두 한 줄 (노션 📦 발주 DB 그대로 — 새 칸 없음)
- *  · 읽기 전용입니다. 「보냈음 표시」는 2단계, 청구(명세서 대조 결과)는 3단계 — 그 전에는 「기록 전」으로만 보여 줌
+ *  · 2단계(10/28): 「✓ 보냈음 표시」(보낸 날·방법 · 받은 줄 없으면 보냄 취소) — 장부의 그 건과, 작업실에서 저장한 직후 아래 줄
+ *  · 청구(명세서 대조 결과)는 3단계 — 그 전에는 「기록 전」으로만 보여 줌
  *  · 서버: getLedger (대표 키만 · 끝까지 읽음). 서버가 옛 것이면 현장 정보의 지난 발주(최근 50건)로 대신 보여 주고 그렇다고 알림
  *  · 줄을 누르면 오른쪽에 그 건 — 품목(받은 것 ✓) · 비고 · 「발주서로 열기」 등
  */
@@ -65,7 +66,8 @@
   }
 
   // ── 줄 나누기 ──
-  const isSent = o => o.state === '발주완료' || o.state === '입고완료';
+  const isSent = o => ['발주완료', '일부 입고', '입고완료'].includes(o.state);
+  const HOWS = ['카톡 발주서', '전화', '인터넷', '현장', '문자·메일'];
   function bucket(o) {
     if (o.state === '보류') return 'hold';
     if (o.state === '입고완료') return 'done';
@@ -84,7 +86,7 @@
     recv.forEach(o => { const k = o.due || ''; (dates[k] = dates[k] || []).push(o); });
     const recvGroups = Object.keys(dates).sort((a, b) => (a || '9') < (b || '9') ? -1 : 1)
       .map(k => [k ? dayName(k) : '날짜 모름', dates[k]]);
-    if (L.filter === 'open' || L.filter === 'draft') { const d = by('draft'); if (d.length) out.push(['보낸 기록 없음 — 저장만 된 발주 (「보냈음 표시」는 다음 단계)', d, 'draft']); }
+    if (L.filter === 'open' || L.filter === 'draft') { const d = by('draft'); if (d.length) out.push(['보낼 것 — 저장만 되고 「보냈음」이 없음', d, 'draft']); }
     if (L.filter === 'open' || L.filter === 'recv') recvGroups.forEach(g => out.push([g[0], g[1], 'recv']));
     if (L.filter === 'open') { const h = by('hold'); if (h.length) out.push(['보류', h, 'hold']); }
     if (L.filter === 'all') {
@@ -99,10 +101,10 @@
 
   // ── 칸 ──
   function ordCell(o) {
-    if (o.state === '발주예정') return '<span class="lg-st w">작성 중 · 보낸 기록 없음</span>';
+    if (o.state === '발주예정') return '<span class="lg-st w">작성 중 · 보냄 전</span>';
     if (o.state === '보류') return '<span class="lg-st r">보류</span>';
-    const how = o.route === '산 것' ? '샀음' : '주문';
-    return '<span class="lg-st s">' + how + ' ' + esc(md(o.date)) + '</span>';
+    const how = o.route === '산 것' ? '샀음' : o.route === '전화' || o.how === '전화' ? '전화' : o.sent ? '보냄' : '주문';
+    return '<span class="lg-st s">' + how + ' ' + esc(md(o.sent || o.date)) + '</span>';
   }
   function inCell(o) {
     if (o.state === '입고완료') return '<span class="lg-st d">✓ 다 받음</span>';
@@ -135,7 +137,7 @@
     $('[data-chips]').innerHTML = chips.join('');
     // 거름
     const n = k => L.orders.filter(o => bucket(o) === k).length;
-    const segs = [['open', '진행 중', n('draft') + n('recv') + n('hold')], ['draft', '보낸 기록 없음', n('draft')], ['recv', '받을 것', n('recv')], ['all', '전부', L.orders.length]];
+    const segs = [['open', '진행 중', n('draft') + n('recv') + n('hold')], ['draft', '보낼 것', n('draft')], ['recv', '받을 것', n('recv')], ['all', '전부', L.orders.length]];
     $('[data-seg]').innerHTML = segs.map(s => '<button type="button" data-f="' + s[0] + '" class="' + (L.filter === s[0] ? 'on' : '') + '">' + s[1] + ' <b>' + s[2] + '</b></button>').join('');
     // 알림 줄
     const warn = L.fallback ? '서버를 새로 올리기 전이라 최근 50건만, 입고 날짜·금액·품목 없이 보입니다 — Order.gs·Code.gs 붙여넣기 뒤 전부 나옵니다'
@@ -173,7 +175,7 @@
     const st = (k, t, v, cls) => '<div class="' + cls + '"><small>' + t + '</small><b>' + v + '</b></div>';
     const it = o.items, got = it ? it.filter(x => x.checked).length : 0;
     const steps = st('a', '작성', '✓ ' + esc(md(o.date)), 'ok')
-      + (isSent(o) ? st('b', o.route === '산 것' ? '샀음' : '주문', '✓ ' + esc(md(o.date)), 'ok') : st('b', '보냄', '기록 없음', 'now'))
+      + (isSent(o) ? st('b', o.route === '산 것' ? '샀음' : '보냄', '✓ ' + esc(md(o.sent || o.date)) + (o.how && o.how !== '카톡 발주서' ? ' · ' + esc(o.how) : ''), 'ok') : st('b', '보냄', '아직', 'now'))
       + (o.state === '입고완료' ? st('c', '입고', '✓ 다 받음', 'ok') : st('c', '입고', it && got ? got + '/' + it.length + ' 받음' : (o.due ? esc(md(o.due)) + (isSent(o) ? ' 예정' : ' 희망') : '—'), ''))
       + st('d', '청구', o.route === '산 것' ? '해당 없음' : '기록 전', '');
     const items = !it ? '<div class="lg-mute">품목 받는 중…</div>'
@@ -184,19 +186,73 @@
         ? '<button type="button" class="lg-pri" data-a="copy">같은 품목으로 새 발주</button><button type="button" data-a="edit">' + (o.state === '입고완료' ? '📤 반품 기록' : '✎ 수량 수정') + '</button>'
         : '<button type="button" class="lg-pri" data-a="open">발주서 열기 (고치기)</button>')
       + (o.url ? '<a class="lg-btn" href="' + esc(o.url) + '" target="_blank" rel="noopener">노션에서 보기</a>' : '');
+    const canCancel = o.state === '발주완료' && o.route !== '산 것' && it && !it.some(x => x.checked);
     det.innerHTML = '<div class="lg-meta">' + esc(o.no) + ' · ' + esc(o.type || '') + (o.route && isSent(o) ? ' · ' + esc(o.route) : '') + '</div>'
       + '<h2>' + esc(o.vendor || o.name || '') + '</h2>'
       + '<div class="lg-meta">' + [o.due ? md(o.due) + (isSent(o) ? ' 입고 예정' : ' 납품 희망') : '', (o.ship || ''), (o.lift || ''), o.amount ? won(o.amount) : ''].filter(Boolean).map(esc).join(' · ') + '</div>'
       + '<div class="lg-steps">' + steps + '</div>'
-      + (o.state === '발주예정' ? '<p class="lg-note w">저장만 되어 있습니다. 업체에 보냈다면 지금은 노션에서 상태를 「발주완료」로 바꿔 주세요 — 「보냈음 표시」 단추는 다음 단계에 생깁니다.</p>' : '')
+      + (o.state === '발주예정' ? sendForm(o) : '')
       + (o.note ? '<p class="lg-note">' + esc(o.note) + '</p>' : '') + (o.ret ? '<p class="lg-note w">반품 · ' + esc(o.ret) + '</p>' : '')
-      + '<div class="lg-items">' + items + '</div><div class="lg-acts">' + acts + '</div>';
+      + '<div class="lg-items">' + items + '</div><div class="lg-acts">' + acts + '</div>'
+      + (canCancel ? '<button type="button" class="lg-undo" data-a="unsend">보냄 취소 — 잘못 눌렀을 때만 (받은 줄이 없을 때)</button>' : '');
     if (!it && !o.loadingItems) {   // 끝난 건·못 받은 건은 열 때 그 건만
       o.loadingItems = true;
       api('getSiteOrders', {sitePageId: L.siteId, orderPageId: o.id, itemsOnly: true}).then(r => { o.loadingItems = false; o.items = (r && r.ok && r.items) || []; if (L.sel === o.id) paintDet(); })
         .catch(() => { o.loadingItems = false; o.items = []; if (L.sel === o.id) paintDet(); });
     }
   }
+
+  // ── 보냈음 표시 (2단계) ──
+  const todayStr = () => today();
+  function sendForm(o) {
+    return '<div class="lg-send"><b>업체에 보냈으면 「보냈음 표시」</b><span>복사·이미지만으로는 바뀌지 않습니다</span>'
+      + '<div class="lg-sendrow"><label>보낸 날<input type="date" data-sdate value="' + todayStr() + '"></label>'
+      + '<label>방법<select data-show>' + HOWS.map(h => '<option' + (h === (o.route === '전화' ? '전화' : '카톡 발주서') ? ' selected' : '') + '>' + esc(h) + '</option>').join('') + '</select></label>'
+      + '<button type="button" class="lg-pri" data-a="send">✓ 보냈음 표시</button></div></div>';
+  }
+  async function send(o, cancel) {
+    const b = app.querySelector(cancel ? '[data-a="unsend"]' : '[data-a="send"]'); if (b) { b.disabled = true; b.textContent = cancel ? '되돌리는 중…' : '기록하는 중…'; }
+    try {
+      const r = await api('markSent', cancel ? {orderPageId: o.id, cancel: true} : {orderPageId: o.id, date: (app.querySelector('[data-sdate]') || {}).value, how: (app.querySelector('[data-show]') || {}).value});
+      if (!r || !r.ok) throw Error((r && r.error) || '기록하지 못했습니다');
+      o.state = r.상태; if (!cancel) { o.sent = r.sent; o.how = r.how; } else { o.sent = ''; o.how = ''; }
+      toast(cancel ? '보냄을 취소했습니다 — 작성 중으로 돌아갔습니다' : r.already ? '이미 보낸 건입니다' : esc(o.no) + ' 보냈음으로 기록했습니다');
+      if (r.warning) toast(r.warning);
+      paint(); load();
+    } catch (e) {
+      toast(/markSent|웹훅에 페이지 id/.test(e.message) ? '서버(Order.gs·Code.gs)를 새로 올린 뒤에 됩니다' : e.message);
+      paint();
+    }
+  }
+  window.보냈음 = {send: (id, date, how) => api('markSent', {orderPageId: id, date: date, how: how})};
+
+  // 작업실에서 저장한 직후 — 아래에 「업체에 보내셨나요? ✓ 보냈음 표시」 한 줄 (6유형 모두 같은 저장 api 를 탐)
+  const bar = document.createElement('div'); bar.id = 'sentBar'; bar.hidden = true; document.body.append(bar);
+  let barFor = null;
+  function showBar(r, p) {
+    barFor = {id: r.orderPageId, no: r.orderNo, vendor: (p && p.vendor) || '', net: /인터넷|온라인/.test((p && p.vendor) || '')};
+    bar.innerHTML = '<span>📨 <b>' + esc(barFor.no) + '</b>' + (barFor.vendor ? ' · ' + esc(barFor.vendor) : '') + ' 저장했습니다 — 업체에 보내셨나요?</span>'
+      + '<input type="date" data-bdate value="' + todayStr() + '"><select data-bhow>' + HOWS.map(h => '<option' + (h === (barFor.net ? '인터넷' : '카톡 발주서') ? ' selected' : '') + '>' + esc(h) + '</option>').join('') + '</select>'
+      + '<button type="button" class="lg-pri" data-b="send">✓ 보냈음 표시</button><button type="button" data-b="later">나중에 — 장부 「보낼 것」에 남음</button>';
+    bar.hidden = false;
+  }
+  bar.addEventListener('click', async e => {
+    const b = e.target.closest('[data-b]'); if (!b || !barFor) return;
+    if (b.dataset.b === 'later') { bar.hidden = true; return; }
+    b.disabled = true; b.textContent = '기록하는 중…';
+    try {
+      const r = await api('markSent', {orderPageId: barFor.id, date: bar.querySelector('[data-bdate]').value, how: bar.querySelector('[data-bhow]').value});
+      if (!r || !r.ok) throw Error((r && r.error) || '기록하지 못했습니다');
+      bar.innerHTML = '<span>✓ <b>' + esc(barFor.no) + '</b> 보냈음으로 기록했습니다' + (r.warning ? ' · ⚠️ ' + esc(r.warning) : '') + '</span><button type="button" data-b="later">닫기</button>';
+      Ledger.refresh();
+    } catch (err) { b.disabled = false; b.textContent = '✓ 보냈음 표시'; toast(/markSent|웹훅에 페이지 id/.test(err.message) ? '서버(Order.gs·Code.gs)를 새로 올린 뒤에 됩니다' : err.message); }
+  });
+  const 원래api = api;
+  api = function (action, data) {
+    const pr = 원래api.apply(this, arguments);
+    if (action === 'submitOrder') pr.then(r => { if (r && r.ok && r.orderPageId && !r.again) showBar(r, data); }).catch(() => { });
+    return pr;
+  };
 
   // ── 동작 ──
   function needSiteReady() {
@@ -228,6 +284,8 @@
     else if (o && a === 'copy') openOrder(o, 'copy');
     else if (o && a === 'edit') openOrder(o, 'edit');
     else if (o && a === 'open') openOrder(o, 'open');
+    else if (o && a === 'send') send(o, false);
+    else if (o && a === 'unsend') send(o, true);
   });
   $('[data-site]').addEventListener('change', e => setSite(e.target.value));
   $('[data-find]').addEventListener('input', e => { L.find = e.target.value.trim(); paint(); });
@@ -254,6 +312,7 @@
       app.hidden = false; document.body.classList.add('ledger-on'); paint(); if (L.siteId) load();
     },
     hide() { app.hidden = true; document.body.classList.remove('ledger-on'); },
+    showBar,   // 점검용
     work() { goInput(); },
     refresh() { if (L.siteId) load(); },
     state: () => ({siteId: L.siteId, n: L.orders.length, fallback: L.fallback, filter: L.filter, sel: L.sel})   // 점검용

@@ -752,7 +752,7 @@ var LS_KEY = 'dsf_key', LS_OWNER = 'dsf_owner', LS_RECENT = 'dsf_recent';
 // 이 앱이 언제 것인지. 보고에 같이 실어 보냅니다.
 // 폰에 옛 앱이 남아 있으면 서버가 알림에서 그걸 짚어줍니다 —
 // 「왜 인원이 안 들어왔지」를 직원분께 물어보지 않기 위해서입니다.
-var APP_VER = '2026-10-28-ledger1';
+var APP_VER = '2026-10-28-sent1';
 
 var state = {
   sites: [], site: null, detail: null,
@@ -968,7 +968,7 @@ function renderOrders() {
       + '<div class="oi">' + (끝남 ? '✅' : '📦') + '</div>'
       + '<div class="ot"><b>' + esc(짧은제목(o)) + '</b>'
       + '<i>' + esc(o.vendor || '발주처 미지정') + '</i>'
-      + '<i class="sub">' + [o.due ? '입고예정 ' + o.due : '', o.no].filter(String).map(esc).join('  ·  ') + '</i></div>'
+      + '<i class="sub">' + [o.due ? '입고예정 ' + o.due : '', o.no, o.state === '발주예정' ? '사무실 보냄 기록 전' : '', o.state === '일부 입고' ? '일부 받음' : ''].filter(String).map(esc).join('  ·  ') + '</i></div>'
       + '<div class="oc">' + (비었음
           ? '<b class="n">—</b><i>품목 없음</i>'
           : 읽기전용
