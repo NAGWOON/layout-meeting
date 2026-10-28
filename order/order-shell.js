@@ -21,6 +21,23 @@
   const chips = document.createElement('div'); chips.id = 'v6Chips'; chips.className = 'v6-chips';
   ctx.append(chips);
 
+  // ── 품목 도구줄 7 → 3 + ⋯ (10/28 개편 2단계 · 시안 바_2) ──
+  //  · 늘 쓰는 것만: 담은 것만 · 붙여넣기 · ＋품목 · 가끔 쓰는 「초도 세트」「비우기」는 ⋯ 안
+  //  · 「✂ 나누기」는 오른쪽 장 줄에 같은 단추가 있어 뺌 · 「지난 발주 불러오기」는 장부(같은 품목으로 새 발주)로 — 칸은 숨겨 둔 채 장부가 씀
+  {
+    const tools = el('itemList') && el('itemList').closest('.card').querySelector('.tools');
+    if (tools) {
+      const kids = [...tools.children], by = t => kids.find(k => (k.textContent || '').indexOf(t) >= 0);
+      [by('나누기'), el('pastSel') && el('pastSel').closest('.btn2')].forEach(k => k && k.classList.add('v6-gone'));
+      const more = document.createElement('div'); more.className = 'btn2 v6-more'; more.title = '가끔 쓰는 것'; more.innerHTML = '⋯<div class="v6-moremenu" hidden></div>';
+      const menu = more.querySelector('.v6-moremenu');
+      [by('초도 세트'), by('비우기')].forEach(k => k && menu.append(k));
+      tools.append(more);
+      more.addEventListener('click', e => { if (e.target === more) menu.hidden = !menu.hidden; else setTimeout(() => { menu.hidden = true; }, 0); });
+      addEventListener('click', e => { if (!more.contains(e.target)) menu.hidden = true; });
+    }
+  }
+
   // ── 아래 참고 카드 빼기 (10/28 개편 1단계 · 대표 10/26 「굳이?」) ──
   //  · 지난 발주 → 장부(왼쪽 메뉴) · 현장 정보(하차·엘리베이터 저장) → 위 「✎ 현장 조건」 · 지난 현장 참고 → 위 「📊 지난 현장 참고」(목자재·설비만)
   //  · 양중 점검 카드는 막힐 때만 뜨므로 그대로 · 카드 안 칸·저장 동작은 그대로 옮겨 씀(id 같음)

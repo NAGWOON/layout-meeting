@@ -300,3 +300,9 @@ body.v6-nocalc #calcPill{display:none!important}
 .v6-popx{position:absolute;right:12px;top:12px;border:1px solid #e6e5e1;border-radius:8px;background:#fff;padding:5px 10px;cursor:pointer;z-index:1}
 .v6-popbody .card{margin:0!important;border:0!important;box-shadow:none!important;padding:0!important}
 .v6-popbody .card[hidden]{display:none}
+
+/* 품목 도구줄 ⋯ (10/28 개편 2단계) */
+#unifiedOrder.v6 .v6-more{position:relative;cursor:pointer;font-weight:700;letter-spacing:1px}
+#unifiedOrder.v6 .v6-moremenu{position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.12);padding:5px;display:flex;flex-direction:column;gap:2px;z-index:20;min-width:130px;letter-spacing:0;font-weight:500}
+#unifiedOrder.v6 .v6-moremenu[hidden]{display:none}
+#unifiedOrder.v6 .v6-moremenu .btn2{border:0!important;text-align:left}

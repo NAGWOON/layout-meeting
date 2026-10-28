@@ -239,6 +239,7 @@
   bar.addEventListener('click', async e => {
     const b = e.target.closest('[data-b]'); if (!b || !barFor) return;
     if (b.dataset.b === 'later') { bar.hidden = true; return; }
+    if (b.dataset.b === 'copychange') return;
     b.disabled = true; b.textContent = '기록하는 중…';
     try {
       const r = await api('markSent', {orderPageId: barFor.id, date: bar.querySelector('[data-bdate]').value, how: bar.querySelector('[data-bhow]').value});
@@ -247,10 +248,27 @@
       Ledger.refresh();
     } catch (err) { b.disabled = false; b.textContent = '✓ 보냈음 표시'; toast(/markSent|웹훅에 페이지 id/.test(err.message) ? '서버(Order.gs·Code.gs)를 새로 올린 뒤에 됩니다' : err.message); }
   });
+  // 보낸 뒤에 고쳤으면 — 업체 발주서는 옛 판입니다. 바뀐 줄만 카톡으로 다시 보내게 (보낸 판은 노션에 그대로 남음 · 10/28 개편 2단계)
+  function showChange(r, data) {
+    const o = L.orders.find(x => x.id === data.orderPageId) || ((S.detail && S.detail.orders) || []).find(x => x.id === data.orderPageId) || {};
+    const v = r.변경, 글 = ['[발주 변경] ' + (o.no || '') + (o.vendor ? ' · ' + o.vendor : '') + (S.detail ? ' · ' + String(S.detail.name || '').replace(/\s*PROJECT\s*$/, '') : '')]
+      .concat(v.빠짐.length ? ['빠짐 — 보낸 것에서 빼 주세요'].concat(v.빠짐.map(t => '  · ' + t)) : [])
+      .concat(v.새로.length ? ['새로 · 바뀐 것 — 이대로 부탁드립니다'].concat(v.새로.map(t => '  · ' + t)) : []).join('\n');
+    bar.innerHTML = '<span>✏️ <b>' + esc(o.no || '') + '</b> 보낸 뒤에 고쳤습니다 — 업체에 바뀐 것을 다시 보내 주세요 (빠짐 ' + v.빠짐.length + ' · 새로/바뀜 ' + v.새로.length + ')</span>'
+      + '<button type="button" class="lg-pri" data-b="copychange">📋 변경 내용 카톡용 글</button><button type="button" data-b="later">닫기</button>';
+    bar.dataset.text = 글; bar.hidden = false; barFor = {id: data.orderPageId, no: o.no};
+  }
+  bar.addEventListener('click', e => {
+    if (!e.target.closest('[data-b="copychange"]')) return;
+    const t = bar.dataset.text || '';
+    const done = () => toast('변경 내용을 복사했습니다 — 카톡에 붙여 보내 주세요');
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => toast('복사하지 못했습니다')); else toast('이 브라우저는 복사를 못 합니다');
+  }, true);
   const 원래api = api;
   api = function (action, data) {
     const pr = 원래api.apply(this, arguments);
     if (action === 'submitOrder') pr.then(r => { if (r && r.ok && r.orderPageId && !r.again) showBar(r, data); }).catch(() => { });
+    if (action === 'updateOrder') pr.then(r => { if (r && r.ok && r.변경) showChange(r, data); if (r && r.ok) Ledger.refresh(); }).catch(() => { });
     return pr;
   };
 
