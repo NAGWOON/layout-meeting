@@ -96,3 +96,15 @@ body.ledger-on #toast{z-index:400}
 #sentBar input,#sentBar select{border:1px solid #e6e5e1;border-radius:8px;padding:6px 8px;font:inherit;font-size:13px}
 #sentBar button{border:1px solid #e6e5e1;border-radius:9px;background:#fff;color:#5d5d58;padding:7px 12px;font:inherit;font-weight:600;cursor:pointer}
 #sentBar .lg-pri{background:#2f5fd0;border-color:#2f5fd0;color:#fff}
+
+/* 명세서 저장 (10/28 개편 3단계 · index.html StatementApp) */
+#stmtApp .cks{margin:0 0 10px;padding:11px 13px;border:1px solid #e4e4e7;border-radius:10px;background:#fff;font-size:12.5px}
+#stmtApp .cks>b{display:block;margin-bottom:6px;font-size:13px}
+#stmtApp .cks ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#stmtApp .cks li{color:#71717a}#stmtApp .cks li.ok{color:#15803d}#stmtApp .cks li em{font-style:normal;color:#b45309}
+#stmtApp .cks .ck{display:inline-flex;gap:6px;align-items:center;color:#18181b;cursor:pointer}
+#stmtApp .cks .xo{margin-top:9px;padding-top:9px;border-top:1px dashed #e4e4e7;display:flex;flex-direction:column;gap:5px;color:#52525b}
+#stmtApp .cks .xo .mi{align-self:flex-start;margin-top:3px}
+#stmtApp .cks .nt2{margin:7px 0 0;color:#b45309}
+#stmtApp .sv{font-size:12px;font-weight:700;color:#2563eb;background:#eff4ff;border-radius:7px;padding:4px 9px}
+#stmtApp .nf{padding:40px 20px;text-align:center;color:#71717a;font-size:13px}#stmtApp .nf a{color:#2563eb;font-weight:700}

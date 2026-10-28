@@ -113,7 +113,10 @@
     if (!o.due) return '<span class="lg-mute">' + (o.state === '발주예정' ? '—' : '날짜 모름') + '</span>' + part;
     return '<span class="lg-st p">' + esc(md(o.due)) + (o.state === '발주예정' ? ' 희망' : ' 예정') + '</span>' + part;
   }
-  const billCell = o => o.route === '산 것' ? '<span class="lg-mute">해당 없음 · 결제 캡처</span>' : '<span class="lg-mute">기록 전</span>';
+  // 청구 — 명세서를 저장하면 그 결과(3단계 · 10/28). 저장 전에는 「기록 전」
+  const BILL = {'확인 끝': 'd', '문의 중': 'r', '확인 중': 'w', '대조 전': 'w', '미수신': 'p', '해당 없음': 'p', '기록 없음': 'p'};
+  const billCell = o => o.bill ? '<span class="lg-st ' + (BILL[o.bill] || 'p') + '">' + (o.bill === '확인 끝' ? '✓ ' : '') + esc(o.bill) + '</span>'
+    : o.route === '산 것' ? '<span class="lg-mute">해당 없음 · 결제 캡처</span>' : '<span class="lg-mute">기록 전</span>';
   function head(o) {
     const it = (o.items || []).map(x => String(x.text || '').split('  ·  ')[0].replace(/^조합 · /, '')).filter(Boolean);   // 칸 사이는 「두 칸·두 칸」 — 앞 칸이 품명
     if (it.length) return esc(it.slice(0, 2).join(' · ')) + (it.length > 2 ? ' 외 ' + (it.length - 2) : '');
@@ -177,7 +180,7 @@
     const steps = st('a', '작성', '✓ ' + esc(md(o.date)), 'ok')
       + (isSent(o) ? st('b', o.route === '산 것' ? '샀음' : '보냄', '✓ ' + esc(md(o.sent || o.date)) + (o.how && o.how !== '카톡 발주서' ? ' · ' + esc(o.how) : ''), 'ok') : st('b', '보냄', '아직', 'now'))
       + (o.state === '입고완료' ? st('c', '입고', '✓ 다 받음', 'ok') : st('c', '입고', it && got ? got + '/' + it.length + ' 받음' : (o.due ? esc(md(o.due)) + (isSent(o) ? ' 예정' : ' 희망') : '—'), ''))
-      + st('d', '청구', o.route === '산 것' ? '해당 없음' : '기록 전', '');
+      + st('d', '청구', o.bill || (o.route === '산 것' ? '해당 없음' : '기록 전'), o.bill === '확인 끝' ? 'ok' : o.bill === '문의 중' ? 'now' : '');
     const items = !it ? '<div class="lg-mute">품목 받는 중…</div>'
       : it.length ? it.map(x => '<div class="' + (x.checked ? 'got' : '') + '"><i>' + (x.checked ? '✓' : (x.readonly ? '·' : '○')) + '</i><span>' + esc(x.text) + '</span></div>').join('')
       : '<div class="lg-mute">품목 줄이 없습니다</div>';
