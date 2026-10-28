@@ -662,7 +662,7 @@ body.unified-mode {padding:0;background:#f6f6f5;color:#222;color-scheme:light;--
 .a4-continuation .a4-cont-meta{display:flex;justify-content:space-between;gap:15px;margin-top:8px;font-size:10px;color:#555}
 
 </style>
-<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=10"><link rel="stylesheet" href="ledger.css?v=3"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
+<link rel="stylesheet" href="measure-office.css?v=10"><link rel="stylesheet" href="order-shell.css?v=10"><link rel="stylesheet" href="ledger.css?v=4"><style>.mo-open{margin-left:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #2f6fed;background:rgba(47,111,237,.08);color:#2f6fed;vertical-align:3px;cursor:pointer}</style></head>
 <body>
 
 <!-- ═════ 접속키 ═════ -->
@@ -1075,12 +1075,13 @@ var CO = {
 // 이 앱이 언제 것인지. 화면 왼쪽 위 DASIFILL 옆에 뜹니다.
 // 「고쳤다는데 화면이 그대로다」 싶을 때 이 날짜만 보면 됩니다 —
 // 날짜가 옛것이면 브라우저가 옛 파일을 들고 있는 것입니다.
-var APP_VER = '2026-10-28-stmt3';
+var APP_VER = '2026-10-28-help1';
 // 왼쪽 메뉴 — 업무 순서대로 셋 (10/28 개편 1단계 · 협업/2026-10-27_발주앱디자인/13). 발주·타일·명세서 화면이 같은 줄을 씁니다.
 // 「단가 기록」은 옛 화면(명세서 기록 → 단가 덮어쓰기)입니다 — 명세서 저장(3단계)이 생기면 뺍니다.
 function 메뉴html(on) {
   var b = function (k, ico, t, go) { return '<button type="button" data-menu="' + k + '"' + (on === k ? ' class="on"' : '') + ' onclick="' + go + '">' + ico + '<span>' + t + '</span></button>'; };
   return '<b>D</b>' + b('ledger', '📒', '장부', 'Ledger.open()') + b('work', '📐', '산출·발주', 'Ledger.work()') + b('stmt', '🔍', '명세서', 'StatementApp.open()')
+    + '<button type="button" class="menu-help" onclick="사용법.open()" title="상황별 사용법">❓<span>사용법</span></button>'
     + '<button type="button" class="menu-old" onclick="goSettle()" title="옛 화면 — 명세서 숫자로 단가를 덮어씁니다">단가 기록</button><small>' + APP_VER + '</small>';
 }
 var OrderLoad = {phase:'idle',error:'',started:0,seq:0,ticker:null,timer:null,trace:[]};
@@ -8512,5 +8513,5 @@ var StatementApp = (function () {
   });
 })();
 </script>
-<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=17"></script><script src="wiring-order.js?v=11"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=10"></script><script src="purchase.js?v=7"></script><script src="ledger.js?v=4"></script></body>
+<script src="lighting-calc.js?v=3"></script><script src="wiring-kit.js?v=5"></script><script src="lighting-order.js?v=17"></script><script src="wiring-order.js?v=11"></script><script src="measure-sheet.js?v=3"></script><script src="order-shell.js?v=10"></script><script src="purchase.js?v=7"></script><script src="ledger.js?v=5"></script></body>
 </html>

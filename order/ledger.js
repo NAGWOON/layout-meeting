@@ -338,6 +338,42 @@
     refresh() { if (L.siteId) load(); },
     state: () => ({siteId: L.siteId, n: L.orders.length, fallback: L.fallback, filter: L.filter, sel: L.sel})   // 점검용
   };
+  // ── ❓ 사용법 (10/28 대표 「앱 자체에 사용법 토글」) — 왼쪽 메뉴 어디서나 · 상황 한 줄 → 누르면 순서 · 원본은 저장소 발주앱_사용법.md ──
+  const HELP = [
+    ['발주', [
+      ['업체에 발주서 보내기', '장부 「＋ 새 발주」 → 유형 → 품목·수량 · 발주처·납품일 → 「○○ 발주 저장」 → 「📋 카톡용 글」이나 「🖼 이미지」로 카톡 → 아래 줄 <b>「✓ 보냈음 표시」</b>'],
+      ['보냈음 표시를 깜빡함', '장부 「보낼 것」에 남아 있습니다 → 그 줄 → 오른쪽 「✓ 보냈음 표시」'],
+      ['잘못 「보냈음」을 누름', '장부 그 줄 → 오른쪽 아래 「보냄 취소」 (현장에서 받은 줄이 없을 때만)'],
+      ['인터넷(네이버·사이트)에서 삼', '장부 「🧾 산 것·전화 주문 기록」 → 주문 완료 캡처 붙여넣기(Ctrl+V) → 이름·주소·전화·카드를 마우스로 칠해 가리기 → 「가린 뒤 읽기」 → 확인 → 「주문 기록 저장」'],
+      ['전화로 주문함', '같은 창 → 「전화 주문」 → 사진 없이 품목 직접 · 외상이면 「결제 전」 → 저장'],
+      ['현장에서 직접 삼', '같은 창 → 「현장 구매」 → 저장'],
+      ['지난 발주 그대로 또 시키기', '장부 「전부」에서 찾기 → 그 줄 → 「같은 품목으로 새 발주」']
+    ]],
+    ['보낸 뒤', [
+      ['수량이 바뀜', '장부 그 줄 → 「✎ 수량 수정」(타일·도기·도어는 「발주서 열기」) → 저장 → 아래 줄 <b>「📋 변경 내용 카톡용 글」</b>을 업체에 · 처음 보낸 판은 노션에 남음'],
+      ['언제 오나', '장부 「받을 것」 — 입고 예정일별로 묶여 있음 (폰에서도)'],
+      ['현장에서 받기', '현장팀이 보고앱 📦 탭에서 받은 품목 체크 · 일부 = 「일부 입고」 · 다 = 「입고완료」 · 받은 줄은 사무실에서 못 고침'],
+      ['돌려보냄(반품)', '장부 그 줄 → 「📤 반품 기록」']
+    ]],
+    ['명세서', [
+      ['명세서가 옴', '🔍 명세서 → 사진 <b>여러 장이면 한 번에</b> → 「이 n건으로 대조」 → 다른 줄만 확인 → 단가·비용·반품 ☑ → 「검토 저장」 · 다 맞으면 <b>「✓ 청구 확인 끝」</b>'],
+      ['우리가 안 적은 게 있음', '전화·카톡으로 더 시킨 것 — 오른쪽 「명세서에만 있는 줄」에서 골라 「☑ 추가 발주로 기록」 (검수 목록에도 뜸)'],
+      ['수량이 이상함', '그 줄 「문의 문구에 담기」 → 「💬 확인 문구 복사」로 업체에 → 「검토 저장」(문의 중) · 답이 오면 「저장한 명세서 열기」로 마무리'],
+      ['「장이 빠졌을 수 있습니다」', '명세서 위 「금액」 ≠ 넣은 장 합계 — 빠진 장을 「사진 더 넣기」로']
+    ]],
+    ['그 밖', [
+      ['하차·엘리베이터 조건 고치기', '산출·발주 화면 위 「✎ 현장 조건」'],
+      ['버튼이 안 보이거나 옛 화면', '왼쪽 아래 버전이 ' + APP_VER + ' 인지 보고, 아니면 Ctrl+Shift+R']
+    ]]
+  ];
+  const help = document.createElement('div'); help.id = 'helpLayer'; help.hidden = true;
+  help.innerHTML = '<div class="hp-in"><div class="hp-hd"><b>❓ 발주앱 사용법</b><span>상황을 누르면 순서가 나옵니다</span><button type="button" data-x>닫기</button></div>'
+    + HELP.map(g => '<section><h3>' + g[0] + '</h3>' + g[1].map(x => '<details><summary>' + x[0] + '</summary><p>' + x[1] + '</p></details>').join('') + '</section>').join('') + '</div>';
+  document.body.append(help);
+  help.addEventListener('click', e => { if (e.target === help || e.target.closest('[data-x]')) help.hidden = true; });
+  addEventListener('keydown', e => { if (e.key === 'Escape') help.hidden = true; });
+  window.사용법 = {open() { help.hidden = false; }, close() { help.hidden = true; }};
+
   // 이 파일이 늦게 읽혀 앱 준비가 먼저 끝났으면 여기서 첫 화면
   if (typeof OrderLoad !== 'undefined' && OrderLoad.phase === 'ready' && !(S.site && document.body.classList.contains('ledger-on'))) Ledger.start();
 })();

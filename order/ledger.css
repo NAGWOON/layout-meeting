@@ -108,3 +108,23 @@ body.ledger-on #toast{z-index:400}
 #stmtApp .cks .nt2{margin:7px 0 0;color:#b45309}
 #stmtApp .sv{font-size:12px;font-weight:700;color:#2563eb;background:#eff4ff;border-radius:7px;padding:4px 9px}
 #stmtApp .nf{padding:40px 20px;text-align:center;color:#71717a;font-size:13px}#stmtApp .nf a{color:#2563eb;font-weight:700}
+
+/* ❓ 사용법 (10/28) */
+.to-rail .menu-help,.srail .menu-help,.lg-rail .menu-help{display:flex!important;flex-direction:column;align-items:center;gap:3px;width:56px;margin-top:auto;font-size:15px!important;line-height:1;cursor:pointer}
+.to-rail .menu-help span,.srail .menu-help span,.lg-rail .menu-help span{font-size:11px}
+.to-rail .menu-help+.menu-old,.srail .menu-help+.menu-old,.lg-rail .menu-help+.menu-old{margin-top:6px}
+#helpLayer{position:fixed;inset:0;z-index:420;background:rgba(20,20,18,.32);display:flex;justify-content:center;align-items:flex-start;padding:40px 16px;overflow:auto;font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif}
+#helpLayer[hidden]{display:none}
+.hp-in{background:#fff;border-radius:16px;width:min(640px,100%);padding:6px 20px 18px;box-shadow:0 22px 60px rgba(0,0,0,.25);color:#1d1d1b;font-size:13.5px}
+.hp-hd{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #efeeea;position:sticky;top:0;background:#fff}
+.hp-hd b{font-size:16px}.hp-hd span{color:#8c8b85;font-size:12px}
+.hp-hd button{margin-left:auto;border:1px solid #e6e5e1;border-radius:8px;background:#fff;padding:6px 12px;font:inherit;cursor:pointer}
+.hp-in h3{font-size:12px;color:#8c8b85;font-weight:600;margin:16px 0 6px;letter-spacing:.02em}
+.hp-in details{border:1px solid #efeeea;border-radius:10px;margin-bottom:5px}
+.hp-in summary{padding:10px 13px;cursor:pointer;font-weight:600;list-style:none}
+.hp-in summary::-webkit-details-marker{display:none}
+.hp-in summary::before{content:"▸";color:#2f5fd0;margin-right:8px;display:inline-block;transition:transform .15s}
+.hp-in details[open] summary::before{transform:rotate(90deg)}
+.hp-in details p{margin:0;padding:0 13px 12px 30px;color:#5d5d58;line-height:1.65}
+.hp-in details p b{color:#1d1d1b}
+@media(max-width:700px){.lg-rail .menu-help{flex-direction:row!important;width:auto;margin-top:0;margin-left:auto}}
